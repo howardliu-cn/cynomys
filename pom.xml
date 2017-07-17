@@ -6,6 +6,10 @@
     <groupId>cn.howardliu.monitor</groupId>
     <artifactId>cynomys</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <modules>
+        <module>cynomys-common</module>
+        <module>cynomys-net</module>
+    </modules>
     <packaging>pom</packaging>
 
     <name>cynomys</name>
@@ -39,7 +43,27 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jdk.version>1.8</jdk.version>
+        <slf4j-api.version>1.7.21</slf4j-api.version>
+        <netty.version>4.1.6.Final</netty.version>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j-api.version}</version>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-handler</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <plugins>
