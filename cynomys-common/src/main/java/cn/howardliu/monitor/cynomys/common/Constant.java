@@ -12,6 +12,7 @@ import java.util.UUID;
 public class Constant {
     public static final int CRC_CODE = 0x0000_0_0_1;
     public static final String THIS_TAG;
+    public static final String HEADER_SERVER_TAG = "Server-Tag";
 
     static {
         THIS_TAG = UUID.randomUUID().toString();
