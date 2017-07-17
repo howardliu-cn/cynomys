@@ -10,6 +10,8 @@
         <module>cynomys-common</module>
         <module>cynomys-net</module>
         <module>cynomys-agent</module>
+        <module>cynomys-config-server</module>
+        <module>cynomys-proxy-server</module>
     </modules>
     <packaging>pom</packaging>
 
