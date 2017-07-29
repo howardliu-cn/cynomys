@@ -31,7 +31,7 @@ public enum ProxyConfig {
         int _maxFrameLength = 1024 * 1024 * 100;
         int _timeoutSeconds = 50;
         // TODO be sure config file path and load method
-        try (InputStream inputStream = ProxyConfig.class.getResourceAsStream("/env/cynomys-config.properties")) {
+        try (InputStream inputStream = ProxyConfig.class.getResourceAsStream("/conf/cynomys-config.properties")) {
             Properties properties = new Properties();
             properties.load(inputStream);
 
