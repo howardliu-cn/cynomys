@@ -5,6 +5,7 @@ import cn.howardliu.monitor.cynomys.net.codec.MessageEncoder;
 import cn.howardliu.monitor.cynomys.net.handler.HeartbeatHandler;
 import cn.howardliu.monitor.cynomys.net.handler.OtherInfoHandler;
 import cn.howardliu.monitor.cynomys.proxy.ServerContext;
+import cn.howardliu.monitor.cynomys.proxy.config.ProxyConfig;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -17,6 +18,8 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static cn.howardliu.monitor.cynomys.proxy.config.ProxyConfig.PROXY_CONFIG;
 
 /**
  * <br>created at 17-7-17
@@ -31,6 +34,10 @@ public class ProxyServer extends AbstractServer {
     private EventLoopGroup workerGroup = new NioEventLoopGroup();
     private ServerContext context;
 
+    public ProxyServer() {
+        this(PROXY_CONFIG.getPort(), PROXY_CONFIG.getCport());
+    }
+
     public ProxyServer(int port, int cport) {
         super(port, cport);
     }
@@ -39,6 +46,7 @@ public class ProxyServer extends AbstractServer {
         logger.info("begin to starting, use server port [], control port []", port, cport);
         this.context = ServerContext.getInstance(this);
         try {
+            ctrl();
             new ServerBootstrap()
                     .group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
@@ -48,11 +56,13 @@ public class ProxyServer extends AbstractServer {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline()
-                                    // TODO read maxFrameLength from config file
-                                    .addLast("MessageDecoder", new MessageDecoder(1024 * 1024 * 100, 4, 4))
+                                    // read maxFrameLength from config file
+                                    .addLast("MessageDecoder",
+                                            new MessageDecoder(PROXY_CONFIG.getMaxFrameLength(), 4, 4))
                                     .addLast("MessageEncoder", new MessageEncoder())
-                                    // TODO read timeout value from config file
-                                    .addLast("read-timeout-handler", new ReadTimeoutHandler(50))
+                                    // read timeout value from config file
+                                    .addLast("read-timeout-handler",
+                                            new ReadTimeoutHandler(PROXY_CONFIG.getTimeoutSeconds()))
                                     .addLast("HeartbeatHandler", new HeartbeatHandler("proxy-server"))
                                     .addLast("OtherInfoHandler", new OtherInfoHandler());
                         }

@@ -36,9 +36,8 @@ public abstract class AbstractServer {
 
     protected void ctrl() {
         Thread t = new Thread(() -> {
-            try {
-                logger.info("server listen to control port {}", cport);
-                ServerSocket ss = new ServerSocket(cport);
+            logger.info("server listen to control port {}", cport);
+            try (ServerSocket ss = new ServerSocket(cport)) {
                 while (isListen) {
                     Socket s = ss.accept();
                     Scanner sc = new Scanner(s.getInputStream());
@@ -53,6 +52,7 @@ public abstract class AbstractServer {
                         }
                     }
                 }
+                logger.info("server listen to control port {} STOPPED!", cport);
             } catch (Exception e) {
                 logger.error("listen to control port {} failed!", cport, e);
                 shutdownGracefully();
