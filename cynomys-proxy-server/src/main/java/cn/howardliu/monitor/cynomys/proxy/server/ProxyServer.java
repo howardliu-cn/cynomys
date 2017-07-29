@@ -5,7 +5,10 @@ import cn.howardliu.monitor.cynomys.net.codec.MessageEncoder;
 import cn.howardliu.monitor.cynomys.net.handler.HeartbeatHandler;
 import cn.howardliu.monitor.cynomys.net.handler.OtherInfoHandler;
 import cn.howardliu.monitor.cynomys.proxy.ServerContext;
-import cn.howardliu.monitor.cynomys.proxy.config.ProxyConfig;
+import cn.howardliu.monitor.cynomys.proxy.net.AppInfo2KafkaHandler;
+import cn.howardliu.monitor.cynomys.proxy.net.AppInfo2ZkHandler;
+import cn.howardliu.monitor.cynomys.proxy.net.RequestInfo2KafkaHandler;
+import cn.howardliu.monitor.cynomys.proxy.net.SqlInfo2KafkaHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -63,7 +66,12 @@ public class ProxyServer extends AbstractServer {
                                     // read timeout value from config file
                                     .addLast("read-timeout-handler",
                                             new ReadTimeoutHandler(PROXY_CONFIG.getTimeoutSeconds()))
+                                    // TODO custom heartbeat handler to create or delete application info path
                                     .addLast("HeartbeatHandler", new HeartbeatHandler("proxy-server"))
+                                    .addLast("AppInfo2ZkHandler", new AppInfo2ZkHandler())
+                                    .addLast("AppInfo2KafkaHandler", new AppInfo2KafkaHandler())
+                                    .addLast("SqlInfo2KafkaHandler", new SqlInfo2KafkaHandler())
+                                    .addLast("RequestInfo2KafkaHandler", new RequestInfo2KafkaHandler())
                                     .addLast("OtherInfoHandler", new OtherInfoHandler());
                         }
                     })

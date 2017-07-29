@@ -104,6 +104,12 @@
             </dependency>
             <dependency>
                 <groupId>cn.howardliu</groupId>
+                <artifactId>gear-commons</artifactId>
+                <version>${my-gear.version}</version>
+                <classifier>jdk7</classifier>
+            </dependency>
+            <dependency>
+                <groupId>cn.howardliu</groupId>
                 <artifactId>gear-monitor</artifactId>
                 <version>${my-gear.version}</version>
                 <classifier>jdk7</classifier>
