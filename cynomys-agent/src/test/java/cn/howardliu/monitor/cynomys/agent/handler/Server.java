@@ -28,7 +28,7 @@ public class Server {
                             ChannelPipeline p = socketChannel.pipeline();
                             p.addLast(new IdleStateHandler(10, 10, 0));
                             p.addLast(new LengthFieldBasedFrameDecoder(1024 * 1024, 0, 4, -4, 0));
-                            p.addLast(new ServerHandler());
+                            p.addLast(new TestServerHandler());
                         }
                     })
                     .bind(12345).sync()

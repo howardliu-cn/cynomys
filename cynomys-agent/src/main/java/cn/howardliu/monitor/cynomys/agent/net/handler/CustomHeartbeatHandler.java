@@ -1,7 +1,9 @@
 package cn.howardliu.monitor.cynomys.agent.net.handler;
 
 import cn.howardliu.monitor.cynomys.agent.net.operator.SocketMonitorDataOperator;
-import cn.howardliu.monitor.cynomys.net.handler.HeartbeatHandler;
+import cn.howardliu.monitor.cynomys.common.Constant;
+import cn.howardliu.monitor.cynomys.net.handler.SimpleHeartbeatHandler;
+import cn.howardliu.monitor.cynomys.net.struct.Header;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,13 +14,20 @@ import org.slf4j.LoggerFactory;
  * @author liuxh
  * @since 0.0.1
  */
-public class CustomHeartbeatHandler extends HeartbeatHandler {
+public class CustomHeartbeatHandler extends SimpleHeartbeatHandler {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private SocketMonitorDataOperator handler;
 
     public CustomHeartbeatHandler(String name, SocketMonitorDataOperator handler) {
         super(name);
         this.handler = handler;
+    }
+
+    @Override
+    protected Header customHeader() {
+        return super.customHeader()
+                .setSysName(Constant.SYS_NAME)
+                .setSysCode(Constant.SYS_CODE);
     }
 
     @Override
@@ -33,24 +42,5 @@ public class CustomHeartbeatHandler extends HeartbeatHandler {
         super.channelInactive(ctx);
         // reconnect
         this.handler.connect();
-    }
-
-    protected void handleReaderIdle(ChannelHandlerContext ctx) {
-        logger.warn("READER IDLE");
-        handlerIdle(ctx);
-    }
-
-    protected void handleWriterIdle(ChannelHandlerContext ctx) {
-        logger.warn("WRITER IDLE");
-        handlerIdle(ctx);
-    }
-
-    protected void handleAllIdle(ChannelHandlerContext ctx) {
-        logger.warn("ALL IDLE");
-        handlerIdle(ctx);
-    }
-
-    private void handlerIdle(ChannelHandlerContext ctx) {
-        ping(ctx);
     }
 }

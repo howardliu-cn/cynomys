@@ -2,8 +2,8 @@ package cn.howardliu.monitor.cynomys.agent.server;
 
 import cn.howardliu.monitor.cynomys.net.codec.MessageDecoder;
 import cn.howardliu.monitor.cynomys.net.codec.MessageEncoder;
-import cn.howardliu.monitor.cynomys.net.handler.HeartbeatHandler;
 import cn.howardliu.monitor.cynomys.net.handler.OtherInfoHandler;
+import cn.howardliu.monitor.cynomys.net.handler.SimpleHeartbeatHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -43,7 +43,7 @@ public class MonitorInfoServer {
                                     .addLast("MessageDecoder", new MessageDecoder(1024 * 1024 * 100, 4, 4))
                                     .addLast("MessageEncoder", new MessageEncoder())
                                     .addLast("read-timeout-handler", new ReadTimeoutHandler(50))
-                                    .addLast("HeartbeatHandler", new HeartbeatHandler("test-server"))
+                                    .addLast("HeartbeatHandler", new SimpleHeartbeatHandler("test-server"))
                                     .addLast("OtherInfoHandler", new OtherInfoHandler());
                         }
                     })

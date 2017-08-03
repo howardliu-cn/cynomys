@@ -1,6 +1,7 @@
 package cn.howardliu.monitor.cynomys.agent.handler;
 
 import cn.howardliu.monitor.cynomys.net.handler.HeartbeatHandler;
+import cn.howardliu.monitor.cynomys.net.struct.Header;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -15,10 +16,10 @@ import static cn.howardliu.monitor.cynomys.net.handler.HeartbeatConstants.HEADER
  * @author liuxh
  * @since 1.0.0
  */
-public class ServerHandler extends HeartbeatHandler {
+public class TestServerHandler extends HeartbeatHandler {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public ServerHandler() {
+    public TestServerHandler() {
         super("server");
     }
 
@@ -30,6 +31,11 @@ public class ServerHandler extends HeartbeatHandler {
         String content = new String(data);
         System.out.println(name + " get content: " + content);
         ctx.write(responseBuf);
+    }
+
+    @Override
+    protected Header customHeader() {
+        return new Header();
     }
 
     @Override

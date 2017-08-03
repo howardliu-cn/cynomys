@@ -6,6 +6,7 @@
  */
 package cn.howardliu.monitor.cynomys.agent.handler;
 
+import cn.howardliu.monitor.cynomys.agent.common.Constant;
 import cn.howardliu.monitor.cynomys.agent.conf.EnvPropertyConfig;
 import cn.howardliu.monitor.cynomys.agent.conf.PropertyAdapter;
 import cn.howardliu.monitor.cynomys.agent.conf.SystemPropertyConfig;
@@ -161,6 +162,8 @@ public class MonitorChecker implements Health {
                                     new Message()
                                             .setHeader(
                                                     new Header()
+                                                            .setSysName(cn.howardliu.monitor.cynomys.common.Constant.SYS_NAME)
+                                                            .setSysCode(cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE)
                                                             .setLength(appInfo.length())
                                                             .setType(MessageType.APP_INFO_REQ.value())
                                             )
@@ -175,6 +178,8 @@ public class MonitorChecker implements Health {
                                     new Message()
                                             .setHeader(
                                                     new Header()
+                                                            .setSysName(cn.howardliu.monitor.cynomys.common.Constant.SYS_NAME)
+                                                            .setSysCode(cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE)
                                                             .setLength(sqlInfo.length())
                                                             .setType(MessageType.SQL_INFO_REQ.value())
                                             )
@@ -189,6 +194,8 @@ public class MonitorChecker implements Health {
                                     new Message()
                                             .setHeader(
                                                     new Header()
+                                                            .setSysName(cn.howardliu.monitor.cynomys.common.Constant.SYS_NAME)
+                                                            .setSysCode(cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE)
                                                             .setLength(requestInfo.length())
                                                             .setType(MessageType.REQUEST_INFO_REQ.value())
                                             )

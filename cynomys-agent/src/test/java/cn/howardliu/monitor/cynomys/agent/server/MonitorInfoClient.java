@@ -2,8 +2,8 @@ package cn.howardliu.monitor.cynomys.agent.server;
 
 import cn.howardliu.monitor.cynomys.net.codec.MessageDecoder;
 import cn.howardliu.monitor.cynomys.net.codec.MessageEncoder;
-import cn.howardliu.monitor.cynomys.net.handler.HeartbeatHandler;
 import cn.howardliu.monitor.cynomys.net.handler.OtherInfoHandler;
+import cn.howardliu.monitor.cynomys.net.handler.SimpleHeartbeatHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -38,26 +38,7 @@ public class MonitorInfoClient {
                                              .addLast("MessageDecoder", new MessageDecoder(1024 * 1024 * 100, 4, 4))
                                              .addLast("MessageEncoder", new MessageEncoder())
                                              .addLast("read-timeout-handler", new ReadTimeoutHandler(50))
-                                             .addLast("HeartbeatHandler", new HeartbeatHandler("test-client") {
-                                                 protected void handleReaderIdle(ChannelHandlerContext ctx) {
-                                                     logger.warn("READER IDLE");
-                                                     handlerIdle(ctx);
-                                                 }
-
-                                                 protected void handleWriterIdle(ChannelHandlerContext ctx) {
-                                                     logger.warn("WRITER IDLE");
-                                                     handlerIdle(ctx);
-                                                 }
-
-                                                 protected void handleAllIdle(ChannelHandlerContext ctx) {
-                                                     logger.warn("ALL IDLE");
-                                                     handlerIdle(ctx);
-                                                 }
-
-                                                 private void handlerIdle(ChannelHandlerContext ctx) {
-                                                     ping(ctx);
-                                                 }
-                                             })
+                                             .addLast("HeartbeatHandler", new SimpleHeartbeatHandler("test-client"))
                                              .addLast("OtherInfoHandler", new OtherInfoHandler());
                                  }
                              }

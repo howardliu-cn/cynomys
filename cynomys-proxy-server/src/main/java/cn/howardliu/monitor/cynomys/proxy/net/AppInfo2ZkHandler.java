@@ -4,6 +4,7 @@ import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
 import cn.howardliu.monitor.cynomys.net.struct.MessageType;
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,10 @@ import static cn.howardliu.monitor.cynomys.net.struct.MessageType.APP_INFO_REQ;
  */
 public class AppInfo2ZkHandler extends AbstractInfo2ZkHandler {
     private static final Logger logger = LoggerFactory.getLogger(AppInfo2ZkHandler.class);
+
+    public AppInfo2ZkHandler(CuratorFramework zkClient) {
+        super(zkClient);
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Message message) throws Exception {

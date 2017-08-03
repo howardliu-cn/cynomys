@@ -1,5 +1,6 @@
 package cn.howardliu.monitor.cynomys.proxy.net;
 
+import cn.howardliu.gear.kafka.KafkaProducerWrapper;
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
 import cn.howardliu.monitor.cynomys.net.struct.MessageType;
@@ -19,6 +20,10 @@ import static cn.howardliu.monitor.cynomys.proxy.config.SystemSetting.SYSTEM_SET
  */
 public class RequestInfo2KafkaHandler extends AbstractInfo2KafkaHandler {
     private static final Logger logger = LoggerFactory.getLogger(RequestInfo2KafkaHandler.class);
+
+    public RequestInfo2KafkaHandler(KafkaProducerWrapper<String, String> kafkaProducerWrapper) {
+        super(kafkaProducerWrapper);
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Message message) throws Exception {

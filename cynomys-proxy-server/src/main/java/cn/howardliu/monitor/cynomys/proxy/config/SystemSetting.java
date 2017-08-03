@@ -20,6 +20,7 @@ public enum SystemSetting {
     SYSTEM_SETTING;
 
     private static final Logger logger = LoggerFactory.getLogger(SystemSetting.class);
+    private static SystemSettingParam param;
 
     static {
         try (InputStream in = SystemSetting.class.getResourceAsStream("/conf/system-setting.properties")) {
@@ -27,92 +28,182 @@ public enum SystemSetting {
             properties.load(in);
             properties.putAll(System.getenv());
             properties.putAll(System.getProperties());
-            SYSTEM_SETTING.clone(PropertiesUtils.parseObject(properties, SystemSetting.class));
+            param = PropertiesUtils.parseObject(properties, SystemSettingParam.class);
         } catch (IOException e) {
             logger.error("Got an IOException when loading system-setting.properties file", e);
             System.exit(1);
         }
     }
 
-    @Key("system.setting.zk.addresses")
-    private String zkAddresses;
-    @Key("system.setting.zk.namespace")
-    private String zkNamespace;
-    @Key("system.setting.kafka.bootstrap.servers")
-    private String kafkaBootstrapServers;
-    @Key("system.setting.kafka.zookeeper.connect")
-    private String kafkaZookeeperConnect;
-    @Key("system.setting.kafka.acks")
-    private String kafkaAcks = "all";
-    @Key("system.setting.kafka.retries")
-    private int kafkaRetries = 0;
-    @Key("system.setting.kafka.batch.size")
-    private int kafkaBatchSize = 16 * 1024;
-    @Key("system.setting.kafka.max.request.size")
-    private int kafkaMaxRequestSize = 1024 * 1024;
-    @Key("system.setting.kafka.topic.app")
-    private String kafkaTopicApp;
-    @Key("system.setting.kafka.topic.sql")
-    private String kafkaTopicSql;
-    @Key("system.setting.kafka.topic.request")
-    private String kafkaTopicRequest;
-
-    private void clone(SystemSetting source) {
-        this.zkAddresses = source.getZkAddresses();
-        this.zkNamespace = source.getZkNamespace();
-
-        this.kafkaBootstrapServers = source.getKafkaBootstrapServers();
-        this.kafkaZookeeperConnect = source.getKafkaZookeeperConnect();
-        this.kafkaAcks = source.getKafkaAcks();
-        this.kafkaRetries = source.getKafkaRetries();
-        this.kafkaBatchSize = source.getKafkaBatchSize();
-        this.kafkaMaxRequestSize = source.getKafkaMaxRequestSize();
-        this.kafkaTopicApp = source.getKafkaTopicApp();
-        this.kafkaTopicSql = source.getKafkaTopicSql();
-        this.kafkaTopicRequest = source.getKafkaTopicRequest();
-    }
-
     public String getZkAddresses() {
-        return zkAddresses;
+        return param.getZkAddresses();
     }
 
     public String getZkNamespace() {
-        return zkNamespace;
+        return param.getZkNamespace();
+    }
+
+    public boolean isCreatePathIfNeeded() {
+        return param.isCreatePathIfNeeded();
     }
 
     public String getKafkaBootstrapServers() {
-        return kafkaBootstrapServers;
+        return param.getKafkaBootstrapServers();
     }
 
     public String getKafkaZookeeperConnect() {
-        return kafkaZookeeperConnect;
+        return param.getKafkaZookeeperConnect();
     }
 
     public String getKafkaAcks() {
-        return kafkaAcks;
+        return param.getKafkaAcks();
     }
 
     public int getKafkaRetries() {
-        return kafkaRetries;
+        return param.getKafkaRetries();
     }
 
     public int getKafkaBatchSize() {
-        return kafkaBatchSize;
+        return param.getKafkaBatchSize();
     }
 
     public int getKafkaMaxRequestSize() {
-        return kafkaMaxRequestSize;
+        return param.getKafkaMaxRequestSize();
     }
 
     public String getKafkaTopicApp() {
-        return kafkaTopicApp;
+        return param.getKafkaTopicApp();
     }
 
     public String getKafkaTopicSql() {
-        return kafkaTopicSql;
+        return param.getKafkaTopicSql();
     }
 
     public String getKafkaTopicRequest() {
-        return kafkaTopicRequest;
+        return param.getKafkaTopicRequest();
+    }
+
+    public static class SystemSettingParam {
+        @Key("system.setting.zk.addresses")
+        private String zkAddresses;
+        @Key("system.setting.zk.namespace")
+        private String zkNamespace;
+        @Key("system.setting.zk.createPathIfNeeded")
+        private boolean createPathIfNeeded = Boolean.TRUE;
+
+        @Key("system.setting.kafka.bootstrap.servers")
+        private String kafkaBootstrapServers;
+        @Key("system.setting.kafka.zookeeper.connect")
+        private String kafkaZookeeperConnect;
+        @Key("system.setting.kafka.acks")
+        private String kafkaAcks = "all";
+        @Key("system.setting.kafka.retries")
+        private int kafkaRetries = 0;
+        @Key("system.setting.kafka.batch.size")
+        private int kafkaBatchSize = 16 * 1024;
+        @Key("system.setting.kafka.max.request.size")
+        private int kafkaMaxRequestSize = 1024 * 1024;
+        @Key("system.setting.kafka.topic.app")
+        private String kafkaTopicApp;
+        @Key("system.setting.kafka.topic.sql")
+        private String kafkaTopicSql;
+        @Key("system.setting.kafka.topic.request")
+        private String kafkaTopicRequest;
+
+        public String getZkAddresses() {
+            return zkAddresses;
+        }
+
+        public void setZkAddresses(String zkAddresses) {
+            this.zkAddresses = zkAddresses;
+        }
+
+        public String getZkNamespace() {
+            return zkNamespace;
+        }
+
+        public void setZkNamespace(String zkNamespace) {
+            this.zkNamespace = zkNamespace;
+        }
+
+        public boolean isCreatePathIfNeeded() {
+            return createPathIfNeeded;
+        }
+
+        public void setCreatePathIfNeeded(boolean createPathIfNeeded) {
+            this.createPathIfNeeded = createPathIfNeeded;
+        }
+
+        public String getKafkaBootstrapServers() {
+            return kafkaBootstrapServers;
+        }
+
+        public void setKafkaBootstrapServers(String kafkaBootstrapServers) {
+            this.kafkaBootstrapServers = kafkaBootstrapServers;
+        }
+
+        public String getKafkaZookeeperConnect() {
+            return kafkaZookeeperConnect;
+        }
+
+        public void setKafkaZookeeperConnect(String kafkaZookeeperConnect) {
+            this.kafkaZookeeperConnect = kafkaZookeeperConnect;
+        }
+
+        public String getKafkaAcks() {
+            return kafkaAcks;
+        }
+
+        public void setKafkaAcks(String kafkaAcks) {
+            this.kafkaAcks = kafkaAcks;
+        }
+
+        public int getKafkaRetries() {
+            return kafkaRetries;
+        }
+
+        public void setKafkaRetries(int kafkaRetries) {
+            this.kafkaRetries = kafkaRetries;
+        }
+
+        public int getKafkaBatchSize() {
+            return kafkaBatchSize;
+        }
+
+        public void setKafkaBatchSize(int kafkaBatchSize) {
+            this.kafkaBatchSize = kafkaBatchSize;
+        }
+
+        public int getKafkaMaxRequestSize() {
+            return kafkaMaxRequestSize;
+        }
+
+        public void setKafkaMaxRequestSize(int kafkaMaxRequestSize) {
+            this.kafkaMaxRequestSize = kafkaMaxRequestSize;
+        }
+
+        public String getKafkaTopicApp() {
+            return kafkaTopicApp;
+        }
+
+        public void setKafkaTopicApp(String kafkaTopicApp) {
+            this.kafkaTopicApp = kafkaTopicApp;
+        }
+
+        public String getKafkaTopicSql() {
+            return kafkaTopicSql;
+        }
+
+        public void setKafkaTopicSql(String kafkaTopicSql) {
+            this.kafkaTopicSql = kafkaTopicSql;
+        }
+
+        public String getKafkaTopicRequest() {
+            return kafkaTopicRequest;
+        }
+
+        public void setKafkaTopicRequest(String kafkaTopicRequest) {
+            this.kafkaTopicRequest = kafkaTopicRequest;
+        }
     }
 }

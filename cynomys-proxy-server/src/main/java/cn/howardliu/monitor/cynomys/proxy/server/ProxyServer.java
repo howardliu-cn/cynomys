@@ -1,14 +1,14 @@
 package cn.howardliu.monitor.cynomys.proxy.server;
 
+import cn.howardliu.gear.kafka.KafkaProducerWrapper;
+import cn.howardliu.gear.zk.ZkClientFactoryBuilder;
+import cn.howardliu.gear.zk.ZkConfig;
 import cn.howardliu.monitor.cynomys.net.codec.MessageDecoder;
 import cn.howardliu.monitor.cynomys.net.codec.MessageEncoder;
-import cn.howardliu.monitor.cynomys.net.handler.HeartbeatHandler;
 import cn.howardliu.monitor.cynomys.net.handler.OtherInfoHandler;
+import cn.howardliu.monitor.cynomys.net.handler.SimpleHeartbeatHandler;
 import cn.howardliu.monitor.cynomys.proxy.ServerContext;
-import cn.howardliu.monitor.cynomys.proxy.net.AppInfo2KafkaHandler;
-import cn.howardliu.monitor.cynomys.proxy.net.AppInfo2ZkHandler;
-import cn.howardliu.monitor.cynomys.proxy.net.RequestInfo2KafkaHandler;
-import cn.howardliu.monitor.cynomys.proxy.net.SqlInfo2KafkaHandler;
+import cn.howardliu.monitor.cynomys.proxy.net.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -19,10 +19,15 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
+import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Properties;
+
 import static cn.howardliu.monitor.cynomys.proxy.config.ProxyConfig.PROXY_CONFIG;
+import static cn.howardliu.monitor.cynomys.proxy.config.SystemSetting.SYSTEM_SETTING;
+import static org.apache.kafka.clients.producer.ProducerConfig.*;
 
 /**
  * <br>created at 17-7-17
@@ -33,6 +38,8 @@ import static cn.howardliu.monitor.cynomys.proxy.config.ProxyConfig.PROXY_CONFIG
  */
 public class ProxyServer extends AbstractServer {
     private static final Logger logger = LoggerFactory.getLogger(ProxyServer.class);
+    private final KafkaProducerWrapper<String, String> kafkaProducerWrapper;
+    private final CuratorFramework zkClient;
     private EventLoopGroup bossGroup = new NioEventLoopGroup();
     private EventLoopGroup workerGroup = new NioEventLoopGroup();
     private ServerContext context;
@@ -43,6 +50,21 @@ public class ProxyServer extends AbstractServer {
 
     public ProxyServer(int port, int cport) {
         super(port, cport);
+
+        Properties config = new Properties();
+        config.put(BOOTSTRAP_SERVERS_CONFIG, SYSTEM_SETTING.getKafkaBootstrapServers());
+        config.put(ACKS_CONFIG, SYSTEM_SETTING.getKafkaAcks());
+        config.put(RETRIES_CONFIG, SYSTEM_SETTING.getKafkaRetries());
+        config.put(BATCH_SIZE_CONFIG, SYSTEM_SETTING.getKafkaBatchSize());
+        config.put(MAX_REQUEST_SIZE_CONFIG, SYSTEM_SETTING.getKafkaMaxRequestSize());
+        this.kafkaProducerWrapper = new KafkaProducerWrapper<>(config);
+
+        this.zkClient = new ZkClientFactoryBuilder()
+                .zkAddresses(SYSTEM_SETTING.getZkAddresses())
+                .namespace(SYSTEM_SETTING.getZkNamespace())
+                .config(ZkConfig.JuteMaxBuffer.key, 10 * 1024 * 1024)
+                .build()
+                .createClient();
     }
 
     public void startup() {
@@ -60,19 +82,19 @@ public class ProxyServer extends AbstractServer {
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline()
                                     // read maxFrameLength from config file
-                                    .addLast("MessageDecoder",
-                                            new MessageDecoder(PROXY_CONFIG.getMaxFrameLength(), 4, 4))
-                                    .addLast("MessageEncoder", new MessageEncoder())
+                                    .addLast(new MessageDecoder(PROXY_CONFIG.getMaxFrameLength(), 4, 4))
+                                    .addLast(new MessageEncoder())
+                                    // link catch handler to create or delete application info path in zookeeper
+                                    .addLast(new LinkCatchHandler(zkClient))
                                     // read timeout value from config file
                                     .addLast("read-timeout-handler",
                                             new ReadTimeoutHandler(PROXY_CONFIG.getTimeoutSeconds()))
-                                    // TODO custom heartbeat handler to create or delete application info path
-                                    .addLast("HeartbeatHandler", new HeartbeatHandler("proxy-server"))
-                                    .addLast("AppInfo2ZkHandler", new AppInfo2ZkHandler())
-                                    .addLast("AppInfo2KafkaHandler", new AppInfo2KafkaHandler())
-                                    .addLast("SqlInfo2KafkaHandler", new SqlInfo2KafkaHandler())
-                                    .addLast("RequestInfo2KafkaHandler", new RequestInfo2KafkaHandler())
-                                    .addLast("OtherInfoHandler", new OtherInfoHandler());
+                                    .addLast(new SimpleHeartbeatHandler("proxy-server"))
+                                    .addLast(new AppInfo2ZkHandler(zkClient))
+                                    .addLast(new AppInfo2KafkaHandler(kafkaProducerWrapper))
+                                    .addLast(new SqlInfo2KafkaHandler(kafkaProducerWrapper))
+                                    .addLast(new RequestInfo2KafkaHandler(kafkaProducerWrapper))
+                                    .addLast(new OtherInfoHandler());
                         }
                     })
                     .bind(port).sync()

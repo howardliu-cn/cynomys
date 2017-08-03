@@ -18,7 +18,7 @@ import static cn.howardliu.monitor.cynomys.net.struct.MessageType.HEARTBEAT_RESP
  * @author liuxh
  * @since 0.0.1
  */
-public class HeartbeatHandler extends SimpleChannelInboundHandler<Message> {
+public abstract class HeartbeatHandler extends SimpleChannelInboundHandler<Message> {
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatHandler.class);
     protected String name;
 
@@ -45,7 +45,7 @@ public class HeartbeatHandler extends SimpleChannelInboundHandler<Message> {
     }
 
     protected void ping(ChannelHandlerContext ctx) {
-        ctx.writeAndFlush(new Message().setHeader(new Header().setType(HEARTBEAT_REQ.value())));
+        ctx.writeAndFlush(new Message().setHeader(customHeader().setType(HEARTBEAT_REQ.value())));
         long count = HEARTBEAT_COUNTER.incrementAndGet();
         if (logger.isDebugEnabled()) {
             logger.debug(name + " send PING single message to " + ctx.channel().remoteAddress() + ", count: " + count);
@@ -53,12 +53,14 @@ public class HeartbeatHandler extends SimpleChannelInboundHandler<Message> {
     }
 
     protected void pong(ChannelHandlerContext ctx) {
-        ctx.writeAndFlush(new Message().setHeader(new Header().setType(HEARTBEAT_RESP.value())));
+        ctx.writeAndFlush(new Message().setHeader(customHeader().setType(HEARTBEAT_RESP.value())));
         long count = HEARTBEAT_COUNTER.incrementAndGet();
         if (logger.isDebugEnabled()) {
             logger.debug(name + " send PONG single message to " + ctx.channel().remoteAddress() + ", count: " + count);
         }
     }
+
+    protected abstract Header customHeader();
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object event) throws Exception {

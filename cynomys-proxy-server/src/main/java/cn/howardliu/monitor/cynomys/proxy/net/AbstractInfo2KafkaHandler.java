@@ -22,14 +22,8 @@ import static org.apache.kafka.clients.producer.ProducerConfig.*;
 public abstract class AbstractInfo2KafkaHandler extends SimpleChannelInboundHandler<Message> {
     private final KafkaProducerWrapper<String, String> kafkaProducerWrapper;
 
-    public AbstractInfo2KafkaHandler() {
-        Properties config = new Properties();
-        config.put(BOOTSTRAP_SERVERS_CONFIG, SYSTEM_SETTING.getKafkaBootstrapServers());
-        config.put(ACKS_CONFIG, SYSTEM_SETTING.getKafkaAcks());
-        config.put(RETRIES_CONFIG, SYSTEM_SETTING.getKafkaRetries());
-        config.put(BATCH_SIZE_CONFIG, SYSTEM_SETTING.getKafkaBatchSize());
-        config.put(MAX_REQUEST_SIZE_CONFIG, SYSTEM_SETTING.getKafkaMaxRequestSize());
-        kafkaProducerWrapper = new KafkaProducerWrapper<>(config);
+    public AbstractInfo2KafkaHandler(KafkaProducerWrapper<String, String> kafkaProducerWrapper) {
+        this.kafkaProducerWrapper = kafkaProducerWrapper;
     }
 
     protected void send(ChannelHandlerContext ctx, Message message, String topic, MessageType resp) {

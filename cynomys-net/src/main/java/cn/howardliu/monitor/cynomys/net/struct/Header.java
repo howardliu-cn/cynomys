@@ -15,10 +15,10 @@ import static cn.howardliu.monitor.cynomys.common.Constant.THIS_TAG;
 public class Header implements Serializable {
     private int crcCode = CRC_CODE;
     private String tag = THIS_TAG;
+    private String sysName = "";
+    private String sysCode = "";
     private int length;
     private byte type;
-    private String sysName = "";
-    private int sysCode;
 
     public int getCrcCode() {
         return crcCode;
@@ -65,13 +65,37 @@ public class Header implements Serializable {
         return this;
     }
 
-    public int getSysCode() {
+    public String getSysCode() {
         return sysCode;
     }
 
-    public Header setSysCode(int sysCode) {
+    public Header setSysCode(String sysCode) {
         this.sysCode = sysCode;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Header header = (Header) o;
+        return crcCode == header.crcCode
+                && tag.equals(header.tag)
+                && sysCode.equals(header.sysCode)
+                && sysName.equals(header.sysName);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = crcCode;
+        result = 31 * result + tag.hashCode();
+        result = 31 * result + sysName.hashCode();
+        result = 31 * result + sysCode.hashCode();
+        return result;
     }
 
     @Override
