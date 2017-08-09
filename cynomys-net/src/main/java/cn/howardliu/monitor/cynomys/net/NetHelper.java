@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * <br>created at 17-8-8
@@ -16,8 +17,8 @@ import java.net.SocketAddress;
  * @version 0.0.1
  * @since 0.0.1
  */
-public final class ChannelHelper {
-    private static final Logger logger = LoggerFactory.getLogger(ChannelHelper.class);
+public final class NetHelper {
+    private static final Logger logger = LoggerFactory.getLogger(NetHelper.class);
 
     public static SocketAddress string2SocketAddress(final String address) {
         String[] s = address.split(":");
@@ -44,16 +45,13 @@ public final class ChannelHelper {
             return;
         }
         final String remote = remoteAddress(channel);
-        channel.close().addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                if (future.isSuccess()) {
-                    logger.info("closeChannel: close the connection to remote address[{}] result: {}", remote,
-                            future.isSuccess());
-                } else {
-                    logger.warn("closeChannel: close the connection to remote address[{}] result: {}", remote,
-                            future.isSuccess(), future.cause());
-                }
+        channel.close().addListener((ChannelFutureListener) future -> {
+            if (future.isSuccess()) {
+                logger.info("closeChannel: close the connection to remote address[{}] result: {}", remote,
+                        future.isSuccess());
+            } else {
+                logger.warn("closeChannel: close the connection to remote address[{}] result: {}", remote,
+                        future.isSuccess(), future.cause());
             }
         });
     }

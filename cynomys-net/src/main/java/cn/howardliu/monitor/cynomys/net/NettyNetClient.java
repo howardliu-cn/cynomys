@@ -1,14 +1,12 @@
-package cn.howardliu.monitor.cynomys.proxy.server;
+package cn.howardliu.monitor.cynomys.net;
 
 import cn.howardliu.monitor.cynomys.common.Constant;
-import cn.howardliu.monitor.cynomys.net.ChannelHelper;
 import cn.howardliu.monitor.cynomys.net.codec.MessageDecoder;
 import cn.howardliu.monitor.cynomys.net.codec.MessageEncoder;
 import cn.howardliu.monitor.cynomys.net.handler.OtherInfoHandler;
 import cn.howardliu.monitor.cynomys.net.handler.SimpleHeartbeatHandler;
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
-import cn.howardliu.monitor.cynomys.net.struct.MessageType;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -21,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.SocketAddress;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,14 +29,17 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * <br>created at 17-8-3
+ * <br>created at 17-8-9
  *
  * @author liuxh
  * @version 0.0.1
  * @since 0.0.1
  */
-public class Client {
-    private static final Logger logger = LoggerFactory.getLogger(Client.class);
+public class NettyNetClient extends NettyNetAbstract implements NetClient {
+    private static final Logger logger = LoggerFactory.getLogger(NettyNetClient.class);
+
+    private final NettyClientConfig nettyClientConfig;
+
     private final EventLoopGroup eventLoopGroupWorker;
     private final Bootstrap bootstrap = new Bootstrap();
     private final ConcurrentMap<String, ChannelWrapper> channelTables = new ConcurrentHashMap<>();
@@ -53,7 +53,9 @@ public class Client {
 
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
 
-    public Client() {
+    public NettyNetClient(final NettyClientConfig nettyClientConfig) {
+        this.nettyClientConfig = nettyClientConfig;
+
         this.eventLoopGroupWorker = new NioEventLoopGroup(
                 1,
                 new ThreadFactory() {
@@ -67,25 +69,10 @@ public class Client {
         );
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        Client client = new Client();
-        client.startup();
-        client.updateAddressList(Arrays.asList("127.0.0.1:7911", "localhost:7912"));
-        client.async(
-                new Message()
-                        .setHeader(
-                                new Header()
-                                        .setSysCode("001")
-                                        .setSysName("test-client")
-                                        .setType(MessageType.HEARTBEAT_REQ.value())
-                        )
-        );
-    }
-
-    public void startup() {
-        int nThreads = 4;
+    @Override
+    public void start() {
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(
-                nThreads,
+                this.nettyClientConfig.getClientWorkerThreads(),
                 new ThreadFactory() {
                     private AtomicInteger threadIndex = new AtomicInteger(0);
 
@@ -101,19 +88,20 @@ public class Client {
                 .channel(NioSocketChannel.class)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.SO_KEEPALIVE, false)
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
-                .option(ChannelOption.SO_SNDBUF, 65535)
-                .option(ChannelOption.SO_RCVBUF, 65535)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.nettyClientConfig.getConnectTimeoutMillis())
+                .option(ChannelOption.SO_SNDBUF, this.nettyClientConfig.getClientSocketSndBufSize())
+                .option(ChannelOption.SO_RCVBUF, this.nettyClientConfig.getClientSocketRcvBufSize())
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline()
                                 .addLast(defaultEventExecutorGroup)
                                 .addLast(new ReadTimeoutHandler(60))
-                                .addLast(new IdleStateHandler(0, 0, 5))
-                                .addLast(new MessageDecoder(10 * 1024 * 1024, 4, 4))
+                                .addLast(new IdleStateHandler(0, 0,
+                                        nettyClientConfig.getClientChannelMaxIdleTimeSeconds()))
+                                .addLast(new MessageDecoder(nettyClientConfig.getClientSocketMaxFrameLength(), 4, 4))
                                 .addLast(new MessageEncoder())
-                                .addLast(new SimpleHeartbeatHandler("test-client") {
+                                .addLast(new SimpleHeartbeatHandler(nettyClientConfig.getClientName()) {
                                     @Override
                                     protected Header customHeader() {
                                         return super.customHeader()
@@ -126,6 +114,7 @@ public class Client {
                                     @Override
                                     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
                                             throws Exception {
+                                        closeChannel(ctx.channel());
                                         cause.printStackTrace();
                                     }
                                 })
@@ -134,6 +123,7 @@ public class Client {
                 });
     }
 
+    @Override
     public void shutdown() {
         try {
             for (ChannelWrapper cw : this.channelTables.values()) {
@@ -146,29 +136,6 @@ public class Client {
             }
         } catch (Exception e) {
             logger.error("Netty-Client shutdown exception, ", e);
-        }
-    }
-
-    public void updateAddressList(List<String> addresses) {
-        List<String> old = this.addressList.get();
-        boolean update = false;
-        if (!addresses.isEmpty()) {
-            if (old == null) {
-                update = true;
-            } else if (addresses.size() != old.size()) {
-                update = true;
-            } else {
-                for (int i = 0; i < addresses.size() && !update; i++) {
-                    if (!old.contains(addresses.get(i))) {
-                        update = true;
-                    }
-                }
-            }
-
-            if (update) {
-                Collections.shuffle(addresses);
-                this.addressList.set(addresses);
-            }
         }
     }
 
@@ -213,7 +180,6 @@ public class Client {
                 }
 
                 if (addresses != null && !addresses.isEmpty()) {
-                    // TODO no loop
                     String _address = addresses.get(ThreadLocalRandom.current().nextInt(10) % addresses.size());
                     this.addressChossed.set(_address);
                     Channel _channel = this.createChannel(_address);
@@ -254,42 +220,8 @@ public class Client {
                 }
 
                 if (createNewConnection) {
-                    ChannelFuture channelFuture = this.bootstrap.connect(ChannelHelper.string2SocketAddress(address))
-                            .addListener((ChannelFutureListener) future -> {
-                                if (future.isSuccess()) {
-                                    if (logger.isDebugEnabled()) {
-                                        logger.debug("Connect to server [{}] successfully!", address);
-                                    }
-                                } else {
-                                    if (relinkCount.get() <= 3) {
-                                        if (logger.isDebugEnabled()) {
-                                            logger.debug(
-                                                    "Failed to connect to server [{}], try connect after {}s, this is {} times",
-                                                    address, 5000, relinkCount.get());
-                                        }
-                                        future.channel().eventLoop().schedule(
-                                                () -> {
-                                                    try {
-                                                        relinkCount.incrementAndGet();
-                                                        getAndCreateChannel(address);
-                                                    } catch (InterruptedException ignored) {
-                                                    }
-                                                },
-                                                5_000,
-                                                TimeUnit.MILLISECONDS
-                                        );
-                                    } else {
-                                        if (logger.isDebugEnabled()) {
-                                            logger.debug(
-                                                    "Failed to connect to server [{}], and reconnect {} times, try close and get server list",
-                                                    address, relinkCount.get());
-                                        }
-                                        this.addressChossed.set(null);
-                                        relinkCount.set(0);
-                                        closeChannel(future.channel());
-                                    }
-                                }
-                            });
+                    ChannelFuture channelFuture = this.bootstrap.connect(NetHelper.string2SocketAddress(address))
+                            .addListener(connectListener(address));
                     logger.info("createChannel: begin to connect remote {} asynchronously", address);
                     cw = new ChannelWrapper(channelFuture);
                     this.channelTables.put(address, cw);
@@ -321,6 +253,46 @@ public class Client {
         }
 
         return null;
+    }
+
+    protected ChannelFutureListener connectListener(final String address) {
+        return future -> {
+            if (future.isSuccess()) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Connect to server [{}] successfully!", address);
+                }
+            } else {
+                // TODO relink count from config
+                if (relinkCount.get() <= 3) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(
+                                "Failed to connect to server [{}], try connect after {}s, this is {} times",
+                                address, 5000, relinkCount.get());
+                    }
+                    future.channel().eventLoop().schedule(
+                            () -> {
+                                try {
+                                    relinkCount.incrementAndGet();
+                                    getAndCreateChannel(address);
+                                } catch (InterruptedException ignored) {
+                                }
+                            },
+                            // TODO delay times from config
+                            5_000,
+                            TimeUnit.MILLISECONDS
+                    );
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(
+                                "Failed to connect to server [{}], and reconnect {} times, try close and get server list",
+                                address, relinkCount.get());
+                    }
+                    this.addressChossed.set(null);
+                    relinkCount.set(0);
+                    closeChannel(future.channel());
+                }
+            }
+        };
     }
 
     private void closeChannel(final Channel channel) {
@@ -355,7 +327,7 @@ public class Client {
                     if (removeItemFromTable) {
                         this.channelTables.remove(address);
                         logger.info("closeChannel: the channel[{}] was removed from channel table", address);
-                        ChannelHelper.closeChannel(channel);
+                        NetHelper.closeChannel(channel);
                     }
 
                 } catch (Exception e) {
@@ -375,7 +347,7 @@ public class Client {
         if (channel == null) {
             return;
         }
-        final String address = remote == null ? ChannelHelper.remoteAddress(channel) : remote;
+        final String address = remote == null ? NetHelper.remoteAddress(channel) : remote;
         try {
             if (this.lockChannelTables.tryLock(3000, TimeUnit.MILLISECONDS)) {
                 try {
@@ -399,7 +371,7 @@ public class Client {
                         logger.info("closeChannel: the channel[{}] was removed from channel table", address);
                     }
 
-                    ChannelHelper.closeChannel(channel);
+                    NetHelper.closeChannel(channel);
                 } catch (Exception e) {
                     logger.error("closeChannel: close the channel exception", e);
                 } finally {
@@ -411,6 +383,41 @@ public class Client {
         } catch (InterruptedException e) {
             logger.error("closeChannel exception", e);
         }
+    }
+
+    @Override
+    public void updateAddressList(List<String> addresses) {
+        List<String> old = getAddressList();
+        boolean update = false;
+        if (!addresses.isEmpty()) {
+            if (old == null) {
+                update = true;
+            } else if (addresses.size() != old.size()) {
+                update = true;
+            } else {
+                for (int i = 0; i < addresses.size() && !update; i++) {
+                    if (!old.contains(addresses.get(i))) {
+                        update = true;
+                    }
+                }
+            }
+
+            if (update) {
+                Collections.shuffle(addresses);
+                this.addressList.set(addresses);
+            }
+        }
+    }
+
+    @Override
+    public List<String> getAddressList() {
+        return this.addressList.get();
+    }
+
+    @Override
+    public boolean isChannelWriteable(String address) {
+        ChannelWrapper cw = this.channelTables.get(address);
+        return cw != null && cw.isOK() && cw.isWriteable();
     }
 
     static class ChannelWrapper {
@@ -440,7 +447,7 @@ public class Client {
     class NettyConnectManageHandler extends ChannelDuplexHandler {
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            final String remoteAddress = ChannelHelper.remoteAddress(ctx.channel());
+            final String remoteAddress = NetHelper.remoteAddress(ctx.channel());
             logger.info("NETTY CLIENT PIPELINE: channelInactive {}", remoteAddress);
             closeChannel(ctx.channel());
             super.channelInactive(ctx);
@@ -457,7 +464,7 @@ public class Client {
 
         @Override
         public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
-            final String remoteAddress = ChannelHelper.remoteAddress(ctx.channel());
+            final String remoteAddress = NetHelper.remoteAddress(ctx.channel());
             logger.info("NETTY CLIENT PIPELINE: DISCONNECT {}", remoteAddress);
             closeChannel(ctx.channel());
             super.disconnect(ctx, promise);
@@ -465,7 +472,7 @@ public class Client {
 
         @Override
         public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
-            final String remoteAddress = ChannelHelper.remoteAddress(ctx.channel());
+            final String remoteAddress = NetHelper.remoteAddress(ctx.channel());
             logger.info("NETTY CLIENT PIPELINE: CLOSE {}", remoteAddress);
             closeChannel(ctx.channel());
             super.close(ctx, promise);
@@ -473,7 +480,7 @@ public class Client {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            final String remoteAddress = ChannelHelper.remoteAddress(ctx.channel());
+            final String remoteAddress = NetHelper.remoteAddress(ctx.channel());
             logger.warn("NETTY CLIENT PIPELINE: exceptionCaught {}", remoteAddress);
             logger.warn("NETTY CLIENT PIPELINE: exceptionCaught exception.", cause);
             closeChannel(ctx.channel());
