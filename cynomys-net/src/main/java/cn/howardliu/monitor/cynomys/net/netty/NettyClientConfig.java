@@ -1,4 +1,4 @@
-package cn.howardliu.monitor.cynomys.net;
+package cn.howardliu.monitor.cynomys.net.netty;
 
 import java.util.concurrent.ThreadLocalRandom;
 

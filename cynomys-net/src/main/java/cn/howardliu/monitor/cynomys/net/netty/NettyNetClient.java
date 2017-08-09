@@ -1,6 +1,9 @@
-package cn.howardliu.monitor.cynomys.net;
+package cn.howardliu.monitor.cynomys.net.netty;
 
 import cn.howardliu.monitor.cynomys.common.Constant;
+import cn.howardliu.monitor.cynomys.net.ChannelEventListener;
+import cn.howardliu.monitor.cynomys.net.NetClient;
+import cn.howardliu.monitor.cynomys.net.NetHelper;
 import cn.howardliu.monitor.cynomys.net.codec.MessageDecoder;
 import cn.howardliu.monitor.cynomys.net.codec.MessageEncoder;
 import cn.howardliu.monitor.cynomys.net.handler.OtherInfoHandler;
@@ -51,10 +54,18 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
     private final AtomicReference<String> addressChossed = new AtomicReference<>();
     private final Lock lockAddressChannel = new ReentrantLock();
 
+    private final ChannelEventListener channelEventListener;
+
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
 
-    public NettyNetClient(final NettyClientConfig nettyClientConfig) {
+    public NettyNetClient(NettyClientConfig nettyClientConfig) {
+        this(nettyClientConfig, null);
+    }
+
+    public NettyNetClient(final NettyClientConfig nettyClientConfig,
+            ChannelEventListener channelEventListener) {
         this.nettyClientConfig = nettyClientConfig;
+        this.channelEventListener = channelEventListener;
 
         this.eventLoopGroupWorker = new NioEventLoopGroup(
                 1,
@@ -121,6 +132,10 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                         ;
                     }
                 });
+
+        if (this.channelEventListener != null) {
+            this.nettyEventExecutor.start();
+        }
     }
 
     @Override
@@ -420,6 +435,11 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
         return cw != null && cw.isOK() && cw.isWriteable();
     }
 
+    @Override
+    public ChannelEventListener getChannelEventListener() {
+        return this.channelEventListener;
+    }
+
     static class ChannelWrapper {
         private final ChannelFuture channelFuture;
 
@@ -451,6 +471,10 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             logger.info("NETTY CLIENT PIPELINE: channelInactive {}", remoteAddress);
             closeChannel(ctx.channel());
             super.channelInactive(ctx);
+
+            if (NettyNetClient.this.channelEventListener != null) {
+                NettyNetClient.this.putNettyEvent(new NettyEvent(NettyEventType.CLOSE, remoteAddress, ctx.channel()));
+            }
         }
 
         @Override
@@ -460,6 +484,10 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             final String remote = remoteAddress == null ? "UNKNOWN" : remoteAddress.toString();
             logger.info("NETTY CLIENT PIPELINE: CONNECT  {} => {}", local, remote);
             super.connect(ctx, remoteAddress, localAddress, promise);
+
+            if (NettyNetClient.this.channelEventListener != null) {
+                NettyNetClient.this.putNettyEvent(new NettyEvent(NettyEventType.CONNECT, remote, ctx.channel()));
+            }
         }
 
         @Override
@@ -468,6 +496,10 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             logger.info("NETTY CLIENT PIPELINE: DISCONNECT {}", remoteAddress);
             closeChannel(ctx.channel());
             super.disconnect(ctx, promise);
+
+            if (NettyNetClient.this.channelEventListener != null) {
+                NettyNetClient.this.putNettyEvent(new NettyEvent(NettyEventType.CLOSE, remoteAddress, ctx.channel()));
+            }
         }
 
         @Override
@@ -476,6 +508,10 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             logger.info("NETTY CLIENT PIPELINE: CLOSE {}", remoteAddress);
             closeChannel(ctx.channel());
             super.close(ctx, promise);
+
+            if (NettyNetClient.this.channelEventListener != null) {
+                NettyNetClient.this.putNettyEvent(new NettyEvent(NettyEventType.CLOSE, remoteAddress, ctx.channel()));
+            }
         }
 
         @Override
@@ -484,6 +520,10 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             logger.warn("NETTY CLIENT PIPELINE: exceptionCaught {}", remoteAddress);
             logger.warn("NETTY CLIENT PIPELINE: exceptionCaught exception.", cause);
             closeChannel(ctx.channel());
+
+            if (NettyNetClient.this.channelEventListener != null) {
+                NettyNetClient.this.putNettyEvent(new NettyEvent(NettyEventType.EXCEPTION, remoteAddress, ctx.channel(), cause));
+            }
         }
     }
 }
