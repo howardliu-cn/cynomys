@@ -1,14 +1,17 @@
 package cn.howardliu.monitor.cynomys.net.netty;
 
+import cn.howardliu.monitor.cynomys.common.SemaphoreReleaseOnlyOnce;
 import cn.howardliu.monitor.cynomys.common.ServiceThread;
 import cn.howardliu.monitor.cynomys.net.ChannelEventListener;
+import cn.howardliu.monitor.cynomys.net.InvokeCallBack;
 import cn.howardliu.monitor.cynomys.net.NetHelper;
-import cn.howardliu.monitor.cynomys.net.exception.NetConnectException;
 import cn.howardliu.monitor.cynomys.net.exception.NetSendRequestException;
 import cn.howardliu.monitor.cynomys.net.exception.NetTimeoutException;
+import cn.howardliu.monitor.cynomys.net.exception.NetTooMuchRequestException;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,25 +30,34 @@ import java.util.concurrent.*;
  */
 public abstract class NettyNetAbstract {
     private static final Logger logger = LoggerFactory.getLogger(NettyNetAbstract.class);
+    protected final Semaphore semaphoreAsync;
     protected final NettyEventExecutor nettyEventExecutor = new NettyEventExecutor();
     protected final ConcurrentMap<Integer, ResponseFuture> responseTable = new ConcurrentHashMap<>(256);
 
+    public NettyNetAbstract(final int permitsAsync) {
+        this.semaphoreAsync = new Semaphore(permitsAsync, true);
+    }
+
     public abstract ChannelEventListener getChannelEventListener();
 
-    public Message invokeSync(final Channel channel, final Message message, final long timeoutMillis)
-            throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException {
-        final int opaque = message.getHeader().getOpaque();
+    public Message invokeSync(final Channel channel, final Message request, final long timeoutMillis)
+            throws InterruptedException, NetTimeoutException, NetSendRequestException {
+        final int opaque = request.getHeader().getOpaque();
         try {
             final ResponseFuture responseFuture = new ResponseFuture(opaque, timeoutMillis, null, null);
             this.responseTable.put(opaque, responseFuture);
-            channel.writeAndFlush(message).addListener((ChannelFutureListener) future -> {
-                if (!future.isSuccess()) {
-                    responseFuture.setSendRequestOK(false);
-                }
-                responseTable.remove(opaque);
-                responseFuture.setCause(future.cause());
-                logger.warn("send a request to channel <{}> failed!", NetHelper.remoteAddress(channel));
-            });
+            channel.writeAndFlush(request)
+                    .addListener((ChannelFutureListener) future -> {
+                        if (future.isSuccess()) {
+                            responseFuture.setSendRequestOK(true);
+                            return;
+                        } else {
+                            responseFuture.setSendRequestOK(false);
+                        }
+                        responseTable.remove(opaque);
+                        responseFuture.setCause(future.cause());
+                        logger.warn("send a request to channel <{}> failed!", NetHelper.remoteAddress(channel));
+                    });
             Message response = responseFuture.waitResponse();
             if (response == null) {
                 if (responseFuture.isSendRequestOK()) {
@@ -58,6 +70,51 @@ public abstract class NettyNetAbstract {
             return response;
         } finally {
             responseTable.remove(opaque);
+        }
+    }
+
+    public void invokeAsync(final Channel channel, final Message request, final long timeoutMillis,
+            final InvokeCallBack invokeCallBack)
+            throws InterruptedException, NetTooMuchRequestException, NetTimeoutException, NetSendRequestException {
+        final int opaque = request.getHeader().getOpaque();
+        boolean acquired = this.semaphoreAsync.tryAcquire(timeoutMillis, TimeUnit.MILLISECONDS);
+        if (acquired) {
+            final SemaphoreReleaseOnlyOnce once = new SemaphoreReleaseOnlyOnce(this.semaphoreAsync);
+            final ResponseFuture responseFuture = new ResponseFuture(opaque, timeoutMillis, invokeCallBack, once);
+            this.responseTable.put(opaque, responseFuture);
+            try {
+                channel.writeAndFlush(request)
+                        .addListener((ChannelFutureListener) future -> {
+                            if (future.isSuccess()) {
+                                responseFuture.setSendRequestOK(true);
+                                return;
+                            } else {
+                                responseFuture.setSendRequestOK(false);
+                            }
+                            responseFuture.putResponse(null);
+                            responseTable.remove(opaque);
+                            try {
+                                executeInvokeCallback(responseFuture);
+                            } catch (Throwable e) {
+                                logger.warn("execute callback in writeAndFlush addListener, and callback throw", e);
+                            } finally {
+                                responseFuture.release();
+                            }
+
+                            logger.warn("send a request to channel <{}> failed!", NetHelper.remoteAddress(channel));
+                        });
+            } catch (Exception e) {
+                responseFuture.release();
+                String remoteAddress = NetHelper.remoteAddress(channel);
+                logger.warn("send a request to channel <{}> exception", remoteAddress, e);
+                throw new NetSendRequestException(remoteAddress, e);
+            }
+        } else {
+            String cause = "invokeAsync tryAcquire semaphore timeout, " + timeoutMillis + "ms, "
+                    + "waiting thread numbers: " + this.semaphoreAsync.getQueueLength()
+                    + " semaphoreAsyncValue: " + this.semaphoreAsync.availablePermits();
+            logger.warn(cause);
+            throw new NetTooMuchRequestException(cause);
         }
     }
 
@@ -89,7 +146,26 @@ public abstract class NettyNetAbstract {
         }
     }
 
-    abstract public ExecutorService getCallbackExecutor();
+    public void processResponse(ChannelHandlerContext ctx, Message response) {
+        final int opaque = response.getHeader().getOpaque();
+        final ResponseFuture responseFuture = responseTable.get(opaque);
+        if (responseFuture != null) {
+            responseFuture.setResponse(response);
+            responseFuture.release();
+            responseTable.remove(opaque);
+
+            if (responseFuture.getInvokeCallBack() != null) {
+                executeInvokeCallback(responseFuture);
+            } else {
+                responseFuture.putResponse(response);
+            }
+        } else {
+            logger.warn("receive response, but not matched any request, remoteAddress: {}, response: {}",
+                    NetHelper.remoteAddress(ctx.channel()), response);
+        }
+    }
+
+    public abstract ExecutorService getCallbackExecutor();
 
     private void executeInvokeCallback(final ResponseFuture responseFuture) {
         boolean runThisThread = false;

@@ -26,7 +26,7 @@ public class ResponseFuture {
 
     private final AtomicBoolean executeCallbackOnlyOnce = new AtomicBoolean(false);
 
-    private volatile Message message;
+    private volatile Message response;
     private volatile boolean sendRequestOK = true;
     private volatile Throwable cause;
 
@@ -56,7 +56,7 @@ public class ResponseFuture {
 
     public Message waitResponse() throws InterruptedException {
         this.waitResponse(this.timeoutMillis);
-        return this.message;
+        return this.response;
     }
 
     public void waitResponse(final long timeoutMillis) throws InterruptedException {
@@ -64,7 +64,7 @@ public class ResponseFuture {
     }
 
     public void putResponse(final Message message) {
-        this.message = message;
+        this.response = message;
         this.countDownLatch.countDown();
     }
 
@@ -74,6 +74,10 @@ public class ResponseFuture {
 
     public long getTimeoutMillis() {
         return timeoutMillis;
+    }
+
+    public InvokeCallBack getInvokeCallBack() {
+        return invokeCallBack;
     }
 
     public long getBeginTimestamp() {
@@ -96,12 +100,12 @@ public class ResponseFuture {
         this.cause = cause;
     }
 
-    public Message getMessage() {
-        return message;
+    public Message getResponse() {
+        return response;
     }
 
-    public void setMessage(Message message) {
-        this.message = message;
+    public void setResponse(Message response) {
+        this.response = response;
     }
 
     @Override
@@ -111,7 +115,7 @@ public class ResponseFuture {
                 ", timeoutMillis=" + timeoutMillis +
                 ", beginTimestamp=" + beginTimestamp +
                 ", countDownLatch=" + countDownLatch +
-                ", message=" + message +
+                ", response=" + response +
                 ", sendRequestOK=" + sendRequestOK +
                 ", cause=" + cause +
                 '}';

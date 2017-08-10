@@ -13,6 +13,7 @@ public class NettyClientConfig {
     private final String clientName;
     private int clientWorkerThreads = 4;
     private int clientCallbackExecutorThreads = Runtime.getRuntime().availableProcessors();
+    private int clientAsyncSemaphoreValue = NettyNetConfig.CLIENT_ASYNC_SEMAPHORE_VALUE;
     private int connectTimeoutMillis = 3000;
     private int socketTimeoutMillis = 20000;
     private int clientChannelMaxIdleTimeSeconds = 120;
@@ -53,6 +54,14 @@ public class NettyClientConfig {
 
     public void setClientCallbackExecutorThreads(int clientCallbackExecutorThreads) {
         this.clientCallbackExecutorThreads = clientCallbackExecutorThreads;
+    }
+
+    public int getClientAsyncSemaphoreValue() {
+        return clientAsyncSemaphoreValue;
+    }
+
+    public void setClientAsyncSemaphoreValue(int clientAsyncSemaphoreValue) {
+        this.clientAsyncSemaphoreValue = clientAsyncSemaphoreValue;
     }
 
     public int getConnectTimeoutMillis() {
