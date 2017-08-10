@@ -32,6 +32,7 @@ public class MessageDecoder extends LengthFieldBasedFrameDecoder {
         Message message = new Message()
                 .setHeader(
                         new Header()
+                                .setOpaque(frame.readInt())
                                 .setCrcCode(frame.readInt())
                                 .setLength(frame.readInt())
                                 .setTag(frame.readCharSequence(frame.readInt(), CharsetUtil.UTF_8).toString())

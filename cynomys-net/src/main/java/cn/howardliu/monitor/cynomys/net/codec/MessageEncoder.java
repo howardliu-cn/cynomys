@@ -23,6 +23,7 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
         if (msg == null || msg.getHeader() == null) {
             throw new IllegalArgumentException("the encode message is null.");
         }
+        out.writeInt(msg.getHeader().getOpaque());
         out.writeInt(msg.getHeader().getCrcCode());
         out.writeInt(msg.getHeader().getLength());
 

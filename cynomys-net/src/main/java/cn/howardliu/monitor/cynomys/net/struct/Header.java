@@ -27,8 +27,9 @@ public class Header {
         return opaque;
     }
 
-    public void setOpaque(int opaque) {
+    public Header setOpaque(int opaque) {
         this.opaque = opaque;
+        return this;
     }
 
     public int getCrcCode() {
