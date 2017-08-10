@@ -6,6 +6,9 @@ import cn.howardliu.monitor.cynomys.net.NetClient;
 import cn.howardliu.monitor.cynomys.net.NetHelper;
 import cn.howardliu.monitor.cynomys.net.codec.MessageDecoder;
 import cn.howardliu.monitor.cynomys.net.codec.MessageEncoder;
+import cn.howardliu.monitor.cynomys.net.exception.NetConnectException;
+import cn.howardliu.monitor.cynomys.net.exception.NetSendRequestException;
+import cn.howardliu.monitor.cynomys.net.exception.NetTimeoutException;
 import cn.howardliu.monitor.cynomys.net.handler.OtherInfoHandler;
 import cn.howardliu.monitor.cynomys.net.handler.SimpleHeartbeatHandler;
 import cn.howardliu.monitor.cynomys.net.struct.Header;
@@ -15,6 +18,8 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
@@ -22,9 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.SocketAddress;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -48,12 +51,15 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
     private final ConcurrentMap<String, ChannelWrapper> channelTables = new ConcurrentHashMap<>();
     private final Lock lockChannelTables = new ReentrantLock();
 
+    private final Timer timer = new Timer("scan-response-timer", true);
+
     private final AtomicInteger relinkCount = new AtomicInteger();
 
     private final AtomicReference<List<String>> addressList = new AtomicReference<>();
     private final AtomicReference<String> addressChossed = new AtomicReference<>();
     private final Lock lockAddressChannel = new ReentrantLock();
 
+    private final ExecutorService publicExecutor;
     private final ChannelEventListener channelEventListener;
 
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
@@ -66,6 +72,22 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             ChannelEventListener channelEventListener) {
         this.nettyClientConfig = nettyClientConfig;
         this.channelEventListener = channelEventListener;
+
+        int callbackThreads = nettyClientConfig.getClientCallbackExecutorThreads();
+        if (callbackThreads <= 0) {
+            callbackThreads = 4;
+        }
+        this.publicExecutor = Executors.newFixedThreadPool(
+                callbackThreads,
+                new ThreadFactory() {
+                    private AtomicInteger threadIndex = new AtomicInteger();
+
+                    @Override
+                    public Thread newThread(Runnable r) {
+                        return new Thread(r, "netty-client-public-executor-" + this.threadIndex.incrementAndGet());
+                    }
+                }
+        );
 
         this.eventLoopGroupWorker = new NioEventLoopGroup(
                 1,
@@ -133,6 +155,17 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                     }
                 });
 
+        this.timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    NettyNetClient.this.scanResponseTable();
+                } catch (Exception e) {
+                    logger.error("scanResponseTable exception", e);
+                }
+            }
+        }, 1000 * 3, 1000);
+
         if (this.channelEventListener != null) {
             this.nettyEventExecutor.start();
         }
@@ -141,10 +174,13 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
     @Override
     public void shutdown() {
         try {
+            this.timer.cancel();
+
             for (ChannelWrapper cw : this.channelTables.values()) {
                 this.closeChannel(null, cw.getChannel());
             }
             this.channelTables.clear();
+
             this.eventLoopGroupWorker.shutdownGracefully();
             if (this.defaultEventExecutorGroup != null) {
                 this.defaultEventExecutorGroup.shutdownGracefully();
@@ -152,15 +188,49 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
         } catch (Exception e) {
             logger.error("Netty-Client shutdown exception, ", e);
         }
+
+        if (this.publicExecutor != null) {
+            try {
+                this.publicExecutor.shutdown();
+            } catch (Exception e) {
+                logger.error("Netty-Client shutdown exception, ", e);
+            }
+        }
     }
 
-    public boolean async(Message message) throws InterruptedException {
+    public Message sync(Message message)
+            throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException {
+        return this.sync(message, this.nettyClientConfig.getSocketTimeoutMillis());
+    }
+
+    public Message sync(Message message, long timeoutMillis)
+            throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException {
         final Channel channel = this.getAndCreateUseAddressChoose();
         if (channel != null && channel.isActive()) {
-            channel.writeAndFlush(message);
-            return true;
+            try {
+                return this.invokeSync(channel, message, timeoutMillis);
+            } catch (NetSendRequestException e) {
+                logger.warn("sync: send request exception, so close the channel[{}]",
+                        NetHelper.remoteAddress(channel));
+                this.closeChannel(channel);
+                throw e;
+            } catch (NetTimeoutException e) {
+                String remoteAddress = NetHelper.remoteAddress(channel);
+                if (this.nettyClientConfig.isClientCloseSocketIfTimeout()) {
+                    this.closeChannel(channel);
+                    logger.warn("sync: close socket because of timeout, {}ms, {}", timeoutMillis, remoteAddress);
+                }
+                logger.warn("sync: wait response timeout exception, the channel[{}]", remoteAddress);
+                throw e;
+            }
+        } else {
+            closeChannel(channel);
+            throw new NetConnectException(NetHelper.remoteAddress(channel));
         }
-        return false;
+    }
+
+    public void connect() throws InterruptedException {
+        getAndCreateUseAddressChoose();
     }
 
     private Channel getAndCreateChannel(final String address) throws InterruptedException {
@@ -277,12 +347,11 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                     logger.debug("Connect to server [{}] successfully!", address);
                 }
             } else {
-                // TODO relink count from config
-                if (relinkCount.get() <= 3) {
+                if (relinkCount.get() <= this.nettyClientConfig.getRelinkMaxCount()) {
                     if (logger.isDebugEnabled()) {
                         logger.debug(
-                                "Failed to connect to server [{}], try connect after {}s, this is {} times",
-                                address, 5000, relinkCount.get());
+                                "Failed to connect to server [{}], try connect after {}ms, this is {} times.",
+                                address, this.nettyClientConfig.getRelinkDelayMillis(), relinkCount.get());
                     }
                     future.channel().eventLoop().schedule(
                             () -> {
@@ -292,14 +361,13 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                                 } catch (InterruptedException ignored) {
                                 }
                             },
-                            // TODO delay times from config
-                            5_000,
+                            this.nettyClientConfig.getRelinkDelayMillis(),
                             TimeUnit.MILLISECONDS
                     );
                 } else {
                     if (logger.isDebugEnabled()) {
                         logger.debug(
-                                "Failed to connect to server [{}], and reconnect {} times, try close and get server list",
+                                "Failed to connect to server [{}], and reconnect {} times, do close!",
                                 address, relinkCount.get());
                     }
                     this.addressChossed.set(null);
@@ -440,6 +508,11 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
         return this.channelEventListener;
     }
 
+    @Override
+    public ExecutorService getCallbackExecutor() {
+        return this.publicExecutor;
+    }
+
     static class ChannelWrapper {
         private final ChannelFuture channelFuture;
 
@@ -522,8 +595,24 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             closeChannel(ctx.channel());
 
             if (NettyNetClient.this.channelEventListener != null) {
-                NettyNetClient.this.putNettyEvent(new NettyEvent(NettyEventType.EXCEPTION, remoteAddress, ctx.channel(), cause));
+                NettyNetClient.this
+                        .putNettyEvent(new NettyEvent(NettyEventType.EXCEPTION, remoteAddress, ctx.channel(), cause));
             }
+        }
+
+        @Override
+        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+            if (evt instanceof IdleStateEvent) {
+                IdleStateEvent event = (IdleStateEvent) evt;
+                if (event.state().equals(IdleState.ALL_IDLE)) {
+                    final String remoteAddress = NetHelper.remoteAddress(ctx.channel());
+                    if (NettyNetClient.this.channelEventListener != null) {
+                        NettyNetClient.this
+                                .putNettyEvent(new NettyEvent(NettyEventType.IDLE, remoteAddress, ctx.channel()));
+                    }
+                }
+            }
+            ctx.fireUserEventTriggered(evt);
         }
     }
 }

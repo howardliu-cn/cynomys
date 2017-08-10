@@ -66,11 +66,10 @@ public class OtherInfoHandler extends SimpleChannelInboundHandler<Message> {
             if (logger.isDebugEnabled()) {
                 logger.debug("receive requestInfo response: {}", msg);
             }
-        } else {
-            if(ctx == null) {
-                throw new IllegalArgumentException("the ChannelHandlerContext which this Handler belongs to cannot be null!");
-            }
-            ctx.fireChannelRead(msg);
         }
+        if(ctx == null) {
+            throw new IllegalArgumentException("the ChannelHandlerContext which this Handler belongs to cannot be null!");
+        }
+        ctx.fireChannelRead(msg);
     }
 }

@@ -1,5 +1,8 @@
 package cn.howardliu.monitor.cynomys.net;
 
+import cn.howardliu.monitor.cynomys.net.exception.NetConnectException;
+import cn.howardliu.monitor.cynomys.net.exception.NetSendRequestException;
+import cn.howardliu.monitor.cynomys.net.exception.NetTimeoutException;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
 
 import java.util.List;
@@ -18,5 +21,9 @@ public interface NetClient extends NetService {
 
     boolean isChannelWriteable(final String address);
 
-    boolean async(Message message) throws InterruptedException;
+    Message sync(Message message)
+            throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException;
+
+    Message sync(Message message, long timeoutMillis)
+            throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException;
 }

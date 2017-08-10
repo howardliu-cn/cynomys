@@ -1,0 +1,119 @@
+package cn.howardliu.monitor.cynomys.net.netty;
+
+import cn.howardliu.monitor.cynomys.common.SemaphoreReleaseOnlyOnce;
+import cn.howardliu.monitor.cynomys.net.InvokeCallBack;
+import cn.howardliu.monitor.cynomys.net.struct.Message;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+/**
+ * <br>created at 17-8-10
+ *
+ * @author liuxh
+ * @version 0.0.1
+ * @since 0.0.1
+ */
+public class ResponseFuture {
+    private final int opaque;
+    private final long timeoutMillis;
+    private final InvokeCallBack invokeCallBack;
+    private final long beginTimestamp = System.currentTimeMillis();
+    private final CountDownLatch countDownLatch = new CountDownLatch(1);
+
+    private final SemaphoreReleaseOnlyOnce once;
+
+    private final AtomicBoolean executeCallbackOnlyOnce = new AtomicBoolean(false);
+
+    private volatile Message message;
+    private volatile boolean sendRequestOK = true;
+    private volatile Throwable cause;
+
+    public ResponseFuture(int opaque, long timeoutMillis,
+            InvokeCallBack invokeCallBack, SemaphoreReleaseOnlyOnce once) {
+        this.opaque = opaque;
+        this.timeoutMillis = timeoutMillis;
+        this.invokeCallBack = invokeCallBack;
+        this.once = once;
+    }
+
+    public void executeInvokeCallback() {
+        if (invokeCallBack != null && this.executeCallbackOnlyOnce.compareAndSet(false, true)) {
+            invokeCallBack.operationComplete(this);
+        }
+    }
+
+    public void release() {
+        if (this.once != null) {
+            this.once.release();
+        }
+    }
+
+    public boolean isTimeout() {
+        return System.currentTimeMillis() - this.beginTimestamp - this.timeoutMillis > 0;
+    }
+
+    public Message waitResponse() throws InterruptedException {
+        this.waitResponse(this.timeoutMillis);
+        return this.message;
+    }
+
+    public void waitResponse(final long timeoutMillis) throws InterruptedException {
+        this.countDownLatch.await(timeoutMillis, TimeUnit.MILLISECONDS);
+    }
+
+    public void putResponse(final Message message) {
+        this.message = message;
+        this.countDownLatch.countDown();
+    }
+
+    public int getOpaque() {
+        return opaque;
+    }
+
+    public long getTimeoutMillis() {
+        return timeoutMillis;
+    }
+
+    public long getBeginTimestamp() {
+        return beginTimestamp;
+    }
+
+    public boolean isSendRequestOK() {
+        return sendRequestOK;
+    }
+
+    public void setSendRequestOK(boolean sendRequestOK) {
+        this.sendRequestOK = sendRequestOK;
+    }
+
+    public Throwable getCause() {
+        return cause;
+    }
+
+    public void setCause(Throwable cause) {
+        this.cause = cause;
+    }
+
+    public Message getMessage() {
+        return message;
+    }
+
+    public void setMessage(Message message) {
+        this.message = message;
+    }
+
+    @Override
+    public String toString() {
+        return "ResponseFuture{" +
+                "opaque=" + opaque +
+                ", timeoutMillis=" + timeoutMillis +
+                ", beginTimestamp=" + beginTimestamp +
+                ", countDownLatch=" + countDownLatch +
+                ", message=" + message +
+                ", sendRequestOK=" + sendRequestOK +
+                ", cause=" + cause +
+                '}';
+    }
+}

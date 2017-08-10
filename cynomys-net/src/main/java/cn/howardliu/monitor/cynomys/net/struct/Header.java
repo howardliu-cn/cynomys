@@ -1,6 +1,6 @@
 package cn.howardliu.monitor.cynomys.net.struct;
 
-import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static cn.howardliu.monitor.cynomys.common.Constant.CRC_CODE;
 import static cn.howardliu.monitor.cynomys.common.Constant.THIS_TAG;
@@ -12,13 +12,24 @@ import static cn.howardliu.monitor.cynomys.common.Constant.THIS_TAG;
  * @version 0.0.1
  * @since 0.0.1
  */
-public class Header implements Serializable {
+public class Header {
+    private static AtomicInteger requestId = new AtomicInteger(0);
+
+    private int opaque = requestId.getAndIncrement();
     private int crcCode = CRC_CODE;
     private String tag = THIS_TAG;
     private String sysName = "";
     private String sysCode = "";
     private int length;
     private byte type;
+
+    public int getOpaque() {
+        return opaque;
+    }
+
+    public void setOpaque(int opaque) {
+        this.opaque = opaque;
+    }
 
     public int getCrcCode() {
         return crcCode;

@@ -36,7 +36,7 @@ public class NettyNetClientTest {
 
     @Test
     public void async() throws Exception {
-        netClient.async(
+        netClient.sync(
                 new Message()
                         .setHeader(
                                 new Header()
