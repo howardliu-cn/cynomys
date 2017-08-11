@@ -1,6 +1,7 @@
 package cn.howardliu.monitor.cynomys.client;
 
 import cn.howardliu.monitor.cynomys.common.CynomysVersion;
+import cn.howardliu.monitor.cynomys.net.ChannelEventListener;
 import cn.howardliu.monitor.cynomys.net.InvokeCallBack;
 import cn.howardliu.monitor.cynomys.net.NetClient;
 import cn.howardliu.monitor.cynomys.net.exception.NetConnectException;
@@ -34,8 +35,8 @@ public class CynomysClient implements NetClient {
 
     private final NetClient netClient;
 
-    public CynomysClient(final NettyClientConfig nettyClientConfig) {
-        this.netClient = new NettyNetClient(nettyClientConfig, null);
+    public CynomysClient(final NettyClientConfig nettyClientConfig, final ChannelEventListener channelEventListener) {
+        this.netClient = new NettyNetClient(nettyClientConfig, channelEventListener);
     }
 
     public List<String> getAddressList() {
@@ -64,6 +65,11 @@ public class CynomysClient implements NetClient {
     }
 
     @Override
+    public boolean isStopped() {
+        return false;
+    }
+
+    @Override
     public void connect() throws InterruptedException {
         this.netClient.connect();
     }
@@ -81,12 +87,20 @@ public class CynomysClient implements NetClient {
     @Override
     public Message sync(Message request)
             throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException {
+        if (this.netClient.isStopped()) {
+            logger.warn("the NetClient is STOPPED!");
+            return null;
+        }
         return this.netClient.sync(request);
     }
 
     @Override
     public Message sync(Message request, long timeoutMillis)
             throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException {
+        if (this.netClient.isStopped()) {
+            logger.warn("the NetClient is STOPPED!");
+            return null;
+        }
         return this.netClient.sync(request, timeoutMillis);
     }
 
@@ -94,6 +108,10 @@ public class CynomysClient implements NetClient {
     public void async(Message request, InvokeCallBack invokeCallBack)
             throws InterruptedException, NetConnectException, NetTooMuchRequestException, NetSendRequestException,
             NetTimeoutException {
+        if (this.netClient.isStopped()) {
+            logger.warn("the NetClient is STOPPED!");
+            return;
+        }
         this.netClient.async(request, invokeCallBack);
     }
 
@@ -101,6 +119,10 @@ public class CynomysClient implements NetClient {
     public void async(Message request, long timeoutMills, InvokeCallBack invokeCallBack)
             throws InterruptedException, NetConnectException, NetTooMuchRequestException, NetSendRequestException,
             NetTimeoutException {
+        if (this.netClient.isStopped()) {
+            logger.warn("the NetClient is STOPPED!");
+            return;
+        }
         this.netClient.async(request, timeoutMills, invokeCallBack);
     }
 }

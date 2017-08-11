@@ -17,12 +17,12 @@
  */
 package cn.howardliu.monitor.cynomys.agent.dto;
 
-import cn.howardliu.gear.monitor.jvm.JvmInfo;
-import cn.howardliu.gear.monitor.jvm.JvmStats;
-import cn.howardliu.gear.monitor.jvm.PID;
-import cn.howardliu.gear.monitor.os.OsInfo;
-import cn.howardliu.gear.monitor.os.OsStats;
-import cn.howardliu.gear.monitor.process.ProcessStats;
+import cn.howardliu.gear.monitor.core.jvm.JvmInfo;
+import cn.howardliu.gear.monitor.core.jvm.JvmStats;
+import cn.howardliu.gear.monitor.core.jvm.PID;
+import cn.howardliu.gear.monitor.core.os.OsInfo;
+import cn.howardliu.gear.monitor.core.os.OsStats;
+import cn.howardliu.gear.monitor.core.process.ProcessStats;
 import cn.howardliu.monitor.cynomys.agent.conf.EnvPropertyConfig;
 import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
@@ -45,7 +45,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
 
-import static cn.howardliu.gear.monitor.Constants.*;
+import static cn.howardliu.gear.monitor.core.Constants.*;
 
 /**
  * Informations systèmes sur le serveur, sans code html de présentation. L'état

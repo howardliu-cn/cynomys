@@ -16,7 +16,7 @@ public class NettyClientConfig {
     private int clientAsyncSemaphoreValue = NettyNetConfig.CLIENT_ASYNC_SEMAPHORE_VALUE;
     private int connectTimeoutMillis = 3000;
     private int socketTimeoutMillis = 20000;
-    private int clientChannelMaxIdleTimeSeconds = 120;
+    private int clientChannelMaxIdleTimeSeconds = 5;
 
     private int clientSocketSndBufSize = NettyNetConfig.socketSndbufSize;
     private int clientSocketRcvBufSize = NettyNetConfig.socketRcvbufSize;

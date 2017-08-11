@@ -117,7 +117,7 @@
             </dependency>
             <dependency>
                 <groupId>cn.howardliu</groupId>
-                <artifactId>gear-monitor</artifactId>
+                <artifactId>gear-monitor-core</artifactId>
                 <version>${my-gear.version}</version>
                 <classifier>jdk7</classifier>
             </dependency>

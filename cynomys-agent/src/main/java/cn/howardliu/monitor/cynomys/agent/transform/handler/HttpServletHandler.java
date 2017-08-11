@@ -54,9 +54,9 @@ public class HttpServletHandler extends MethodRewriteHandler {
         try {
             CtMethod ctMethod = ctClass.getDeclaredMethod("init");
             ctMethod.insertAfter(
-                    "if(com.wfj.monitor.common.Constant.SERVLET_CONTEXT == null) {" +
-                            "com.wfj.monitor.common.Constant.SERVLET_CONTEXT = $0.getServletContext();" +
-                            "com.wfj.monitor.counter.MonitorStarter.run();" +
+                    "if(cn.howardliu.monitor.cynomys.agent.common.Constant.SERVLET_CONTEXT == null) {" +
+                            "cn.howardliu.monitor.cynomys.agent.common.Constant.SERVLET_CONTEXT = $0.getServletContext();" +
+                            "cn.howardliu.monitor.cynomys.agent.counter.MonitorStarter.run();" +
                             "}"
             );
         } catch (NotFoundException ignored) {
@@ -74,15 +74,15 @@ public class HttpServletHandler extends MethodRewriteHandler {
             };
             CtMethod ctMethod = ctClass.getDeclaredMethod(methodName, params);
             ctMethod.insertBefore(
-                    "com.wfj.monitor.transform.aspect.RequestAspect.begin(Thread.currentThread().getId(), $1, $2);"
+                    "cn.howardliu.monitor.cynomys.agent.transform.aspect.RequestAspect.begin(Thread.currentThread().getId(), $1, $2);"
             );
             ctMethod.addCatch(
-                    "com.wfj.monitor.transform.aspect.RequestAspect.catchBlock(Thread.currentThread().getId(), $1, $2, $e);" +
+                    "cn.howardliu.monitor.cynomys.agent.transform.aspect.RequestAspect.catchBlock(Thread.currentThread().getId(), $1, $2, $e);" +
                             "throw $e;",
                     classPool.get("java.lang.Throwable")
             );
             ctMethod.insertAfter(
-                    "com.wfj.monitor.transform.aspect.RequestAspect.end(Thread.currentThread().getId(), $1, $2);"
+                    "cn.howardliu.monitor.cynomys.agent.transform.aspect.RequestAspect.end(Thread.currentThread().getId(), $1, $2);"
             );
         } catch (NotFoundException e) {
             logger.info("not found " + methodName + " method in " + ctClass.getName());

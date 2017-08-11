@@ -68,11 +68,13 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
 
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
 
+    private volatile boolean stop = false;
+
     public NettyNetClient(NettyClientConfig nettyClientConfig) {
         this(nettyClientConfig, null);
     }
 
-    public NettyNetClient(final NettyClientConfig nettyClientConfig, ChannelEventListener channelEventListener) {
+    public NettyNetClient(final NettyClientConfig nettyClientConfig, final ChannelEventListener channelEventListener) {
         super(nettyClientConfig.getClientAsyncSemaphoreValue());
 
         this.nettyClientConfig = nettyClientConfig;
@@ -109,6 +111,8 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
 
     @Override
     public void start() {
+        this.stop = false;
+
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(
                 this.nettyClientConfig.getClientWorkerThreads(),
                 new ThreadFactory() {
@@ -124,11 +128,11 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
         this.bootstrap
                 .group(this.eventLoopGroupWorker)
                 .channel(NioSocketChannel.class)
-                .option(ChannelOption.TCP_NODELAY, true)
-                .option(ChannelOption.SO_KEEPALIVE, false)
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.nettyClientConfig.getConnectTimeoutMillis())
-                .option(ChannelOption.SO_SNDBUF, this.nettyClientConfig.getClientSocketSndBufSize())
-                .option(ChannelOption.SO_RCVBUF, this.nettyClientConfig.getClientSocketRcvBufSize())
+//                .option(ChannelOption.TCP_NODELAY, true)
+//                .option(ChannelOption.SO_KEEPALIVE, false)
+//                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.nettyClientConfig.getConnectTimeoutMillis())
+//                .option(ChannelOption.SO_SNDBUF, this.nettyClientConfig.getClientSocketSndBufSize())
+//                .option(ChannelOption.SO_RCVBUF, this.nettyClientConfig.getClientSocketRcvBufSize())
                 .handler(this.getChannelHandler());
 
         this.timer.scheduleAtFixedRate(new TimerTask() {
@@ -172,7 +176,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                             @Override
                             public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
                                     throws Exception {
-                                closeChannel(ctx.channel());
+//                                closeChannel(ctx.channel());
                                 cause.printStackTrace();
                             }
                         })
@@ -201,6 +205,8 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
 
     @Override
     public void shutdown() {
+        this.stop = true;
+
         try {
             this.timer.cancel();
 
@@ -208,6 +214,10 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                 this.closeChannel(null, cw.getChannel());
             }
             this.channelTables.clear();
+
+            if (this.nettyEventExecutor != null) {
+                this.nettyEventExecutor.shutdown();
+            }
 
             this.eventLoopGroupWorker.shutdownGracefully();
             if (this.defaultEventExecutorGroup != null) {
@@ -224,6 +234,11 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                 logger.error("Netty-Client shutdown exception, ", e);
             }
         }
+    }
+
+    @Override
+    public boolean isStopped() {
+        return this.stop;
     }
 
     @Override
@@ -335,6 +350,8 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                 }
             } catch (Exception e) {
                 logger.error("getAndCreateUseAddressChoosen: create server channel exception", e);
+            } finally {
+                this.lockAddressChannel.unlock();
             }
         } else {
             logger.warn("getAndCreateUseAddressChoosen: try to lock server, but timeout, {}ms", 3000);
@@ -501,7 +518,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                     logger.info("closeChannel: begin close the channel[{}] Found: {}", remote, wrapper != null);
 
                     if (wrapper == null) {
-                        logger.info("eventCloseChannel: the channel has been removed from the channel table before");
+                        logger.info("closeChannel: the channel has been removed from the channel table before");
                         removeItemFromTable = false;
                     } else if (wrapper.getChannel() != channel) {
                         logger.info(

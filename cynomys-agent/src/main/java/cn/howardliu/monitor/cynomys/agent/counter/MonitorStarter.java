@@ -5,9 +5,6 @@ import cn.howardliu.monitor.cynomys.agent.dto.JavaInformations;
 import cn.howardliu.monitor.cynomys.agent.handler.MonitorChecker;
 import cn.howardliu.monitor.cynomys.agent.handler.factory.SLACountManager;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.RequestWrapper;
-import cn.howardliu.monitor.cynomys.agent.net.operator.ConfigInfoOperator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static cn.howardliu.monitor.cynomys.agent.common.Constant.*;
 
@@ -19,8 +16,6 @@ import static cn.howardliu.monitor.cynomys.agent.common.Constant.*;
  * @since 0.0.1
  */
 public class MonitorStarter {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-
     public static void run() {
         if (!started) {
             Thread t = new Thread(new MonitorStarterRunner());
@@ -54,8 +49,7 @@ public class MonitorStarter {
             SLACountManager.init();
 
             // TODO read config server
-            new MonitorChecker(port, SERVLET_CONTEXT, ConfigInfoOperator.instance(CONFIG_SERVER_IP, CONFIG_SERVER_PORT))
-                    .startHealth("Active");
+            new MonitorChecker(port, SERVLET_CONTEXT).startHealth("Active");
         }
     }
 }

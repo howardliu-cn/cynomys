@@ -25,7 +25,7 @@ public class ConnectionHandler extends SqlHandler {
             CtConstructor[] constructors = ctClass.getDeclaredConstructors();
             for (CtConstructor constructor : constructors) {
                 try {
-                    constructor.insertAfter("com.wfj.monitor.transform.aspect.ConnectionAspect.constructorEnd($0);");
+                    constructor.insertAfter("cn.howardliu.monitor.cynomys.agent.transform.aspect.ConnectionAspect.constructorEnd($0);");
                 } catch (CannotCompileException ignored) {
                 }
             }
@@ -41,7 +41,7 @@ public class ConnectionHandler extends SqlHandler {
         try {
             CtMethod[] ctMethods = ctClass.getDeclaredMethods(methodName);
             for (CtMethod ctMethod : ctMethods) {
-                ctMethod.insertAfter("com.wfj.monitor.transform.aspect.ConnectionAspect.catchStatementAndSql($1, $_);");
+                ctMethod.insertAfter("cn.howardliu.monitor.cynomys.agent.transform.aspect.ConnectionAspect.catchStatementAndSql($1, $_);");
             }
         } catch (Exception e) {
             e.printStackTrace();

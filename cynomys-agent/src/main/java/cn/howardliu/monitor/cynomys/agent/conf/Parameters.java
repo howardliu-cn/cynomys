@@ -17,7 +17,7 @@
  */
 package cn.howardliu.monitor.cynomys.agent.conf;
 
-import cn.howardliu.gear.monitor.NetUtils;
+import cn.howardliu.gear.monitor.core.NetUtils;
 
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;

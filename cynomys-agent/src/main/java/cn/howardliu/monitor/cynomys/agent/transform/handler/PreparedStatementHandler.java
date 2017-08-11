@@ -36,14 +36,14 @@ public class PreparedStatementHandler extends SqlHandler {
             CtMethod[] ctMethods = ctClass.getDeclaredMethods(methodName);
             for (CtMethod ctMethod : ctMethods) {
                 ctMethod.insertBefore(
-                        "com.wfj.monitor.transform.aspect.PreparedStatementAspect.begin(Thread.currentThread().getId(), $0);"
+                        "cn.howardliu.monitor.cynomys.agent.transform.aspect.PreparedStatementAspect.begin(Thread.currentThread().getId(), $0);"
                 );
                 ctMethod.addCatch(
-                        "com.wfj.monitor.transform.aspect.PreparedStatementAspect.catchBlock(Thread.currentThread().getId(), $e); throw $e;",
+                        "cn.howardliu.monitor.cynomys.agent.transform.aspect.PreparedStatementAspect.catchBlock(Thread.currentThread().getId(), $e); throw $e;",
                         classPool.get("java.lang.Throwable")
                 );
                 ctMethod.insertAfter(
-                        "com.wfj.monitor.transform.aspect.PreparedStatementAspect.end(Thread.currentThread().getId(), \"" + ctMethod
+                        "cn.howardliu.monitor.cynomys.agent.transform.aspect.PreparedStatementAspect.end(Thread.currentThread().getId(), \"" + ctMethod
                                 .getLongName() + "\");"
                 );
             }
@@ -57,7 +57,7 @@ public class PreparedStatementHandler extends SqlHandler {
         try {
             CtMethod[] ctMethods = ctClass.getDeclaredMethods("close");
             for (CtMethod ctMethod : ctMethods) {
-                ctMethod.insertAfter("com.wfj.monitor.transform.aspect.PreparedStatementAspect.close($0);");
+                ctMethod.insertAfter("cn.howardliu.monitor.cynomys.agent.transform.aspect.PreparedStatementAspect.close($0);");
             }
         } catch (Exception e) {
             e.printStackTrace();

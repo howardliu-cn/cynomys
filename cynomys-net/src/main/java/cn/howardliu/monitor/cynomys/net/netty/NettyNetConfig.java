@@ -20,8 +20,8 @@ final class NettyNetConfig {
 
     static int socketSndbufSize = parseInt(System.getProperty(CYNOMYS_NET_SOCKET_SNDBUF_SIZE, "65535"));
     static int socketRcvbufSize = parseInt(System.getProperty(CYNOMYS_NET_SOCKET_RCVBUF_SIZE, "65535"));
-    static int socketMaxFrameLength = parseInt(System.getProperty(CYNOMYS_NET_SOCKET_MAX_FRAME_LENGTH),
-            10 * 1024 * 1024);
+    static int socketMaxFrameLength = parseInt(System.getProperty(CYNOMYS_NET_SOCKET_MAX_FRAME_LENGTH,
+            (10 * 1024 * 1024) + ""));
 
     private NettyNetConfig() {
     }

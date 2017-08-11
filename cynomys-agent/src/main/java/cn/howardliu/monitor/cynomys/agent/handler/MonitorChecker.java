@@ -6,25 +6,29 @@
  */
 package cn.howardliu.monitor.cynomys.agent.handler;
 
-import cn.howardliu.monitor.cynomys.agent.common.Constant;
 import cn.howardliu.monitor.cynomys.agent.conf.EnvPropertyConfig;
 import cn.howardliu.monitor.cynomys.agent.conf.PropertyAdapter;
 import cn.howardliu.monitor.cynomys.agent.conf.SystemPropertyConfig;
-import cn.howardliu.monitor.cynomys.agent.net.ServerInfo;
-import cn.howardliu.monitor.cynomys.agent.net.operator.ConfigInfoOperator;
-import cn.howardliu.monitor.cynomys.agent.net.operator.SocketMonitorDataOperator;
+import cn.howardliu.monitor.cynomys.client.ClientConfig;
+import cn.howardliu.monitor.cynomys.client.CynomysClient;
+import cn.howardliu.monitor.cynomys.client.CynomysClientManager;
+import cn.howardliu.monitor.cynomys.net.SimpleChannelEventListener;
+import cn.howardliu.monitor.cynomys.net.exception.NetConnectException;
+import cn.howardliu.monitor.cynomys.net.exception.NetSendRequestException;
+import cn.howardliu.monitor.cynomys.net.exception.NetTimeoutException;
+import cn.howardliu.monitor.cynomys.net.exception.NetTooMuchRequestException;
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
 import cn.howardliu.monitor.cynomys.net.struct.MessageType;
+import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.io.Closeable;
+import java.io.IOException;
+
+import static cn.howardliu.monitor.cynomys.agent.common.Constant.SYSTEM_SETTING_MONITOR_SERVERS;
 
 /**
  * 服务器心跳组件
@@ -33,8 +37,9 @@ import java.util.concurrent.TimeUnit;
  * @Author Jack
  * @Create In 2015年8月25日
  */
-public class MonitorChecker implements Health {
+public class MonitorChecker implements Health, Closeable {
     private static final Logger logger = LoggerFactory.getLogger(MonitorChecker.class);
+    private final CynomysClient cynomysClient;
     private String appName;
     private Long sessionId;
     private byte[] sessionPassword;
@@ -42,13 +47,41 @@ public class MonitorChecker implements Health {
     private Thread m;
     private volatile boolean isMonitorStop = false;
     private AppMonitor appMonitor;
-    private ConfigInfoOperator configInfoOperator;
-    private SocketMonitorDataOperator operator;
 
-    public MonitorChecker(Integer p, ServletContext sc, ConfigInfoOperator configInfoOperator) {
+    public MonitorChecker(Integer p, ServletContext sc) {
         this.appName = SystemPropertyConfig.getContextProperty("system.setting.context-name");
         appMonitor = AppMonitor.instance(p, sc);
-        this.configInfoOperator = configInfoOperator;
+        cynomysClient = CynomysClientManager.INSTANCE
+                .getAndCreateCynomysClient(
+                        new ClientConfig(),
+                        new SimpleChannelEventListener() {
+                            @Override
+                            public void onChannelClose(String address, Channel channel) {
+                                super.onChannelClose(address, channel);
+                                reconnection();
+                            }
+
+                            @Override
+                            public void onChannelException(String address, Channel channel, Throwable cause) {
+                                super.onChannelException(address, channel, cause);
+                                reconnection();
+                            }
+
+                            private void reconnection() {
+                                try {
+                                    cynomysClient.connect();
+                                } catch (InterruptedException ignored) {
+                                }
+                            }
+                        }
+                );
+        cynomysClient.updateAddressList(SystemPropertyConfig.getContextProperty(SYSTEM_SETTING_MONITOR_SERVERS));
+        cynomysClient.start();
+        try {
+            this.cynomysClient.connect();
+        } catch (InterruptedException e) {
+            logger.error("got an exception when connecting to Cynomys Server", e);
+        }
     }
 
     /**
@@ -151,138 +184,81 @@ public class MonitorChecker implements Health {
      */
     private void hearthCheck(final Long splitTime) {
         isMonitorStop = false;
-        this.m = new Thread(new Runnable() {
-            public void run() {
-                try {
-                    while (!isMonitorStop) {
-                        // 1.构建系统实时状态并存储
-                        String appInfo = appMonitor.buildAppInfo();
-                        if (appInfo != null) {
-                            operator.sendData(
-                                    new Message()
-                                            .setHeader(
-                                                    new Header()
-                                                            .setSysName(cn.howardliu.monitor.cynomys.common.Constant.SYS_NAME)
-                                                            .setSysCode(cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE)
-                                                            .setLength(appInfo.length())
-                                                            .setType(MessageType.APP_INFO_REQ.value())
-                                            )
-                                            .setBody(appInfo)
-                            );
-                        }
-
-                        // 2.SQL计数信息
-                        String sqlInfo = appMonitor.buildSQLCountsInfo();
-                        if (sqlInfo != null) {
-                            operator.sendData(
-                                    new Message()
-                                            .setHeader(
-                                                    new Header()
-                                                            .setSysName(cn.howardliu.monitor.cynomys.common.Constant.SYS_NAME)
-                                                            .setSysCode(cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE)
-                                                            .setLength(sqlInfo.length())
-                                                            .setType(MessageType.SQL_INFO_REQ.value())
-                                            )
-                                            .setBody(sqlInfo)
-                            );
-                        }
-
-                        // 3. 请求计数信息
-                        String requestInfo = appMonitor.buildRequestCountInfo();
-                        if (requestInfo != null) {
-                            operator.sendData(
-                                    new Message()
-                                            .setHeader(
-                                                    new Header()
-                                                            .setSysName(cn.howardliu.monitor.cynomys.common.Constant.SYS_NAME)
-                                                            .setSysCode(cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE)
-                                                            .setLength(requestInfo.length())
-                                                            .setType(MessageType.REQUEST_INFO_REQ.value())
-                                            )
-                                            .setBody(requestInfo)
-                            );
-                        }
-
-                        // 4.进入休眠，等待下一次执行，默认5分钟执行一次
-                        Thread.sleep(splitTime);
+        this.m = new Thread(() -> {
+            try {
+                while (!isMonitorStop) {
+                    // 1.构建系统实时状态并存储
+                    String appInfo = appMonitor.buildAppInfo();
+                    if (appInfo != null) {
+                        sendData(
+                                new Message()
+                                        .setHeader(
+                                                new Header()
+                                                        .setSysName(
+                                                                cn.howardliu.monitor.cynomys.common.Constant.SYS_NAME)
+                                                        .setSysCode(
+                                                                cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE)
+                                                        .setLength(appInfo.length())
+                                                        .setType(MessageType.APP_INFO_REQ.value())
+                                        )
+                                        .setBody(appInfo)
+                        );
                     }
-                    logger.debug("Health Monitor Service is Stop!");
-                } catch (InterruptedException e) {
-                    logger.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001012"));
-                    logger.error("Details: " + e.getMessage());
-                    Thread.currentThread().interrupt();
+
+                    // 2.SQL计数信息
+                    String sqlInfo = appMonitor.buildSQLCountsInfo();
+                    if (sqlInfo != null) {
+                        sendData(
+                                new Message()
+                                        .setHeader(
+                                                new Header()
+                                                        .setSysName(
+                                                                cn.howardliu.monitor.cynomys.common.Constant.SYS_NAME)
+                                                        .setSysCode(
+                                                                cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE)
+                                                        .setLength(sqlInfo.length())
+                                                        .setType(MessageType.SQL_INFO_REQ.value())
+                                        )
+                                        .setBody(sqlInfo)
+                        );
+                    }
+
+                    // 3. 请求计数信息
+                    String requestInfo = appMonitor.buildRequestCountInfo();
+                    if (requestInfo != null) {
+                        sendData(
+                                new Message()
+                                        .setHeader(
+                                                new Header()
+                                                        .setSysName(
+                                                                cn.howardliu.monitor.cynomys.common.Constant.SYS_NAME)
+                                                        .setSysCode(
+                                                                cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE)
+                                                        .setLength(requestInfo.length())
+                                                        .setType(MessageType.REQUEST_INFO_REQ.value())
+                                        )
+                                        .setBody(requestInfo)
+                        );
+                    }
+
+                    // 4.进入休眠，等待下一次执行，默认5分钟执行一次
+                    Thread.sleep(splitTime);
                 }
+                logger.debug("Health Monitor Service is Stop!");
+            } catch (InterruptedException e) {
+                logger.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001012"));
+                logger.error("Details: " + e.getMessage());
+                Thread.currentThread().interrupt();
             }
         }, "monitor-agent-hearth-thread");
+        m.setDaemon(true);
         m.start();
     }
 
     public void startHealth(String status) {
-
-//        try {
-//            // 1.初始化跟踪节点
-//            this.appServerPath = appMonitor.buildMonitorRootInfo(status);
-        // 2 启动实例状态监控服务
         Long stepTime = Long
                 .valueOf(EnvPropertyConfig.getContextProperty("env.setting.server.monitor.checker.sleeptime"));
-        link();
         hearthCheck(stepTime);
-//        } catch (InterruptedException e) {
-//            logger.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001010"));
-//            logger.error("Details: " + e.getMessage());
-//        }
-
-    }
-
-    private List<ServerInfo> getServerInfoList() {
-        try {
-            List<ServerInfo> proxyServers = new ArrayList<>(
-                    this.configInfoOperator
-                            .reset()
-                            .start()
-                            .getProxyServers()
-            );
-            Collections.sort(proxyServers, new Comparator<ServerInfo>() {
-                @Override
-                public int compare(ServerInfo o1, ServerInfo o2) {
-                    return -(o1.getConnectCount() - o2.getConnectCount());
-                }
-            });
-            return proxyServers;
-        } catch (Exception e) {
-            try {
-                TimeUnit.SECONDS.sleep(5);
-            } catch (InterruptedException ignored) {
-            }
-            return getServerInfoList();
-        }
-    }
-
-    public synchronized void link() {
-        List<ServerInfo> serverInfoList = getServerInfoList();
-        System.err.println("获取连接列表：" + serverInfoList);
-        ServerInfo serverInfo = serverInfoList.get(0);
-        if (operator == null) {
-            operator = new SocketMonitorDataOperator(serverInfo.getIp(), serverInfo.getPort(), this);
-        } else {
-            operator.reconnect(serverInfo.getIp(), serverInfo.getPort());
-        }
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    operator.start();
-                    if (!operator.connect()) {
-                        link();
-                    }
-                } catch (Exception e) {
-                    logger.error("disconnect to server", e);
-                }
-            }
-        });
-        thread.setDaemon(true);
-        thread.setName("SocketMonitorDataOperator-start-thread");
-        thread.start();
     }
 
     public void updateHealth(String status) {
@@ -308,9 +284,8 @@ public class MonitorChecker implements Health {
     @Override
     public void restartHealth(String status) {
         shutdownHealth(status);
-        // TODO reconnect
         try {
-            this.operator.connect();
+            this.cynomysClient.connect();
         } catch (InterruptedException ignored) {
         }
     }
@@ -320,4 +295,17 @@ public class MonitorChecker implements Health {
         this.appMonitor.setPort(port);
     }
 
+    private void sendData(Message request) {
+        try {
+            this.cynomysClient.async(request, null);
+        } catch (InterruptedException | NetTimeoutException | NetSendRequestException | NetTooMuchRequestException | NetConnectException e) {
+            logger.error("send monitor data to SERVER exception", e);
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        this.isMonitorStop = true;
+        this.cynomysClient.shutdown();
+    }
 }

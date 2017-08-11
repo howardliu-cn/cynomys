@@ -17,7 +17,7 @@
  */
 package cn.howardliu.monitor.cynomys.agent.dto;
 
-import cn.howardliu.gear.monitor.jvm.PID;
+import cn.howardliu.gear.monitor.core.jvm.PID;
 
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;

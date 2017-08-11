@@ -30,8 +30,8 @@ public class DruidDataSourceHandler extends DataSourceHandler {
         try {
             CtMethod ctMethod = ctClass.getDeclaredMethod("init");
             ctMethod.insertAfter(
-                    "com.wfj.monitor.handler.wrapper.JdbcWrapper.SINGLETON.fillDataSourceInfo($0);" +
-                            "com.wfj.monitor.handler.wrapper.JdbcWrapper.registerCommonDataSource($0.getClass().getName() + \"@\" + System.identityHashCode($0), $0);"
+                    "cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper.SINGLETON.fillDataSourceInfo($0);" +
+                            "cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapperHelper.registerCommonDataSource($0.getClass().getName() + \"@\" + System.identityHashCode($0), $0);"
             );
 
         } catch (NotFoundException e) {

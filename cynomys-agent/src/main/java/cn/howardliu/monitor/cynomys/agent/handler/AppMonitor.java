@@ -1,7 +1,7 @@
 package cn.howardliu.monitor.cynomys.agent.handler;
 
-import cn.howardliu.gear.monitor.os.NetworkInterfaceInfo;
-import cn.howardliu.gear.monitor.os.OsInfo;
+import cn.howardliu.gear.monitor.core.os.NetworkInterfaceInfo;
+import cn.howardliu.gear.monitor.core.os.OsInfo;
 import cn.howardliu.monitor.cynomys.agent.conf.Constant;
 import cn.howardliu.monitor.cynomys.agent.conf.EnvPropertyConfig;
 import cn.howardliu.monitor.cynomys.agent.conf.PropertyAdapter;

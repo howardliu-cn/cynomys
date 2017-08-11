@@ -10,6 +10,7 @@ import cn.howardliu.monitor.cynomys.net.handler.SimpleHeartbeatHandler;
 import cn.howardliu.monitor.cynomys.proxy.ServerContext;
 import cn.howardliu.monitor.cynomys.proxy.net.*;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -19,6 +20,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,20 +83,27 @@ public class ProxyServer extends AbstractServer {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline()
+                                    .addLast("read-timeout-handler",
+                                            new ReadTimeoutHandler(PROXY_CONFIG.getTimeoutSeconds()))
+                                    .addLast(new WriteTimeoutHandler(PROXY_CONFIG.getTimeoutSeconds()))
                                     // read maxFrameLength from config file
                                     .addLast(new MessageDecoder(PROXY_CONFIG.getMaxFrameLength(), 4, 4))
                                     .addLast(new MessageEncoder())
                                     // link catch handler to create or delete application info path in zookeeper
                                     .addLast(new LinkCatchHandler(zkClient))
                                     // read timeout value from config file
-                                    .addLast("read-timeout-handler",
-                                            new ReadTimeoutHandler(PROXY_CONFIG.getTimeoutSeconds()))
                                     .addLast(new SimpleHeartbeatHandler("proxy-server"))
                                     .addLast(new AppInfo2ZkHandler(zkClient))
                                     .addLast(new AppInfo2KafkaHandler(kafkaProducerWrapper))
                                     .addLast(new SqlInfo2KafkaHandler(kafkaProducerWrapper))
                                     .addLast(new RequestInfo2KafkaHandler(kafkaProducerWrapper))
-                                    .addLast(new OtherInfoHandler());
+                                    .addLast(new OtherInfoHandler(){
+                                        @Override
+                                        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+                                                throws Exception {
+                                            cause.printStackTrace();
+                                        }
+                                    });
                         }
                     })
                     .bind(port).sync()

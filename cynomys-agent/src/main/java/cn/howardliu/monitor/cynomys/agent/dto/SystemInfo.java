@@ -6,8 +6,8 @@
  */
 package cn.howardliu.monitor.cynomys.agent.dto;
 
-import cn.howardliu.gear.monitor.jvm.JvmStats;
-import cn.howardliu.gear.monitor.memory.MemoryUsage;
+import cn.howardliu.gear.monitor.core.jvm.JvmStats;
+import cn.howardliu.gear.monitor.core.memory.MemoryUsage;
 
 import java.util.List;
 
