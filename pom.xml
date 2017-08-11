@@ -9,6 +9,7 @@
     <modules>
         <module>cynomys-common</module>
         <module>cynomys-net</module>
+        <module>cynomys-client</module>
         <module>cynomys-agent</module>
         <module>cynomys-config-server</module>
         <module>cynomys-proxy-server</module>
@@ -81,6 +82,11 @@
             <dependency>
                 <groupId>cn.howardliu.monitor</groupId>
                 <artifactId>cynomys-net</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.howardliu.monitor</groupId>
+                <artifactId>cynomys-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

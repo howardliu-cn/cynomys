@@ -20,6 +20,10 @@ public interface NetClient extends NetService {
 
     List<String> getAddressList();
 
+    void connect() throws InterruptedException;
+
+    void connect(final String address) throws InterruptedException;
+
     boolean isChannelWriteable(final String address);
 
     Message sync(final Message request)

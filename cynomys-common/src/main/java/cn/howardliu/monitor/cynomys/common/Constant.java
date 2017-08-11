@@ -18,6 +18,8 @@ import java.util.UUID;
  */
 // TODO server or client, need to check and notify
 public final class Constant {
+    public static final String VERSION_KEY = "cynomys.net.version";
+
     public static final int CRC_CODE = 0x0000_0_0_1;
     public static final String THIS_TAG;
     public static final String HEADER_SERVER_TAG = "Server-Tag";

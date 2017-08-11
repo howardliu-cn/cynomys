@@ -72,8 +72,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
         this(nettyClientConfig, null);
     }
 
-    public NettyNetClient(final NettyClientConfig nettyClientConfig,
-            ChannelEventListener channelEventListener) {
+    public NettyNetClient(final NettyClientConfig nettyClientConfig, ChannelEventListener channelEventListener) {
         super(nettyClientConfig.getClientAsyncSemaphoreValue());
 
         this.nettyClientConfig = nettyClientConfig;
@@ -291,6 +290,10 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
         getAndCreateUseAddressChoosen();
     }
 
+    public void connect(final String address) throws InterruptedException {
+        getAndCreateChannel(address);
+    }
+
     private Channel getAndCreateChannel(final String address) throws InterruptedException {
         if (address == null) {
             return getAndCreateUseAddressChoosen();
@@ -484,7 +487,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
         }
     }
 
-    public void closeChannel(final String remote, final Channel channel) {
+    private void closeChannel(final String remote, final Channel channel) {
         if (channel == null) {
             return;
         }
