@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.ServletContext;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import static cn.howardliu.monitor.cynomys.agent.common.Constant.SYSTEM_SETTING_MONITOR_SERVERS;
 
@@ -69,6 +70,8 @@ public class MonitorChecker implements Health, Closeable {
 
                             private void reconnection() {
                                 try {
+                                    TimeUnit.MILLISECONDS
+                                            .sleep(cynomysClient.getNettyClientConfig().getRelinkDelayMillis());
                                     cynomysClient.connect();
                                 } catch (InterruptedException ignored) {
                                 }

@@ -128,11 +128,11 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
         this.bootstrap
                 .group(this.eventLoopGroupWorker)
                 .channel(NioSocketChannel.class)
-//                .option(ChannelOption.TCP_NODELAY, true)
-//                .option(ChannelOption.SO_KEEPALIVE, false)
-//                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.nettyClientConfig.getConnectTimeoutMillis())
-//                .option(ChannelOption.SO_SNDBUF, this.nettyClientConfig.getClientSocketSndBufSize())
-//                .option(ChannelOption.SO_RCVBUF, this.nettyClientConfig.getClientSocketRcvBufSize())
+                .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.SO_KEEPALIVE, false)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.nettyClientConfig.getConnectTimeoutMillis())
+                .option(ChannelOption.SO_SNDBUF, this.nettyClientConfig.getClientSocketSndBufSize())
+                .option(ChannelOption.SO_RCVBUF, this.nettyClientConfig.getClientSocketRcvBufSize())
                 .handler(this.getChannelHandler());
 
         this.timer.scheduleAtFixedRate(new TimerTask() {
@@ -176,7 +176,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                             @Override
                             public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
                                     throws Exception {
-//                                closeChannel(ctx.channel());
+                                closeChannel(ctx.channel());
                                 cause.printStackTrace();
                             }
                         })
@@ -411,7 +411,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                 }
             } else {
                 logger.warn("createChannel: connect remote {} timeout {}ms, {}",
-                        address, 3000, channelFuture.toString());
+                        address, 3000, channelFuture.channel().toString());
             }
         }
 

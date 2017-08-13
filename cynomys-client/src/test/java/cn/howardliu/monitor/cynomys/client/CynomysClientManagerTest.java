@@ -14,13 +14,13 @@ import java.util.concurrent.TimeUnit;
  * @since 0.0.1
  */
 public class CynomysClientManagerTest {
+    private CynomysClient cynomysClient;
+
     @Test
     public void getAndCreateCynomysClient() throws Exception {
         CynomysClient cynomysClient = CynomysClientManager.INSTANCE.getAndCreateCynomysClient(new ClientConfig());
         Assert.assertNotNull(cynomysClient);
     }
-
-    private CynomysClient cynomysClient;
 
     @Test
     public void test() throws Exception {
@@ -42,6 +42,8 @@ public class CynomysClientManagerTest {
 
                             private void reconnection() {
                                 try {
+                                    TimeUnit.MILLISECONDS
+                                            .sleep(cynomysClient.getNettyClientConfig().getRelinkDelayMillis());
                                     cynomysClient.connect();
                                 } catch (InterruptedException ignored) {
                                 }

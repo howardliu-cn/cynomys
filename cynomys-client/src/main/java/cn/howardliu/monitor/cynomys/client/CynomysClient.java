@@ -11,6 +11,7 @@ import cn.howardliu.monitor.cynomys.net.exception.NetTooMuchRequestException;
 import cn.howardliu.monitor.cynomys.net.netty.NettyClientConfig;
 import cn.howardliu.monitor.cynomys.net.netty.NettyNetClient;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
+import io.netty.channel.ChannelFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,10 +34,27 @@ public class CynomysClient implements NetClient {
         System.setProperty(VERSION_KEY, Integer.toString(CynomysVersion.CURRENT_VERSION));
     }
 
+    private final NettyClientConfig nettyClientConfig;
     private final NetClient netClient;
 
     public CynomysClient(final NettyClientConfig nettyClientConfig, final ChannelEventListener channelEventListener) {
-        this.netClient = new NettyNetClient(nettyClientConfig, channelEventListener);
+        this.nettyClientConfig =nettyClientConfig;
+        this.netClient = new NettyNetClient(nettyClientConfig, channelEventListener) {
+            @Override
+            protected ChannelFutureListener connectListener(String address) {
+                return future -> {
+                    if (future.isSuccess()) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Connect to server [{}] successfully!", address);
+                        }
+                    } else {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Failed to connect to server [{}]!", address);
+                        }
+                    }
+                };
+            }
+        };
     }
 
     public List<String> getAddressList() {
@@ -124,5 +142,9 @@ public class CynomysClient implements NetClient {
             return;
         }
         this.netClient.async(request, timeoutMills, invokeCallBack);
+    }
+
+    public NettyClientConfig getNettyClientConfig() {
+        return nettyClientConfig;
     }
 }
