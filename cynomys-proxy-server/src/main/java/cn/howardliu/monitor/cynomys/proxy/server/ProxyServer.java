@@ -3,30 +3,26 @@ package cn.howardliu.monitor.cynomys.proxy.server;
 import cn.howardliu.gear.kafka.KafkaProducerWrapper;
 import cn.howardliu.gear.zk.ZkClientFactoryBuilder;
 import cn.howardliu.gear.zk.ZkConfig;
-import cn.howardliu.monitor.cynomys.net.codec.MessageDecoder;
-import cn.howardliu.monitor.cynomys.net.codec.MessageEncoder;
-import cn.howardliu.monitor.cynomys.net.handler.OtherInfoHandler;
-import cn.howardliu.monitor.cynomys.net.handler.SimpleHeartbeatHandler;
+import cn.howardliu.monitor.cynomys.net.NetServer;
+import cn.howardliu.monitor.cynomys.net.netty.NettyNetServer;
+import cn.howardliu.monitor.cynomys.net.netty.NettyServerConfig;
 import cn.howardliu.monitor.cynomys.proxy.ServerContext;
+import cn.howardliu.monitor.cynomys.proxy.config.ServerConfig;
 import cn.howardliu.monitor.cynomys.proxy.net.*;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.timeout.ReadTimeoutHandler;
-import io.netty.handler.timeout.WriteTimeoutHandler;
+import cn.howardliu.monitor.cynomys.proxy.processor.AppInfo2ZkProcessor;
+import cn.howardliu.monitor.cynomys.proxy.processor.RequestInfo2KafkaProcessor;
+import cn.howardliu.monitor.cynomys.proxy.processor.SqlInfo2KafkaProcessor;
+import io.netty.channel.ChannelHandler;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import static cn.howardliu.monitor.cynomys.net.struct.MessageCode.*;
 import static cn.howardliu.monitor.cynomys.proxy.config.ProxyConfig.PROXY_CONFIG;
 import static cn.howardliu.monitor.cynomys.proxy.config.SystemSetting.SYSTEM_SETTING;
 import static org.apache.kafka.clients.producer.ProducerConfig.*;
@@ -40,18 +36,22 @@ import static org.apache.kafka.clients.producer.ProducerConfig.*;
  */
 public class ProxyServer extends AbstractServer {
     private static final Logger logger = LoggerFactory.getLogger(ProxyServer.class);
+    private final ServerConfig serverConfig;
+
     private final KafkaProducerWrapper<String, String> kafkaProducerWrapper;
     private final CuratorFramework zkClient;
-    private EventLoopGroup bossGroup = new NioEventLoopGroup();
-    private EventLoopGroup workerGroup = new NioEventLoopGroup();
+    private final NetServer netServer;
+
     private ServerContext context;
 
-    public ProxyServer() {
-        this(PROXY_CONFIG.getPort(), PROXY_CONFIG.getCport());
-    }
+    private ExecutorService appInfoActionExecutor;
+    private ExecutorService requestInfoActionExecutor;
+    private ExecutorService sqlInfoActionExecutor;
 
-    public ProxyServer(int port, int cport) {
-        super(port, cport);
+    public ProxyServer(ServerConfig serverConfig) {
+        super(serverConfig.getListenPort(), serverConfig.getCtrlPort());
+
+        this.serverConfig = serverConfig;
 
         Properties config = new Properties();
         config.put(BOOTSTRAP_SERVERS_CONFIG, SYSTEM_SETTING.getKafkaBootstrapServers());
@@ -67,61 +67,59 @@ public class ProxyServer extends AbstractServer {
                 .config(ZkConfig.JuteMaxBuffer.key, 10 * 1024 * 1024)
                 .build()
                 .createClient();
+
+        NettyServerConfig nettyServerConfig = new NettyServerConfig();
+        nettyServerConfig.setListenPort(port);
+        nettyServerConfig.setServerSocketMaxFrameLength(PROXY_CONFIG.getMaxFrameLength());
+        nettyServerConfig.setServerChannelMaxIdleTimeSeconds(PROXY_CONFIG.getTimeoutSeconds());
+        this.netServer = new NettyNetServer(nettyServerConfig) {
+            @Override
+            protected ChannelHandler[] additionalChannelHandler() {
+                return new ChannelHandler[]{
+                        new LinkCatchHandler(zkClient)
+                };
+            }
+        };
+    }
+
+    public void initialize() {
+        appInfoActionExecutor = Executors.newFixedThreadPool(
+                this.serverConfig.getAppInfoActionThreadPoolNums(),
+                new DefaultThreadFactory("app-info-action-thread")
+        );
+        requestInfoActionExecutor = Executors.newFixedThreadPool(
+                this.serverConfig.getRequestInfoActionThreadPoolNums(),
+                new DefaultThreadFactory("request-info-action-thread")
+        );
+        sqlInfoActionExecutor = Executors.newFixedThreadPool(
+                this.serverConfig.getSqlInfoActionThreadPoolNums(),
+                new DefaultThreadFactory("sql-info-action-thread")
+        );
+    }
+
+    public void registProcessor() {
+        this.netServer.registProcessor(APP_INFO_REQ.value(), new AppInfo2ZkProcessor(zkClient), appInfoActionExecutor);
+        this.netServer.registProcessor(REQUEST_INFO_REQ.value(), new RequestInfo2KafkaProcessor(kafkaProducerWrapper),
+                requestInfoActionExecutor);
+        this.netServer.registProcessor(SQL_INFO_REQ.value(), new SqlInfo2KafkaProcessor(kafkaProducerWrapper),
+                sqlInfoActionExecutor);
     }
 
     @Override
     public void startup() {
-        logger.info("begin to starting, use server port [], control port []", port, cport);
+        logger.info("begin to starting, use server port [{}], control port [{}]", port, cport);
         this.context = ServerContext.getInstance(this);
         try {
             ctrl();
-            new ServerBootstrap()
-                    .group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
-                    .option(ChannelOption.SO_BACKLOG, 1024)
-                    .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline()
-                                    .addLast("read-timeout-handler",
-                                            new ReadTimeoutHandler(PROXY_CONFIG.getTimeoutSeconds()))
-                                    .addLast(new WriteTimeoutHandler(PROXY_CONFIG.getTimeoutSeconds()))
-                                    // read maxFrameLength from config file
-                                    .addLast(new MessageDecoder(PROXY_CONFIG.getMaxFrameLength(), 4, 4))
-                                    .addLast(new MessageEncoder())
-                                    // link catch handler to create or delete application info path in zookeeper
-                                    .addLast(new LinkCatchHandler(zkClient))
-                                    // read timeout value from config file
-                                    .addLast(new SimpleHeartbeatHandler("proxy-server"))
-                                    .addLast(new AppInfo2ZkHandler(zkClient))
-                                    .addLast(new AppInfo2KafkaHandler(kafkaProducerWrapper))
-                                    .addLast(new SqlInfo2KafkaHandler(kafkaProducerWrapper))
-                                    .addLast(new RequestInfo2KafkaHandler(kafkaProducerWrapper))
-                                    .addLast(new OtherInfoHandler(){
-                                        @Override
-                                        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-                                                throws Exception {
-                                            cause.printStackTrace();
-                                        }
-                                    });
-                        }
-                    })
-                    .bind(port).sync()
-                    .channel().closeFuture().sync()
-            ;
+            this.netServer.start();
         } catch (Exception e) {
             logger.error("an exception thrown when server starting up", e);
-        } finally {
-            bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
         }
     }
 
     @Override
     public void shutdown() {
-        bossGroup.shutdownGracefully();
-        workerGroup.shutdownGracefully();
+        this.netServer.shutdown();
     }
 
     public ServerContext getContext() {

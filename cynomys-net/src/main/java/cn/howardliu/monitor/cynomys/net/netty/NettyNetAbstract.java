@@ -155,12 +155,20 @@ public abstract class NettyNetAbstract {
         final int opaque = request.getHeader().getOpaque();
 
         if (pair != null) {
+            NettyRequestProcessor processor = pair.getObject1();
             Runnable run = () -> {
                 try {
-                    final Message response = pair.getObject1().processRequest(ctx, request);
-                    response.getHeader().setOpaque(opaque);
-                    response.getHeader().setType(MessageType.RESPONSE.value());
-                    ctx.writeAndFlush(request);
+                    if (processor.waitResponse()) {
+                        final Message response = processor.processRequest(ctx, request);
+                        if (response == null) {
+                            throw new RuntimeException("request process exception");
+                        }
+                        response.getHeader().setOpaque(opaque);
+                        response.getHeader().setType(MessageType.RESPONSE.value());
+                        ctx.writeAndFlush(request);
+                    } else {
+                        processor.processRequest(ctx, request);
+                    }
                 } catch (Throwable e) {
                     ctx.writeAndFlush(
                             new Message()
@@ -168,20 +176,20 @@ public abstract class NettyNetAbstract {
                                             new Header()
                                                     .setOpaque(opaque)
                                                     .setType(MessageType.RESPONSE.value())
-                                                    .setRemark(NetHelper.exceptionSimpleDesc(e))
                                     )
+                                    .setBody(NetHelper.exceptionSimpleDesc(e))
                     );
                 }
             };
 
-            if (pair.getObject1().rejectRequest()) {
+            if (processor.rejectRequest()) {
                 ctx.writeAndFlush(
                         new Message()
                                 .setHeader(new Header()
                                         .setOpaque(opaque)
                                         .setType(MessageType.RESPONSE.value())
-                                        .setRemark("system busy, start flow control for a while")
                                 )
+                                .setBody("system busy, start flow control for a while")
                 );
                 return;
             }
@@ -198,8 +206,8 @@ public abstract class NettyNetAbstract {
                                 .setHeader(new Header()
                                         .setOpaque(opaque)
                                         .setType(MessageType.RESPONSE.value())
-                                        .setRemark("system busy, start flow control for a while")
                                 )
+                                .setBody("system busy, start flow control for a while")
                 );
             }
         } else {
@@ -209,8 +217,8 @@ public abstract class NettyNetAbstract {
                             .setHeader(new Header()
                                     .setOpaque(opaque)
                                     .setType(MessageType.RESPONSE.value())
-                                    .setRemark(error)
                             )
+                            .setBody(error)
             );
             logger.warn(NetHelper.remoteAddress(ctx.channel()) + ' ' + error);
         }

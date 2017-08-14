@@ -59,6 +59,15 @@ public final class NetHelper {
         return new InetSocketAddress(s[0], Integer.parseInt(s[1]));
     }
 
+    public static String localHostName() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        return "DEFAULT_SERVER";
+    }
+
     public static String localAddress() {
         try {
             Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();

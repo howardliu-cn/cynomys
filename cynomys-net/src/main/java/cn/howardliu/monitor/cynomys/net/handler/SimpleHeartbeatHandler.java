@@ -38,7 +38,7 @@ public class SimpleHeartbeatHandler extends HeartbeatHandler {
         handlerIdle(ctx);
     }
 
-    private void handlerIdle(ChannelHandlerContext ctx) {
+    protected void handlerIdle(ChannelHandlerContext ctx) {
         ping(ctx);
     }
 }

@@ -16,6 +16,10 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.DefaultThreadFactory;
@@ -113,6 +117,7 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
                 .option(ChannelOption.SO_RCVBUF, nettyServerConfig.getServerSocketRcvBufSize())
                 .childOption(ChannelOption.TCP_NODELAY, true)
                 .localAddress(this.nettyServerConfig.getListenPort())
+                .handler(new LoggingHandler(LogLevel.INFO))
                 .childHandler(this.getChannelHandler());
 
         if (nettyServerConfig.isServerPooledByteBufAllocatorEnable()) {
@@ -153,7 +158,12 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
                         .addLast(new MessageEncoder())
                         .addLast(new NettyConnectManageHandler())
                         .addLast(additionalChannelHandler())
-                        .addLast(new SimpleHeartbeatHandler(nettyServerConfig.getServerName()))
+                        .addLast(new SimpleHeartbeatHandler(nettyServerConfig.getServerName()) {
+                            @Override
+                            protected void handlerIdle(ChannelHandlerContext ctx) {
+                                NetHelper.closeChannel(ctx.channel());
+                            }
+                        })
                         .addLast(additionalChannelHandler2())
                         .addLast(new OtherInfoHandler() {
                             @Override
@@ -298,6 +308,23 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
             }
 
             NetHelper.closeChannel(ctx.channel());
+        }
+
+        @Override
+        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+            if (evt instanceof IdleStateEvent) {
+                IdleStateEvent event = (IdleStateEvent) evt;
+                if (event.state().equals(IdleState.ALL_IDLE)) {
+                    final String remoteAddress = NetHelper.remoteAddress(ctx.channel());
+                    logger.warn("NETTY SERVER PIPELINE: IDLE exception [{}]", remoteAddress);
+                    NetHelper.closeChannel(ctx.channel());
+                    if (channelEventListener != null) {
+                        putNettyEvent(new NettyEvent(NettyEventType.IDLE, remoteAddress, ctx.channel()));
+                    }
+                }
+            }
+
+            ctx.fireUserEventTriggered(evt);
         }
     }
 }

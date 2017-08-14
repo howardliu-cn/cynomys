@@ -23,7 +23,6 @@ public class Header {
     private int length;
     private byte type;
     private byte code;
-    private String remark;
 
     public int getOpaque() {
         return opaque;
@@ -76,15 +75,6 @@ public class Header {
 
     public Header setCode(byte code) {
         this.code = code;
-        return this;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public Header setRemark(String remark) {
-        this.remark = remark;
         return this;
     }
 
@@ -141,7 +131,6 @@ public class Header {
                 ", length=" + length +
                 ", type=" + type +
                 ", code=" + code +
-                ", remark='" + remark + '\'' +
                 '}';
     }
 }

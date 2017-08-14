@@ -1,5 +1,6 @@
 package cn.howardliu.monitor.cynomys.proxy;
 
+import cn.howardliu.monitor.cynomys.proxy.config.ServerConfig;
 import cn.howardliu.monitor.cynomys.proxy.server.ProxyServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,9 @@ public enum CynomysProxyServer {
     }
 
     public void start() throws Exception {
-        ProxyServer proxyServer = new ProxyServer();
+        ProxyServer proxyServer = new ProxyServer(new ServerConfig());
+        proxyServer.initialize();
+        proxyServer.registProcessor();
         proxyServer.startup();
     }
 
