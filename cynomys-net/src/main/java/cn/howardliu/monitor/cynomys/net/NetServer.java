@@ -8,4 +8,5 @@ package cn.howardliu.monitor.cynomys.net;
  * @since 0.0.1
  */
 public interface NetServer extends NetService {
+    int localListenPort();
 }

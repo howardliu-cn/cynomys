@@ -146,6 +146,10 @@ public abstract class NettyNetAbstract {
         }
     }
 
+    public void processRequest(ChannelHandlerContext ctx, Message request) {
+        // TODO process request
+    }
+
     public void processResponse(ChannelHandlerContext ctx, Message response) {
         final int opaque = response.getHeader().getOpaque();
         final ResponseFuture responseFuture = responseTable.get(opaque);
@@ -212,7 +216,6 @@ public abstract class NettyNetAbstract {
         @Override
         public void run() {
             logger.info(this.getServiceName() + " service started");
-
             final ChannelEventListener listener = NettyNetAbstract.this.getChannelEventListener();
 
             while (!this.isStopped()) {
