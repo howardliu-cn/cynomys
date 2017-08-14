@@ -69,6 +69,7 @@ public class ProxyServer extends AbstractServer {
                 .createClient();
     }
 
+    @Override
     public void startup() {
         logger.info("begin to starting, use server port [], control port []", port, cport);
         this.context = ServerContext.getInstance(this);
@@ -117,6 +118,7 @@ public class ProxyServer extends AbstractServer {
         }
     }
 
+    @Override
     public void shutdown() {
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();

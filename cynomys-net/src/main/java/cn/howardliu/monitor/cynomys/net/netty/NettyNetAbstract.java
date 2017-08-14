@@ -1,5 +1,6 @@
 package cn.howardliu.monitor.cynomys.net.netty;
 
+import cn.howardliu.monitor.cynomys.common.Pair;
 import cn.howardliu.monitor.cynomys.common.SemaphoreReleaseOnlyOnce;
 import cn.howardliu.monitor.cynomys.common.ServiceThread;
 import cn.howardliu.monitor.cynomys.net.ChannelEventListener;
@@ -8,17 +9,16 @@ import cn.howardliu.monitor.cynomys.net.NetHelper;
 import cn.howardliu.monitor.cynomys.net.exception.NetSendRequestException;
 import cn.howardliu.monitor.cynomys.net.exception.NetTimeoutException;
 import cn.howardliu.monitor.cynomys.net.exception.NetTooMuchRequestException;
+import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
+import cn.howardliu.monitor.cynomys.net.struct.MessageType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -33,6 +33,9 @@ public abstract class NettyNetAbstract {
     protected final Semaphore semaphoreAsync;
     protected final NettyEventExecutor nettyEventExecutor = new NettyEventExecutor();
     protected final ConcurrentMap<Integer, ResponseFuture> responseTable = new ConcurrentHashMap<>(256);
+
+    protected final Map<Byte, Pair<NettyRequestProcessor, ExecutorService>> processorTable = new HashMap<>(64);
+    protected Pair<NettyRequestProcessor, ExecutorService> defaultRequestProcessor;
 
     public NettyNetAbstract(final int permitsAsync) {
         this.semaphoreAsync = new Semaphore(permitsAsync, true);
@@ -147,7 +150,70 @@ public abstract class NettyNetAbstract {
     }
 
     public void processRequest(ChannelHandlerContext ctx, Message request) {
-        // TODO process request
+        Pair<NettyRequestProcessor, ExecutorService> matched = this.processorTable.get(request.getHeader().getCode());
+        Pair<NettyRequestProcessor, ExecutorService> pair = matched == null ? this.defaultRequestProcessor : matched;
+        final int opaque = request.getHeader().getOpaque();
+
+        if (pair != null) {
+            Runnable run = () -> {
+                try {
+                    final Message response = pair.getObject1().processRequest(ctx, request);
+                    response.getHeader().setOpaque(opaque);
+                    response.getHeader().setType(MessageType.RESPONSE.value());
+                    ctx.writeAndFlush(request);
+                } catch (Throwable e) {
+                    ctx.writeAndFlush(
+                            new Message()
+                                    .setHeader(
+                                            new Header()
+                                                    .setOpaque(opaque)
+                                                    .setType(MessageType.RESPONSE.value())
+                                                    .setRemark(NetHelper.exceptionSimpleDesc(e))
+                                    )
+                    );
+                }
+            };
+
+            if (pair.getObject1().rejectRequest()) {
+                ctx.writeAndFlush(
+                        new Message()
+                                .setHeader(new Header()
+                                        .setOpaque(opaque)
+                                        .setType(MessageType.RESPONSE.value())
+                                        .setRemark("system busy, start flow control for a while")
+                                )
+                );
+                return;
+            }
+
+            try {
+                pair.getObject2().submit(new NetTask(run, ctx.channel(), request));
+            } catch (RejectedExecutionException e) {
+                logger.warn("{}, too many requests and system thread pool busy, {}, request code : {}",
+                        NetHelper.remoteAddress(ctx.channel()), pair.getObject2().toString(),
+                        request.getHeader().getCode());
+
+                ctx.writeAndFlush(
+                        new Message()
+                                .setHeader(new Header()
+                                        .setOpaque(opaque)
+                                        .setType(MessageType.RESPONSE.value())
+                                        .setRemark("system busy, start flow control for a while")
+                                )
+                );
+            }
+        } else {
+            String error = "request code " + request.getHeader().getCode() + " not supported!";
+            ctx.writeAndFlush(
+                    new Message()
+                            .setHeader(new Header()
+                                    .setOpaque(opaque)
+                                    .setType(MessageType.RESPONSE.value())
+                                    .setRemark(error)
+                            )
+            );
+            logger.warn(NetHelper.remoteAddress(ctx.channel()) + ' ' + error);
+        }
     }
 
     public void processResponse(ChannelHandlerContext ctx, Message response) {

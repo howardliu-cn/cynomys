@@ -1,5 +1,6 @@
 package cn.howardliu.monitor.cynomys.net.netty;
 
+import cn.howardliu.monitor.cynomys.common.Pair;
 import cn.howardliu.monitor.cynomys.net.ChannelEventListener;
 import cn.howardliu.monitor.cynomys.net.NetHelper;
 import cn.howardliu.monitor.cynomys.net.NetServer;
@@ -150,7 +151,6 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
                                 nettyServerConfig.getServerChannelMaxIdleTimeSeconds()))
                         .addLast(new MessageDecoder(nettyServerConfig.getServerSocketMaxFrameLength(), 4, 4))
                         .addLast(new MessageEncoder())
-                        // read timeout value from config file
                         .addLast(new NettyConnectManageHandler())
                         .addLast(additionalChannelHandler())
                         .addLast(new SimpleHeartbeatHandler(nettyServerConfig.getServerName()))
@@ -233,6 +233,21 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
     @Override
     public int localListenPort() {
         return this.port;
+    }
+
+    @Override
+    public void registProcessor(byte requestCode, NettyRequestProcessor processor,
+            ExecutorService executor) {
+        ExecutorService _executor = executor;
+        if (executor == null) {
+            _executor = this.publicExecutor;
+        }
+        this.processorTable.put(requestCode, new Pair<>(processor, _executor));
+    }
+
+    @Override
+    public void registDefaultProcessor(NettyRequestProcessor processor, ExecutorService executor) {
+        this.defaultRequestProcessor = new Pair<>(processor, executor);
     }
 
     class NettyConnectManageHandler extends ChannelDuplexHandler {

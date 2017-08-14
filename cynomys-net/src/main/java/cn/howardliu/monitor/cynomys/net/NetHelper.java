@@ -41,6 +41,19 @@ public final class NetHelper {
         return isLinuxPlatform;
     }
 
+    public static String exceptionSimpleDesc(Throwable t) {
+        StringBuilder s = new StringBuilder();
+        if (t != null) {
+            s.append(t.toString());
+            StackTraceElement[] stackTrace = t.getStackTrace();
+            if (stackTrace != null && stackTrace.length > 0) {
+                s.append(", ");
+                s.append(stackTrace[0].toString());
+            }
+        }
+        return s.toString();
+    }
+
     public static SocketAddress string2SocketAddress(final String address) {
         String[] s = address.split(":");
         return new InetSocketAddress(s[0], Integer.parseInt(s[1]));

@@ -23,6 +23,7 @@ public class Header {
     private int length;
     private byte type;
     private byte code;
+    private String remark;
 
     public int getOpaque() {
         return opaque;
@@ -78,6 +79,15 @@ public class Header {
         return this;
     }
 
+    public String getRemark() {
+        return remark;
+    }
+
+    public Header setRemark(String remark) {
+        this.remark = remark;
+        return this;
+    }
+
     public String getSysName() {
         return sysName;
     }
@@ -123,12 +133,15 @@ public class Header {
     @Override
     public String toString() {
         return "Header{" +
-                "crcCode=" + crcCode +
+                "opaque=" + opaque +
+                ", crcCode=" + crcCode +
                 ", tag='" + tag + '\'' +
+                ", sysName='" + sysName + '\'' +
+                ", sysCode='" + sysCode + '\'' +
                 ", length=" + length +
                 ", type=" + type +
-                ", sysName='" + sysName + '\'' +
-                ", sysCode=" + sysCode +
+                ", code=" + code +
+                ", remark='" + remark + '\'' +
                 '}';
     }
 }
