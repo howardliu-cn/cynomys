@@ -3,14 +3,9 @@ package cn.howardliu.monitor.cynomys.proxy.net;
 import cn.howardliu.gear.kafka.KafkaProducerWrapper;
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
-import cn.howardliu.monitor.cynomys.net.struct.MessageType;
+import cn.howardliu.monitor.cynomys.net.struct.MessageCode;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-
-import java.util.Properties;
-
-import static cn.howardliu.monitor.cynomys.proxy.config.SystemSetting.SYSTEM_SETTING;
-import static org.apache.kafka.clients.producer.ProducerConfig.*;
 
 /**
  * <br>created at 17-7-29
@@ -26,7 +21,7 @@ public abstract class AbstractInfo2KafkaHandler extends SimpleChannelInboundHand
         this.kafkaProducerWrapper = kafkaProducerWrapper;
     }
 
-    protected void send(ChannelHandlerContext ctx, Message message, String topic, MessageType resp) {
+    protected void send(ChannelHandlerContext ctx, Message message, String topic, MessageCode resp) {
         Header header = message.getHeader();
         kafkaProducerWrapper.send(
                 topic,

@@ -2,7 +2,7 @@ package cn.howardliu.monitor.cynomys.proxy.net;
 
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
-import cn.howardliu.monitor.cynomys.net.struct.MessageType;
+import cn.howardliu.monitor.cynomys.net.struct.MessageCode;
 import cn.howardliu.monitor.cynomys.proxy.config.SystemSetting;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -27,7 +27,7 @@ public abstract class AbstractInfo2ZkHandler extends SimpleChannelInboundHandler
         this.zkClient = zkClient;
     }
 
-    protected void send(ChannelHandlerContext ctx, Message message, String prePath, MessageType resp) {
+    protected void send(ChannelHandlerContext ctx, Message message, String prePath, MessageCode resp) {
         Header header = message.getHeader();
         String path = prePath + "/" + header.getSysName() + "-" + header.getSysCode() + "-" + header.getTag();
         boolean success = true;

@@ -8,7 +8,7 @@ import cn.howardliu.monitor.cynomys.net.handler.OtherInfoHandler;
 import cn.howardliu.monitor.cynomys.net.handler.SimpleHeartbeatHandler;
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
-import cn.howardliu.monitor.cynomys.net.struct.MessageType;
+import cn.howardliu.monitor.cynomys.net.struct.MessageCode;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -76,7 +76,7 @@ public class Client {
                                 new Header()
                                         .setSysCode("001")
                                         .setSysName("test-client")
-                                        .setType(MessageType.HEARTBEAT_REQ.value())
+                                        .setType(MessageCode.HEARTBEAT_REQ.value())
                         )
         );
 

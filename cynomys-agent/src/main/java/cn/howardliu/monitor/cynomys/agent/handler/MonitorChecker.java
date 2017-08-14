@@ -19,7 +19,7 @@ import cn.howardliu.monitor.cynomys.net.exception.NetTimeoutException;
 import cn.howardliu.monitor.cynomys.net.exception.NetTooMuchRequestException;
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
-import cn.howardliu.monitor.cynomys.net.struct.MessageType;
+import cn.howardliu.monitor.cynomys.net.struct.MessageCode;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -202,7 +202,7 @@ public class MonitorChecker implements Health, Closeable {
                                                         .setSysCode(
                                                                 cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE)
                                                         .setLength(appInfo.length())
-                                                        .setType(MessageType.APP_INFO_REQ.value())
+                                                        .setType(MessageCode.APP_INFO_REQ.value())
                                         )
                                         .setBody(appInfo)
                         );
@@ -220,7 +220,7 @@ public class MonitorChecker implements Health, Closeable {
                                                         .setSysCode(
                                                                 cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE)
                                                         .setLength(sqlInfo.length())
-                                                        .setType(MessageType.SQL_INFO_REQ.value())
+                                                        .setType(MessageCode.SQL_INFO_REQ.value())
                                         )
                                         .setBody(sqlInfo)
                         );
@@ -238,7 +238,7 @@ public class MonitorChecker implements Health, Closeable {
                                                         .setSysCode(
                                                                 cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE)
                                                         .setLength(requestInfo.length())
-                                                        .setType(MessageType.REQUEST_INFO_REQ.value())
+                                                        .setType(MessageCode.REQUEST_INFO_REQ.value())
                                         )
                                         .setBody(requestInfo)
                         );

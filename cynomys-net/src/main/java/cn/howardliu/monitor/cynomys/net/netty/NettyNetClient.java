@@ -15,6 +15,7 @@ import cn.howardliu.monitor.cynomys.net.handler.OtherInfoHandler;
 import cn.howardliu.monitor.cynomys.net.handler.SimpleHeartbeatHandler;
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
+import cn.howardliu.monitor.cynomys.net.struct.MessageType;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -36,7 +37,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static cn.howardliu.monitor.cynomys.net.struct.MessageType.*;
+import static cn.howardliu.monitor.cynomys.net.struct.MessageCode.*;
 
 /**
  * <br>created at 17-8-9
@@ -195,12 +196,8 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                 new SimpleChannelInboundHandler<Message>() {
                     @Override
                     protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
-                        byte messageType = msg.getHeader().getType();
-                        if (messageType == CONFIG_RESP.value()
-                                || messageType == HEARTBEAT_RESP.value()
-                                || messageType == APP_INFO_RESP.value()
-                                || messageType == SQL_INFO_RESP.value()
-                                || messageType == REQUEST_INFO_RESP.value()) {
+                        byte rpcType = msg.getHeader().getType();
+                        if (rpcType == MessageType.RESPONSE.value()) {
                             processResponse(ctx, msg);
                         } else {
                             ctx.fireChannelRead(msg);

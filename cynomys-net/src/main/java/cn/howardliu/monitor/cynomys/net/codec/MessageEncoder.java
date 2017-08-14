@@ -37,6 +37,7 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
         out.writeCharSequence(msg.getHeader().getSysCode(), CharsetUtil.UTF_8);
 
         out.writeByte(msg.getHeader().getType());
+        out.writeByte(msg.getHeader().getCode());
 
         if (msg.getBody() == null) {
             out.writeInt(0);

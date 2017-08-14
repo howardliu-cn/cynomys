@@ -27,7 +27,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static cn.howardliu.monitor.cynomys.net.struct.MessageType.*;
+import static cn.howardliu.monitor.cynomys.net.struct.MessageType.REQUEST;
 
 /**
  * <br>created at 17-8-14
@@ -175,12 +175,8 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
                 new SimpleChannelInboundHandler<Message>() {
                     @Override
                     protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
-                        byte messageType = msg.getHeader().getType();
-                        if (messageType == CONFIG_REQ.value()
-                                || messageType == HEARTBEAT_REQ.value()
-                                || messageType == APP_INFO_REQ.value()
-                                || messageType == SQL_INFO_REQ.value()
-                                || messageType == REQUEST_INFO_REQ.value()) {
+                        byte rpcType = msg.getHeader().getType();
+                        if (rpcType == REQUEST.value()) {
                             processRequest(ctx, msg);
                         } else {
                             ctx.fireChannelRead(msg);

@@ -39,6 +39,7 @@ public class MessageDecoder extends LengthFieldBasedFrameDecoder {
                                 .setSysName(frame.readCharSequence(frame.readInt(), CharsetUtil.UTF_8).toString())
                                 .setSysCode(frame.readCharSequence(frame.readInt(), CharsetUtil.UTF_8).toString())
                                 .setType(frame.readByte())
+                                .setCode(frame.readByte())
                 );
         if (frame.readableBytes() > 4) {
             message.setBody(frame.readCharSequence(frame.readInt(), CharsetUtil.UTF_8).toString());

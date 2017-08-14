@@ -4,7 +4,7 @@ import cn.howardliu.monitor.cynomys.net.codec.MessageDecoder;
 import cn.howardliu.monitor.cynomys.net.codec.MessageEncoder;
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
-import cn.howardliu.monitor.cynomys.net.struct.MessageType;
+import cn.howardliu.monitor.cynomys.net.struct.MessageCode;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -48,7 +48,7 @@ public class ConfigClient {
                                                 ctx.fireChannelRead(msg);
                                                 return;
                                             }
-                                            if (MessageType.CONFIG_RESP.value() == msg.getHeader().getType()) {
+                                            if (MessageCode.CONFIG_RESP.value() == msg.getHeader().getCode()) {
                                                 if (StringUtils.isBlank(msg.getBody())) {
                                                     query(ctx);
                                                 }
@@ -64,7 +64,7 @@ public class ConfigClient {
                                         }
 
                                         private void query(ChannelHandlerContext ctx) {
-                                            ctx.writeAndFlush(new Message().setHeader(new Header().setType(MessageType.CONFIG_REQ.value())));
+                                            ctx.writeAndFlush(new Message().setHeader(new Header().setType(MessageCode.CONFIG_REQ.value())));
                                         }
                                     });
                         }

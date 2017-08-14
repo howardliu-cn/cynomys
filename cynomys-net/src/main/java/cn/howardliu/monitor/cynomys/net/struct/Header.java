@@ -22,6 +22,7 @@ public class Header {
     private String sysCode = "";
     private int length;
     private byte type;
+    private byte code;
 
     public int getOpaque() {
         return opaque;
@@ -65,6 +66,15 @@ public class Header {
 
     public Header setType(byte type) {
         this.type = type;
+        return this;
+    }
+
+    public byte getCode() {
+        return code;
+    }
+
+    public Header setCode(byte code) {
+        this.code = code;
         return this;
     }
 

@@ -9,8 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static cn.howardliu.monitor.cynomys.net.handler.HeartbeatConstants.HEARTBEAT_COUNTER;
-import static cn.howardliu.monitor.cynomys.net.struct.MessageType.HEARTBEAT_REQ;
-import static cn.howardliu.monitor.cynomys.net.struct.MessageType.HEARTBEAT_RESP;
+import static cn.howardliu.monitor.cynomys.net.struct.MessageCode.HEARTBEAT_REQ;
+import static cn.howardliu.monitor.cynomys.net.struct.MessageCode.HEARTBEAT_RESP;
+import static cn.howardliu.monitor.cynomys.net.struct.MessageType.REQUEST;
+import static cn.howardliu.monitor.cynomys.net.struct.MessageType.RESPONSE;
 
 /**
  * <br>created at 17-3-30
@@ -31,10 +33,10 @@ public abstract class HeartbeatHandler extends SimpleChannelInboundHandler<Messa
         assert message != null;
         assert message.getHeader() != null;
         Header header = message.getHeader();
-        if (header.getType() == HEARTBEAT_REQ.value()) {
+        if (header.getCode() == HEARTBEAT_REQ.value()) {
             // handle PING single message
             pong(ctx);
-        } else if (header.getType() == HEARTBEAT_RESP.value()) {
+        } else if (header.getCode() == HEARTBEAT_RESP.value()) {
             // handle PONG single message
             if (logger.isDebugEnabled()) {
                 logger.debug(name + " get PONG single message from " + ctx.channel().remoteAddress());
@@ -45,7 +47,14 @@ public abstract class HeartbeatHandler extends SimpleChannelInboundHandler<Messa
     }
 
     protected void ping(ChannelHandlerContext ctx) {
-        ctx.writeAndFlush(new Message().setHeader(customHeader().setType(HEARTBEAT_REQ.value())));
+        ctx.writeAndFlush(
+                new Message()
+                        .setHeader(
+                                customHeader()
+                                        .setType(REQUEST.value())
+                                        .setCode(HEARTBEAT_REQ.value())
+                        )
+        );
         long count = HEARTBEAT_COUNTER.incrementAndGet();
         if (logger.isDebugEnabled()) {
             logger.debug(name + " send PING single message to " + ctx.channel().remoteAddress() + ", count: " + count);
@@ -53,7 +62,13 @@ public abstract class HeartbeatHandler extends SimpleChannelInboundHandler<Messa
     }
 
     protected void pong(ChannelHandlerContext ctx) {
-        ctx.writeAndFlush(new Message().setHeader(customHeader().setType(HEARTBEAT_RESP.value())));
+        ctx.writeAndFlush(
+                new Message()
+                        .setHeader(
+                                customHeader()
+                                        .setType(RESPONSE.value())
+                                        .setCode(HEARTBEAT_RESP.value()))
+        );
         long count = HEARTBEAT_COUNTER.incrementAndGet();
         if (logger.isDebugEnabled()) {
             logger.debug(name + " send PONG single message to " + ctx.channel().remoteAddress() + ", count: " + count);
