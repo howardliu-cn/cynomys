@@ -1,6 +1,10 @@
 package cn.howardliu.monitor.cynomys.agent.common;
 
+import org.apache.commons.lang3.SystemUtils;
+
 import javax.servlet.ServletContext;
+
+import static org.apache.commons.lang3.SystemUtils.USER_HOME;
 
 /**
  * <br>created at 17-4-11
@@ -11,8 +15,8 @@ import javax.servlet.ServletContext;
  */
 public class Constant {
     public static final String DEFAULT_ENV_PROPERTIES_FILE = "/env/monitor-env-setting-default.properties";
-    public static final String DEFAULT_MONITOR_PROPERTIES_FILE = "/env/default-wfj-monitor.properties";
-    public static final String CUSTOM_MONITOR_PROPERTIES_FILE = "/wfj-monitor.properties";
+    public static final String DEFAULT_MONITOR_PROPERTIES_FILE = "/conf/default-cynomys-monitor.properties";
+    public static final String CUSTOM_MONITOR_PROPERTIES_FILE = USER_HOME + ".cynomys/cynomys-monitor.properties";
     public static final String SYSTEM_SETTING_MONITOR_IS_DEBUG = "system.setting.monitor.isDebug";
     public static final String SYSTEM_SETTING_EXCLUDE_PACKAGE = "system.setting.exclude.package";
     public static final String SYSTEM_SETTING_INCLUDE_PACKAGE = "system.setting.include.package";

@@ -27,6 +27,8 @@ public final class Constant {
     public static final boolean IS_DEBUG;
     public static final String SYS_NAME;
     public static final String SYS_CODE;
+    public static final String SYS_DESC;
+    public static final String SERVER_LIST;
 
     private static final Logger logger = LoggerFactory.getLogger(Constant.class);
     private static final String DEFAULT_MONITOR_PROPERTIES_FILE = "/conf/default-cynomys-monitor.properties";
@@ -38,6 +40,8 @@ public final class Constant {
         boolean _isDebug = Boolean.TRUE;
         String sysName = "cynomys-monitor-project-default-name";
         String sysCode = "000";
+        String sysDesc = "";
+        String serverList = "127.0.0.1:7911";
         InputStream defaultIn = null;
         InputStream customIn = null;
         try {
@@ -56,6 +60,8 @@ public final class Constant {
             _isDebug = Boolean.valueOf(properties.getProperty("system.setting.monitor.isDebug"));
             sysName = properties.getProperty("system.setting.context-name");
             sysCode = properties.getProperty("system.setting.context-code");
+            sysDesc = properties.getProperty("system.setting.context-desc");
+            serverList = properties.getProperty("system.setting.monitor.servers");
         } catch (IOException e) {
             logger.error("got an exception when load config file", e);
         } finally {
@@ -65,6 +71,8 @@ public final class Constant {
         IS_DEBUG = _isDebug;
         SYS_NAME = sysName;
         SYS_CODE = sysCode;
+        SYS_DESC = sysDesc;
+        SERVER_LIST = serverList;
     }
 
     private Constant() {

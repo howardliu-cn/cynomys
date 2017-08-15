@@ -23,7 +23,6 @@ import cn.howardliu.gear.monitor.core.jvm.PID;
 import cn.howardliu.gear.monitor.core.os.OsInfo;
 import cn.howardliu.gear.monitor.core.os.OsStats;
 import cn.howardliu.gear.monitor.core.process.ProcessStats;
-import cn.howardliu.monitor.cynomys.agent.conf.EnvPropertyConfig;
 import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +45,10 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static cn.howardliu.gear.monitor.core.Constants.*;
+import static org.apache.commons.lang3.SystemUtils.*;
+import static org.apache.commons.lang3.SystemUtils.OS_ARCH;
+import static org.apache.commons.lang3.SystemUtils.OS_NAME;
+import static org.apache.commons.lang3.SystemUtils.OS_VERSION;
 
 /**
  * Informations systèmes sur le serveur, sans code html de présentation. L'état
@@ -57,9 +60,9 @@ import static cn.howardliu.gear.monitor.core.Constants.*;
  * @author Emeric Vernat
  */
 public class JavaInformations implements Serializable {
+    public static final String os = buildOS();
     private static final Logger log = LoggerFactory.getLogger(JavaInformations.class);
     private static final double HIGH_USAGE_THRESHOLD_IN_PERCENTS = 95d;
-    public static final String os = buildOS();
     /**
      * 一下计算 CUP 占用率使用
      */
@@ -185,14 +188,11 @@ public class JavaInformations implements Serializable {
                 double idletime = c1[0] - c0[0];
                 double busytime = c1[1] - c0[1];
                 return PERCENT * (busytime) / (busytime + idletime);
-            } else {
-                return 0;
             }
         } catch (Exception e) {
-            log.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001013"));
-            log.error("Details: " + e.getMessage());
-            return 0;
+            log.error("cannot load monitor info", e);
         }
+        return 0;
     }
 
     /**
@@ -254,14 +254,12 @@ public class JavaInformations implements Serializable {
             retn[1] = kneltime + usertime;
             return retn;
         } catch (Exception e) {
-            log.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001013"));
-            log.error("Details: " + e.getMessage());
+            log.error("cannot load monitor info", e);
         } finally {
             try {
                 proc.getInputStream().close();
             } catch (Exception e) {
-                log.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001013"));
-                log.error("Details: " + e.getMessage());
+                log.error("cannot load monitor info", e);
             }
         }
         return null;
@@ -657,9 +655,8 @@ public class JavaInformations implements Serializable {
         processCpuLoad = processStats.getCpu().getPercent();
 
         availableProcessors = osStats.getAvailableProcessors();
-        javaVersion = System.getProperty("java.runtime.name") + ", " + System.getProperty("java.runtime.version");
-        jvmVersion = System.getProperty("java.vm.name") + ", " + System.getProperty("java.vm.version") + ", " + System
-                .getProperty("java.vm.info");
+        javaVersion = JAVA_RUNTIME_NAME + ", " + JAVA_RUNTIME_VERSION;
+        jvmVersion = JAVA_VM_NAME + ", " + JAVA_VM_VERSION + ", " + JAVA_VM_INFO;
 
         vmName = JVM_NAME;
         vmVendor = JVM_VENDOR;
@@ -739,8 +736,7 @@ public class JavaInformations implements Serializable {
                 }
             }
         } catch (IOException e) {
-            log.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001013"));
-            log.error("Details: " + e.getMessage());
+            log.error("cannot load monitor info", e);
         }
         return cpuUsage;
     }

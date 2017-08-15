@@ -17,8 +17,6 @@
  */
 package cn.howardliu.monitor.cynomys.agent.dto;
 
-import cn.howardliu.monitor.cynomys.agent.conf.Constant;
-import cn.howardliu.monitor.cynomys.agent.conf.EnvPropertyConfig;
 import cn.howardliu.monitor.cynomys.agent.util.MBeans;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,21 +31,17 @@ import java.util.*;
  * @author Emeric Vernat
  */
 public final class TomcatInformations implements Serializable {
+    private static final boolean TOMCAT_USED = System.getProperty("catalina.home") != null;
+    private static final long serialVersionUID = -6145865427461051370L;
+    @SuppressWarnings("all")
+    private static final List<ObjectName> THREAD_POOLS = new ArrayList<ObjectName>();
+    @SuppressWarnings("all")
+    private static final List<ObjectName> GLOBAL_REQUEST_PROCESSORS = new ArrayList<ObjectName>();
     // cette classe utilise la même technique avec les MBeans Tomcat que la webapp manager de Tomcat
     // http://svn.apache.org/repos/asf/tomcat/trunk/java/org/apache/catalina/manager/StatusManagerServlet.java
     // http://svn.apache.org/repos/asf/tomcat/trunk/java/org/apache/catalina/manager/StatusTransformer.java
     // http://svn.apache.org/repos/asf/tomcat/trunk/webapps/manager/xform.xsl
     private static Logger log = LoggerFactory.getLogger(TomcatInformations.class);
-
-    private static final boolean TOMCAT_USED = System.getProperty("catalina.home") != null;
-
-    private static final long serialVersionUID = -6145865427461051370L;
-
-    @SuppressWarnings("all")
-    private static final List<ObjectName> THREAD_POOLS = new ArrayList<ObjectName>();
-    @SuppressWarnings("all")
-    private static final List<ObjectName> GLOBAL_REQUEST_PROCESSORS = new ArrayList<ObjectName>();
-
     private static int mbeansInitAttemps;
 
     private final String name;
@@ -65,8 +59,7 @@ public final class TomcatInformations implements Serializable {
     private TomcatInformations(MBeans mBeans, ObjectName threadPool) throws JMException {
         super();
         name = threadPool.getKeyProperty("name");
-        httpPort = getHttpPort(mBeans, EnvPropertyConfig.getContextProperty(
-                Constant.SYSTEM_SEETING_SERVER_DEFAULT_SERVER_PORT));
+        httpPort = getHttpPort(mBeans, "8080");
         maxThreads = (Integer) mBeans.getAttribute(threadPool, "maxThreads");
         currentThreadCount = (Integer) mBeans.getAttribute(threadPool, "currentThreadCount");
         currentThreadsBusy = (Integer) mBeans.getAttribute(threadPool, "currentThreadsBusy");
@@ -114,8 +107,7 @@ public final class TomcatInformations implements Serializable {
                 }
             }
         } catch (Exception e) {
-            log.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001018"));
-            log.error("Details: " + e.getMessage());
+            log.error("got port use MXBean exception", e);
         }
         return portString;
     }

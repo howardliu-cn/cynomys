@@ -1,14 +1,6 @@
-/**
- * @Probject Name: netty-wfj-base-dev
- * @Path: com.wfj.netty.monitorHeartLive.java
- * @Create By Jack
- * @Create In 2015年8月25日 上午9:49:49
- */
 package cn.howardliu.monitor.cynomys.agent.handler;
 
-import cn.howardliu.monitor.cynomys.agent.conf.EnvPropertyConfig;
 import cn.howardliu.monitor.cynomys.agent.conf.PropertyAdapter;
-import cn.howardliu.monitor.cynomys.agent.conf.SystemPropertyConfig;
 import cn.howardliu.monitor.cynomys.client.ClientConfig;
 import cn.howardliu.monitor.cynomys.client.CynomysClient;
 import cn.howardliu.monitor.cynomys.client.CynomysClientManager;
@@ -29,7 +21,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import static cn.howardliu.monitor.cynomys.agent.common.Constant.SYSTEM_SETTING_MONITOR_SERVERS;
+import static cn.howardliu.monitor.cynomys.common.Constant.*;
 
 /**
  * 服务器心跳组件
@@ -50,7 +42,7 @@ public class MonitorChecker implements Health, Closeable {
     private AppMonitor appMonitor;
 
     public MonitorChecker(Integer p, ServletContext sc) {
-        this.appName = SystemPropertyConfig.getContextProperty("system.setting.context-name");
+        this.appName = SYS_NAME;
         appMonitor = AppMonitor.instance(p, sc);
         cynomysClient = CynomysClientManager.INSTANCE
                 .getAndCreateCynomysClient(
@@ -78,7 +70,7 @@ public class MonitorChecker implements Health, Closeable {
                             }
                         }
                 );
-        cynomysClient.updateAddressList(SystemPropertyConfig.getContextProperty(SYSTEM_SETTING_MONITOR_SERVERS));
+        cynomysClient.updateAddressList(SERVER_LIST);
         cynomysClient.start();
         try {
             this.cynomysClient.connect();
@@ -197,10 +189,8 @@ public class MonitorChecker implements Health, Closeable {
                                 new Message()
                                         .setHeader(
                                                 new Header()
-                                                        .setSysName(
-                                                                cn.howardliu.monitor.cynomys.common.Constant.SYS_NAME)
-                                                        .setSysCode(
-                                                                cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE)
+                                                        .setSysName(SYS_NAME)
+                                                        .setSysCode(SYS_CODE)
                                                         .setLength(appInfo.length())
                                                         .setType(MessageCode.APP_INFO_REQ.value())
                                         )
@@ -215,10 +205,8 @@ public class MonitorChecker implements Health, Closeable {
                                 new Message()
                                         .setHeader(
                                                 new Header()
-                                                        .setSysName(
-                                                                cn.howardliu.monitor.cynomys.common.Constant.SYS_NAME)
-                                                        .setSysCode(
-                                                                cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE)
+                                                        .setSysName(SYS_NAME)
+                                                        .setSysCode(SYS_CODE)
                                                         .setLength(sqlInfo.length())
                                                         .setType(MessageCode.SQL_INFO_REQ.value())
                                         )
@@ -233,10 +221,8 @@ public class MonitorChecker implements Health, Closeable {
                                 new Message()
                                         .setHeader(
                                                 new Header()
-                                                        .setSysName(
-                                                                cn.howardliu.monitor.cynomys.common.Constant.SYS_NAME)
-                                                        .setSysCode(
-                                                                cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE)
+                                                        .setSysName(SYS_NAME)
+                                                        .setSysCode(SYS_CODE)
                                                         .setLength(requestInfo.length())
                                                         .setType(MessageCode.REQUEST_INFO_REQ.value())
                                         )
@@ -249,8 +235,7 @@ public class MonitorChecker implements Health, Closeable {
                 }
                 logger.debug("Health Monitor Service is Stop!");
             } catch (InterruptedException e) {
-                logger.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001012"));
-                logger.error("Details: " + e.getMessage());
+                logger.error("cannot load monitor module", e);
                 Thread.currentThread().interrupt();
             }
         }, "monitor-agent-hearth-thread");
@@ -259,21 +244,20 @@ public class MonitorChecker implements Health, Closeable {
     }
 
     public void startHealth(String status) {
-        Long stepTime = Long
-                .valueOf(EnvPropertyConfig.getContextProperty("env.setting.server.monitor.checker.sleeptime"));
-        hearthCheck(stepTime);
+        // TODO read from config file
+        hearthCheck(60000L);
     }
 
     public void updateHealth(String status) {
         try {
             // 更新自身节点状态
             Object[] tagArgs = {status};
-            String rootDesc = SystemPropertyConfig.getContextProperty("system.setting.context-desc");
+            String rootDesc = SYS_DESC;
             rootDesc = PropertyAdapter.formatter(rootDesc, tagArgs);
             System.err.println(rootDesc);
+            // TODO check this function
         } catch (Exception e) {
-            logger.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001011"));
-            logger.error("Details: " + e.getMessage());
+            logger.error("cannot update monitor info", e);
         }
     }
 

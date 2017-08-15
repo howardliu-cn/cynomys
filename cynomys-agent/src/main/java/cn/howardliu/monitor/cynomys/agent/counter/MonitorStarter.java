@@ -39,7 +39,7 @@ public class MonitorStarter {
             int port;
             if (javaInformations.getTomcatInformationsList().isEmpty()) {
                 port = Integer.valueOf(System.getProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_SERVER_PORT,
-                        Constant.SYSTEM_SEETING_SERVER_DEFAULT_SERVER_PORT_VALUE));
+                        SERVER_PORT + ""));
             } else {
                 port = Integer.valueOf(javaInformations.getTomcatInformationsList().get(0).getHttpPort());
             }

@@ -1,6 +1,5 @@
 package cn.howardliu.monitor.cynomys.agent.transform;
 
-import cn.howardliu.monitor.cynomys.agent.conf.EnvPropertyConfig;
 import javassist.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +26,6 @@ public class MonitoringTransformer implements ClassFileTransformer {
             this.classPool.appendPathList(System.getProperty("java.class.path"));
             this.classPool.appendClassPath(new LoaderClassPath(ClassLoader.getSystemClassLoader()));
         } catch (NotFoundException e) {
-            logger.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001000"), e);
             throw new RuntimeException(e);
         }
         this.methodRewriteHandler = MethodRewriteHandler.instance();
@@ -85,7 +83,6 @@ public class MonitoringTransformer implements ClassFileTransformer {
             return ctClass.toBytecode();
         } catch (Exception e) {
             logger.error("className: " + className, e);
-            logger.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001002"), e);
         }
         return classfileBuffer;
     }

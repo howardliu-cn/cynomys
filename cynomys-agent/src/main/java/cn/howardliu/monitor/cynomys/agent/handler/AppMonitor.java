@@ -3,7 +3,6 @@ package cn.howardliu.monitor.cynomys.agent.handler;
 import cn.howardliu.gear.monitor.core.os.NetworkInterfaceInfo;
 import cn.howardliu.gear.monitor.core.os.OsInfo;
 import cn.howardliu.monitor.cynomys.agent.conf.Constant;
-import cn.howardliu.monitor.cynomys.agent.conf.EnvPropertyConfig;
 import cn.howardliu.monitor.cynomys.agent.conf.PropertyAdapter;
 import cn.howardliu.monitor.cynomys.agent.conf.SystemPropertyConfig;
 import cn.howardliu.monitor.cynomys.agent.dto.*;
@@ -20,6 +19,11 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static cn.howardliu.monitor.cynomys.agent.conf.EnvPropertyConfig.getContextProperty;
+import static cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE;
+import static cn.howardliu.monitor.cynomys.common.Constant.SYS_DESC;
+import static cn.howardliu.monitor.cynomys.common.Constant.SYS_NAME;
 
 /**
  * @author Jack
@@ -77,41 +81,36 @@ public class AppMonitor {
      */
     public String buildMonitorRootInfo(String status) throws InterruptedException {
         // 1. 判断用于监控的父节点是否存在，如不存在则建立，每个集成Netty-WFJ-Base的服务均会检查此配置，争抢建立,利用Zookeeper的原生节点创建锁完成
-        String rootPath = EnvPropertyConfig.getContextProperty(
+        String rootPath = getContextProperty(
                 Constant.SYSTEM_SEETING_SERVER_DEFAULT_SERVER_MONITOR_ROOT_PATH);
         // TODO 确认ProxyServer是否连通
         boolean isMonitorRootExist = false;
         if (!isMonitorRootExist) {
             Object[] tagArgs = {"Active"};
-            String rootDesc = EnvPropertyConfig
-                    .getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_SERVER_MONITOR_ROOT_DESC);
+            String rootDesc =
+                    getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_SERVER_MONITOR_ROOT_DESC);
             rootDesc = PropertyAdapter.formatter(rootDesc, tagArgs);
             // TODO 发送初始化状态
             System.out.println(rootDesc);
         }
 
         // 2. 判断用于监控的系统本身的父节点是否存在，如不存在则建立，建立过程每个此系统的实例争抢创建，利用Zookeeper的原生节点创建锁完成
-        String systemPath = rootPath + "/" +
-                SystemPropertyConfig.getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_CONTEXT_NAME)
-                + "-" +
-                SystemPropertyConfig.getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_CONTEXT_CODE);
+        String systemPath = rootPath + "/" + SYS_NAME + "-" + SYS_CODE;
 
-        String systemDesc = SystemPropertyConfig.getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_CONTEXT_NAME)
-                + "-" +
-                SystemPropertyConfig.getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_CONTEXT_CODE);
+        String systemDesc = SYS_NAME + "-" + SYS_CODE;
 
+        // TODO check this function
         System.out.println(systemPath);
         System.out.println(systemDesc);
 
         // TODO 获取实例数量，并给出标号
         int instanceID = 0;
         SystemPropertyConfig.setContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_INSTANCE_KEY,
-                SystemPropertyConfig.getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_CONTEXT_NAME)
-                        + "-i" + String.valueOf(++instanceID));
+                SYS_NAME + "-i" + String.valueOf(++instanceID));
 
         // 3. 创建本次实例的临时节点，利用临时节点特性，完成系统监控
         Object[] tagArgs = {status};
-        String rootDesc = SystemPropertyConfig.getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_CONTEXT_DESC);
+        String rootDesc = SYS_DESC;
         rootDesc = PropertyAdapter.formatter(rootDesc, tagArgs);
         // TODO write data
         System.out.println(rootDesc);
@@ -133,7 +132,7 @@ public class AppMonitor {
 
             // 1. 获取目前节点基础信息
             Object[] tagArgs = {"Active"};
-            rootDesc = SystemPropertyConfig.getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_CONTEXT_DESC);
+            rootDesc = SYS_DESC;
             rootDesc = PropertyAdapter.formatter(rootDesc, tagArgs);
             appInfo = JSON.parseObject(rootDesc, ApplicationInfo.class);
 
@@ -227,8 +226,7 @@ public class AppMonitor {
             // TODO write data
             return JSON.toJSONString(appInfo);
         } catch (Exception e) {
-            log.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001013"));
-            log.error("Details: " + e.getMessage());
+            log.error("cannot load monitor info", e);
         }
         return null;
     }
@@ -242,14 +240,11 @@ public class AppMonitor {
     public String buildSQLCountsInfo() {
         //构造 SQL 信息并发送
         try {
-            String rootDesc;
             JdbcWrapper jw = JdbcWrapper.SINGLETON;
             if (jw != null) {
                 SQLInfo sqlInfo = SQLInfo.instance();
-                sqlInfo.setSysCode(
-                        SystemPropertyConfig.getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_CONTEXT_CODE));
-                sqlInfo.setSysName(
-                        SystemPropertyConfig.getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_CONTEXT_NAME));
+                sqlInfo.setSysCode(SYS_CODE);
+                sqlInfo.setSysName(SYS_NAME);
                 sqlInfo.setSysIPS(StringUtils.join(getAddress(new OsInfo(), this.port), "<br>"));
                 sqlInfo.setDataBaseVersion(javaInfor.getDataBaseVersion());
                 sqlInfo.setDataSourceDetails(javaInfor.getDataSourceDetails());
@@ -263,16 +258,10 @@ public class AppMonitor {
 
                 List<CounterRequest> sqlDetails = jw.getSqlCounter().getRequests();
                 sqlInfo.setSqlDetails(sqlDetails);
-                rootDesc = JSON.toJSONString(sqlInfo);
-
-                // TODO write data
-                System.out.println("sysCode: " + sqlInfo.getSysCode() + "\nsysName: " + sqlInfo
-                        .getSysName() + "\ndata: " + rootDesc);
-                return rootDesc;
+                return JSON.toJSONString(sqlInfo);
             }
         } catch (Exception e) {
-            log.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001013"));
-            log.error("Details: " + e.getMessage());
+            log.error("cannot load monitor info", e);
         }
         return null;
     }
@@ -280,15 +269,11 @@ public class AppMonitor {
 
     public String buildRequestCountInfo() {
         try {
-            String rootDesc;
             RequestWrapper rw = RequestWrapper.SINGLETON;
-
             if (rw != null) {
                 RequestInfo reqInfo = RequestInfo.instance();
-                reqInfo.setSysCode(
-                        SystemPropertyConfig.getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_CONTEXT_CODE));
-                reqInfo.setSysName(
-                        SystemPropertyConfig.getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_CONTEXT_NAME));
+                reqInfo.setSysCode(SYS_CODE);
+                reqInfo.setSysName(SYS_NAME);
 
                 reqInfo.setSysIPS(StringUtils.join(getAddress(new OsInfo(), this.port), "<br>"));
                 reqInfo.setUpdateDate(new SimpleDateFormat(timeFmtPattern).format(new Date()));
@@ -297,16 +282,10 @@ public class AppMonitor {
                 List<CounterRequest> errDetails = rw.getErrorCounter().getRequests();
                 reqInfo.setRequestDetails(reqDetails);
                 reqInfo.setErrorDetails(errDetails);
-                rootDesc = JSON.toJSONString(reqInfo);
-                // 发送消息到回收队列
-                // TODO write data
-                System.out.println("sysCode: " + reqInfo.getSysCode() + "\nsysName: " + reqInfo
-                        .getSysName() + "\ndata: " + rootDesc);
-                return rootDesc;
+                return JSON.toJSONString(reqInfo);
             }
         } catch (Exception e) {
-            log.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001013"));
-            log.error("Details: " + e.getMessage());
+            log.error("cannot load monitor info", e);
         }
         return null;
     }
@@ -328,8 +307,7 @@ public class AppMonitor {
                 SLACountManager.init();
             }
         } catch (ParseException e) {
-            log.error(EnvPropertyConfig.getContextProperty("env.setting.server.error.00001015"));
-            log.error("Details: " + e.getMessage());
+            log.error("cannot refresh timer", e);
         }
     }
 
