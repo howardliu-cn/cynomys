@@ -20,8 +20,6 @@ package cn.howardliu.monitor.cynomys.agent.dto;
 import cn.howardliu.gear.monitor.core.jvm.PID;
 
 import java.io.Serializable;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadMXBean;
 import java.util.Collections;
 import java.util.List;
 
@@ -37,9 +35,6 @@ import java.util.List;
 public class ThreadInformations implements Serializable {
     private static final long serialVersionUID = 3604281253550723654L;
     @SuppressWarnings("all")
-    private static final ThreadMXBean THREAD_BEAN = ManagementFactory.getThreadMXBean();
-    private static final boolean CPU_TIME_ENABLED = THREAD_BEAN.isThreadCpuTimeSupported() && THREAD_BEAN
-            .isThreadCpuTimeEnabled();
     private final String name;
     private final long id;
     private final int priority;
@@ -71,16 +66,8 @@ public class ThreadInformations implements Serializable {
         this.globalThreadId = buildGlobalThreadId(thread, hostAddress);
     }
 
-    public static long getCurrentThreadCpuTime() {
-        return getThreadCpuTime(Thread.currentThread().getId());
-    }
-
-    public static long getThreadCpuTime(long threadId) {
-        if (CPU_TIME_ENABLED) {
-            // le coût de cette méthode se mesure à environ 0,6 microseconde
-            return THREAD_BEAN.getThreadCpuTime(threadId);
-        }
-        return 0;
+    private static String buildGlobalThreadId(Thread thread, String hostAddress) {
+        return PID.getPID() + '_' + hostAddress + '_' + thread.getId();
     }
 
     public String getName() {
@@ -132,10 +119,6 @@ public class ThreadInformations implements Serializable {
 
     public String getGlobalThreadId() {
         return globalThreadId;
-    }
-
-    private static String buildGlobalThreadId(Thread thread, String hostAddress) {
-        return PID.getPID() + '_' + hostAddress + '_' + thread.getId();
     }
 
     /**

@@ -117,8 +117,7 @@ final class JspWrapper implements InvocationHandler {
         this.requestDispatcher = requestDispatcher;
     }
 
-    static HttpServletRequest createHttpRequestWrapper(HttpServletRequest request,
-            HttpServletResponse response) {
+    static HttpServletRequest createHttpRequestWrapper(HttpServletRequest request, HttpServletResponse response) {
         if (DISABLED || COUNTER_HIDDEN) {
             return request;
         }

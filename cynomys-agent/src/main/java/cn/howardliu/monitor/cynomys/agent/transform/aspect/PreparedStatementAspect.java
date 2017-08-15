@@ -2,10 +2,10 @@ package cn.howardliu.monitor.cynomys.agent.transform.aspect;
 
 import cn.howardliu.monitor.cynomys.agent.common.SqlHolder;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
+import cn.howardliu.monitor.cynomys.common.ThreadMXBeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.management.ManagementFactory;
 import java.sql.PreparedStatement;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import java.util.Map;
  * @since 0.0.1
  */
 public class PreparedStatementAspect {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(PreparedStatementAspect.class);
     private static final Map<Long, ExecuteRunnerWrapper> RUNNER_MAP =
             Collections.synchronizedMap(new HashMap<Long, ExecuteRunnerWrapper>());
 
@@ -30,7 +30,7 @@ public class PreparedStatementAspect {
             return;
         }
         long startTime = System.currentTimeMillis();
-        long startThreadCupTime = ManagementFactory.getThreadMXBean().getThreadCpuTime(tid);
+        long startThreadCupTime = ThreadMXBeanUtils.getThreadCpuTime(tid);
         ExecuteRunnerWrapper wrapper = new ExecuteRunnerWrapper();
         wrapper.setStartTime(startTime);
         wrapper.setStartThreadCupTime(startThreadCupTime);
@@ -48,8 +48,6 @@ public class PreparedStatementAspect {
             return;
         }
         wrapper.setCause(cause);
-
-        System.err.println("CATCH_ERROR: " + cause);
     }
 
     public static void end(long tid, String methodName) {
@@ -66,8 +64,12 @@ public class PreparedStatementAspect {
         //noinspection ThrowableResultOfMethodCallIgnored
         Throwable cause = wrapper.getCause();
         JdbcWrapper.SINGLETON.getSqlCounter().addRequest(sql, duration, -1, cause != null, -1);
-
-        System.err.println(methodName + " used " + duration + "ms, sql is [" + sql + "]");
+        if (logger.isDebugEnabled()) {
+            logger.debug("{} used {}ms, sql is [{}]", methodName, duration, sql);
+            if(cause != null) {
+                logger.debug("sql [{}] run error", sql, cause);
+            }
+        }
     }
 
     public static void close(Object stmt) {

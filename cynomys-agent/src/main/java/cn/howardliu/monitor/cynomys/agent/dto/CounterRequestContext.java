@@ -17,6 +17,8 @@
  */
 package cn.howardliu.monitor.cynomys.agent.dto;
 
+import cn.howardliu.monitor.cynomys.common.ThreadMXBeanUtils;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -31,11 +33,7 @@ import java.util.*;
 public class CounterRequestContext implements CounterRequest.ICounterRequestContext, Cloneable, Serializable {
     private static final long serialVersionUID = 1L;
     private static final Long ONE = 1L;
-    // attention de ne pas sérialiser le counter d'origine vers le serveur de
-    // collecte, le vrai ayant été cloné
-    private Counter parentCounter;
     private final CounterRequestContext parentContext;
-    private CounterRequestContext currentChildContext;
     private final String requestName;
     private final String completeRequestName;
     private final String remoteUser;
@@ -44,6 +42,10 @@ public class CounterRequestContext implements CounterRequest.ICounterRequestCont
     // impactée s'il y a désynchronisation d'horloge
     private final long startTime;
     private final long startCpuTime;
+    // attention de ne pas sérialiser le counter d'origine vers le serveur de
+    // collecte, le vrai ayant été cloné
+    private Counter parentCounter;
+    private CounterRequestContext currentChildContext;
     // ces 2 champs sont initialisés à 0
     private int childHits;
     private int childDurationsSum;
@@ -82,15 +84,6 @@ public class CounterRequestContext implements CounterRequest.ICounterRequestCont
         this.startCpuTime = startCpuTime;
     }
 
-    public Counter getParentCounter() {
-        return parentCounter;
-    }
-
-    public void setParentCounter(Counter parentCounter) {
-        assert parentCounter != null && this.parentCounter.getName().equals(parentCounter.getName());
-        this.parentCounter = parentCounter;
-    }
-
     public static void replaceParentCounters(List<CounterRequestContext> rootCurrentContexts,
             List<Counter> newParentCounters) {
         final Map<String, Counter> newParentCountersByName = new HashMap<>(newParentCounters.size());
@@ -114,6 +107,15 @@ public class CounterRequestContext implements CounterRequest.ICounterRequestCont
                 replaceParentCounters(childContexts, newParentCountersByName);
             }
         }
+    }
+
+    public Counter getParentCounter() {
+        return parentCounter;
+    }
+
+    public void setParentCounter(Counter parentCounter) {
+        assert parentCounter != null && this.parentCounter.getName().equals(parentCounter.getName());
+        this.parentCounter = parentCounter;
     }
 
     public CounterRequestContext getParentContext() {
@@ -145,7 +147,7 @@ public class CounterRequestContext implements CounterRequest.ICounterRequestCont
         if (startCpuTime < 0) {
             return -1;
         }
-        final int cpuTime = (int) (ThreadInformations.getThreadCpuTime(getThreadId()) - startCpuTime) / 1000000;
+        final int cpuTime = (int) (ThreadMXBeanUtils.getThreadCpuTime(getThreadId()) - startCpuTime) / 1000000;
         // pas de négatif ici sinon on peut avoir une assertion si elles sont
         // activées
         return Math.max(cpuTime, 0);

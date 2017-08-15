@@ -1,6 +1,7 @@
 package cn.howardliu.monitor.cynomys.agent.counter;
 
 import cn.howardliu.monitor.cynomys.agent.conf.Constant;
+import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
 import cn.howardliu.monitor.cynomys.agent.dto.JavaInformations;
 import cn.howardliu.monitor.cynomys.agent.handler.MonitorChecker;
 import cn.howardliu.monitor.cynomys.agent.handler.factory.SLACountManager;
@@ -34,7 +35,7 @@ public class MonitorStarter {
             }
             // TODO 暂时将监控代码放在下面，需要更优雅的写法
             JavaInformations javaInformations = JavaInformations.instance(SERVLET_CONTEXT, true);
-            RequestWrapper.SINGLETON.initServletContext(SERVLET_CONTEXT);
+            Parameters.initialize(SERVLET_CONTEXT);
 
             int port;
             if (javaInformations.getTomcatInformationsList().isEmpty()) {

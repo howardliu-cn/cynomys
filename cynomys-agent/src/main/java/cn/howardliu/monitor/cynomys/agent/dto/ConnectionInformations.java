@@ -53,13 +53,6 @@ public class ConnectionInformations implements Serializable {
         this.threadId = currentThread.getId();
     }
 
-    public static int getUniqueIdOfConnection(Connection connection) {
-        // ce hashCode est normalement implémenté par l'adresse mémoire de
-        // l'objet
-        // qui est donc unique
-        return System.identityHashCode(connection);
-    }
-
     public Date getOpeningDate() {
         return new Date(openingTime);
     }

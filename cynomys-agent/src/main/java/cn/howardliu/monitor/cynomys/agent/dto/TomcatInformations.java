@@ -31,17 +31,14 @@ import java.util.*;
  * @author Emeric Vernat
  */
 public final class TomcatInformations implements Serializable {
+    private static final Logger logger = LoggerFactory.getLogger(TomcatInformations.class);
+
     private static final boolean TOMCAT_USED = System.getProperty("catalina.home") != null;
     private static final long serialVersionUID = -6145865427461051370L;
     @SuppressWarnings("all")
     private static final List<ObjectName> THREAD_POOLS = new ArrayList<ObjectName>();
     @SuppressWarnings("all")
     private static final List<ObjectName> GLOBAL_REQUEST_PROCESSORS = new ArrayList<ObjectName>();
-    // cette classe utilise la même technique avec les MBeans Tomcat que la webapp manager de Tomcat
-    // http://svn.apache.org/repos/asf/tomcat/trunk/java/org/apache/catalina/manager/StatusManagerServlet.java
-    // http://svn.apache.org/repos/asf/tomcat/trunk/java/org/apache/catalina/manager/StatusTransformer.java
-    // http://svn.apache.org/repos/asf/tomcat/trunk/webapps/manager/xform.xsl
-    private static Logger log = LoggerFactory.getLogger(TomcatInformations.class);
     private static int mbeansInitAttemps;
 
     private final String name;
@@ -107,7 +104,7 @@ public final class TomcatInformations implements Serializable {
                 }
             }
         } catch (Exception e) {
-            log.error("got port use MXBean exception", e);
+            logger.error("got port use MXBean exception", e);
         }
         return portString;
     }
@@ -118,45 +115,24 @@ public final class TomcatInformations implements Serializable {
         }
         try {
             synchronized (THREAD_POOLS) {
-                if ((THREAD_POOLS.isEmpty() || GLOBAL_REQUEST_PROCESSORS.isEmpty())
-                        && mbeansInitAttemps < 10) {
-                    // lors du premier appel dans Tomcat lors du déploiement de la webapp,
-                    // ce initMBeans ne fonctionne pas car les MBeans n'existent pas encore,
-                    // donc il faut réessayer plus tard
+                if ((THREAD_POOLS.isEmpty() || GLOBAL_REQUEST_PROCESSORS.isEmpty()) && mbeansInitAttemps < 10) {
                     initMBeans();
-
-                    // issue 406, Tomcat mbeans never found in jboss eap 6.2,
-                    // we must stop initMBeans at some point
                     mbeansInitAttemps++;
                 }
             }
-            final MBeans mBeans = new MBeans();
-            final List<TomcatInformations> tomcatInformationsList = new ArrayList<>(
-                    THREAD_POOLS.size());
-            // rq: le processor correspondant au threadPool peut se retrouver selon
-            // threadPool.getKeyProperty("name").equals(globalRequestProcessor.getKeyProperty("name"))
+            final List<TomcatInformations> tomcatInformationsList = new ArrayList<>(THREAD_POOLS.size());
             for (final ObjectName threadPool : THREAD_POOLS) {
-                tomcatInformationsList.add(new TomcatInformations(mBeans, threadPool));
+                tomcatInformationsList.add(new TomcatInformations(new MBeans(), threadPool));
             }
             return tomcatInformationsList;
-        } catch (final InstanceNotFoundException e) {
-            // nécessaire pour JBoss 6.0 quand appelé depuis MonitoringFilter.destroy via
-            // writeHtmlToLastShutdownFile
-            return Collections.emptyList();
-        } catch (final AttributeNotFoundException e) {
-            // issue 220 and end of issue 133:
-            // AttributeNotFoundException: No attribute called maxThreads (in some JBossAS or JBossWeb)
+        } catch (final InstanceNotFoundException | AttributeNotFoundException e) {
             return Collections.emptyList();
         } catch (final JMException e) {
-            // n'est pas censé arriver
             throw new IllegalStateException(e);
         }
     }
 
-    // visibilité package pour réinitialisation en test unitaire
     public static void initMBeans() throws MalformedObjectNameException {
-        // rq: en général, il y a 2 connecteurs (http et ajp 1.3) définis dans server.xml et donc
-        // 2 threadPools et 2 globalRequestProcessors de même nom : http-8080 et jk-8009 (ajp13)
         final MBeans mBeans = new MBeans();
         THREAD_POOLS.clear();
         GLOBAL_REQUEST_PROCESSORS.clear();
@@ -204,16 +180,10 @@ public final class TomcatInformations implements Serializable {
         return maxTime;
     }
 
-    /**
-     * @return the String httpPort
-     */
     public String getHttpPort() {
         return httpPort;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String toString() {
         return getClass()

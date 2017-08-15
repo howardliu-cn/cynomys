@@ -17,6 +17,8 @@
  */
 package cn.howardliu.monitor.cynomys.agent.dto;
 
+import cn.howardliu.monitor.cynomys.common.ThreadMXBeanUtils;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
@@ -431,16 +433,10 @@ public class Counter implements Cloneable, Serializable { // NOPMD
     }
 
     public void bindContextIncludingCpu(String requestName) {
-        bindContext(requestName, requestName, null, ThreadInformations.getCurrentThreadCpuTime());
+        bindContext(requestName, requestName, null, ThreadMXBeanUtils.getCurrentThreadCpuTime());
     }
 
     public void bindContext(String requestName, String completeRequestName, String remoteUser, long startCpuTime) {
-        // requestName est la même chose que ce qui sera utilisée dans
-        // addRequest,
-        // completeRequestName est la même chose éventuellement complétée
-        // pour cette requête à destination de l'affichage dans les requêtes
-        // courantes
-        // (sinon mettre 2 fois la même chose)
         final CounterRequestContext context = new CounterRequestContext(this, contextThreadLocal.get(), requestName,
                 completeRequestName, remoteUser, startCpuTime);
         contextThreadLocal.set(context);
@@ -484,12 +480,6 @@ public class Counter implements Cloneable, Serializable { // NOPMD
 
     private void addRequest(String requestName, long duration, long cpuTime, boolean systemError,
             String systemErrorStackTrace, int responseSize) {
-        // la méthode addRequest n'est pas synchronisée pour ne pas avoir
-        // de synchronisation globale à l'application sur cette instance d'objet
-        // ce qui pourrait faire une contention et des ralentissements,
-        // par contre la map requests est synchronisée pour les modifications
-        // concurrentes
-
         assert requestName != null;
         assert duration >= 0;
         assert cpuTime >= -1; // -1 pour requêtes sql
@@ -941,48 +931,6 @@ public class Counter implements Cloneable, Serializable { // NOPMD
             clone.errors.addAll(getErrors());
         }
         return clone;
-    }
-
-    /**
-     * Enregistre le counter.
-     *
-     * @throws java.io.IOException e
-     */
-    public void writeToFile() throws IOException {
-        // on clone le counter avant de le sérialiser pour ne pas avoir de
-        // problèmes de concurrences d'accès
-        final Counter counter = this.clone();
-        // on n'écrit pas rootCurrentContextsByThreadId en fichier
-        // puisque ces données ne seront plus vraies dans quelques secondes
-        // (clear pour être sûr ici)
-        counter.rootCurrentContextsByThreadId.clear();
-        estimatedMemorySize = new CounterStorage(counter).writeToFile();
-    }
-
-    /**
-     * Lecture du counter depuis son fichier.
-     *
-     * @throws java.io.IOException e
-     */
-    public void readFromFile() throws IOException {
-        final Counter counter = new CounterStorage(this).readFromFile();
-        if (counter != null) {
-            final Counter newCounter = clone();
-            startDate = counter.getStartDate();
-            requests.clear();
-            for (final CounterRequest request : counter.getRequests()) {
-                requests.put(request.getName(), request);
-            }
-            if (errors != null) {
-                errors.clear();
-                errors.addAll(counter.getErrors());
-            }
-            // on ajoute les nouvelles requêtes enregistrées avant de lire le
-            // fichier
-            // (par ex. les premières requêtes collectées par le serveur de
-            // collecte lors de l'initialisation)
-            addRequestsAndErrors(newCounter);
-        }
     }
 
     /**

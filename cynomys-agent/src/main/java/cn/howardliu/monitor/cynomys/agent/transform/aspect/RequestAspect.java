@@ -3,12 +3,12 @@ package cn.howardliu.monitor.cynomys.agent.transform.aspect;
 import cn.howardliu.monitor.cynomys.agent.counter.SLACounter;
 import cn.howardliu.monitor.cynomys.agent.handler.factory.SLACountManager;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.RequestWrapper;
+import cn.howardliu.monitor.cynomys.common.ThreadMXBeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.lang.management.ManagementFactory;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +35,7 @@ public class RequestAspect {
         assert request != null;
         assert response != null;
         long startTime = System.currentTimeMillis();
-        long startThreadCupTime = ManagementFactory.getThreadMXBean().getThreadCpuTime(tid);
+        long startThreadCupTime = ThreadMXBeanUtils.getThreadCpuTime(tid);
         response.setHeader(HEADER_SERVER_TAG, THIS_TAG);
         RequestDataWrapper wrapper = new RequestDataWrapper();
         wrapper.setTid(tid);
@@ -104,8 +104,7 @@ public class RequestAspect {
             SLACountManager.instance().getSumErrDealRequestCounts().incrementAndGet();
             SLACountManager.instance().setSumErrDealRequestTime(new AtomicLong(sumDealTime));
 
-            RequestWrapper.SINGLETON.doError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, startThreadCupTime,
-                    startTime);
+            RequestWrapper.SINGLETON.doError(response.getStatus(), startThreadCupTime, startTime);
         }
         if (logger.isDebugEnabled()) {
             logger.debug("the request counter is : " + SLACounter.instance());

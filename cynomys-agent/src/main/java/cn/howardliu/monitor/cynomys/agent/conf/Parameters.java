@@ -40,7 +40,6 @@ public final class Parameters {
     public static final String PARAMETER_SYSTEM_PREFIX = "wfj-netty-monitor.";
     public static final File TEMPORARY_DIRECTORY = new File(System.getProperty("java.io.tmpdir"));
     public static final String JAVA_VERSION = System.getProperty("java.version");
-    public static final String WFJ_NETTY_MONITOR_VERSION = getMonitorVersion();
 
     private static final int DEFAULT_RESOLUTION_SECONDS = 60;
     private static final String DEFAULT_DIRECTORY = "wfj-netty-monitor";

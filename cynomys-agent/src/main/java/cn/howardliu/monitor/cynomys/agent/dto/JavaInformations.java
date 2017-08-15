@@ -25,6 +25,7 @@ import cn.howardliu.gear.monitor.core.os.OsStats;
 import cn.howardliu.gear.monitor.core.process.ProcessStats;
 import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
+import cn.howardliu.monitor.cynomys.common.ThreadMXBeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -269,56 +270,21 @@ public class JavaInformations implements Serializable {
         final ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
         final Map<Thread, StackTraceElement[]> stackTraces = Thread.getAllStackTraces();
         final List<Thread> threads = new ArrayList<>(stackTraces.keySet());
-
-        // 如果 "1.6.0_01".compareTo(Parameters.JAVA_VERSION) > 0;
-        // 我们恢复线程的堆栈跟踪没有绕过漏洞6434648
-        //1.6.0_01之前
-        // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6434648
-        //除了当前线程不同而得到它的堆栈跟踪
-        //如果没有错误
-        // threads = getThreadsFromThreadGroups();
-        // final Thread currentThread = Thread.currentThread();
-        // stackTraces = Collections.singletonMap(currentThread,
-        // currentThread.getStackTrace());
-
-        final boolean cpuTimeEnabled = threadBean.isThreadCpuTimeSupported() && threadBean.isThreadCpuTimeEnabled();
         final long[] deadlockedThreads = getDeadlockedThreads(threadBean);
         final List<ThreadInformations> threadInfosList = new ArrayList<>(threads.size());
-        // 检索这里，因为可能有超过20,000的线程
         final String hostAddress = Parameters.getHostAddress();
         for (final Thread thread : threads) {
             final StackTraceElement[] stackTraceElements = stackTraces.get(thread);
             final List<StackTraceElement> stackTraceElementList = stackTraceElements == null ? null : new ArrayList<>(
                     Arrays.asList(stackTraceElements));
-            final long cpuTimeMillis;
-            final long userTimeMillis;
-            if (cpuTimeEnabled) {
-                cpuTimeMillis = threadBean.getThreadCpuTime(thread.getId()) / 1000000;
-                userTimeMillis = threadBean.getThreadUserTime(thread.getId()) / 1000000;
-            } else {
-                cpuTimeMillis = -1;
-                userTimeMillis = -1;
-            }
-            final boolean deadlocked = deadlockedThreads != null && Arrays
-                    .binarySearch(deadlockedThreads, thread.getId()) >= 0;
-            // stackTraceElementList ArrayList是不能修改的列表
-            //对于可读性XML
+            final long cpuTimeMillis = ThreadMXBeanUtils.getThreadCpuTime(thread.getId()) / 1000000;
+            final long userTimeMillis = ThreadMXBeanUtils.getThreadUserTime(thread.getId()) / 1000000;
+            final boolean deadlocked = deadlockedThreads != null
+                    && Arrays.binarySearch(deadlockedThreads, thread.getId()) >= 0;
             threadInfosList.add(new ThreadInformations(thread, stackTraceElementList, cpuTimeMillis, userTimeMillis,
                     deadlocked, hostAddress));
         }
-        // 我们回到ArrayList和不修改的列表为XML可读性
-        //通过XStream的
         return threadInfosList;
-    }
-
-    private static List<Thread> getThreadsFromThreadGroups() {
-        ThreadGroup group = Thread.currentThread().getThreadGroup(); // NOPMD
-        while (group.getParent() != null) {
-            group = group.getParent();
-        }
-        final Thread[] threadsArray = new Thread[group.activeCount()];
-        group.enumerate(threadsArray, true);
-        return Arrays.asList(threadsArray);
     }
 
     private static long[] getDeadlockedThreads(ThreadMXBean threadBean) {
@@ -634,8 +600,7 @@ public class JavaInformations implements Serializable {
         // 系统信息
         memoryInformations = new MemoryInformations(jvmStats, osStats, processStats);
 
-        // TODO tomcat info
-//        tomcatInformationsList = TomcatInformations.buildTomcatInformationsList();
+        tomcatInformationsList = TomcatInformations.buildTomcatInformationsList();
 
         double[] loadAverages = osStats.getCpu().getLoadAverages();
         if (loadAverages == null || loadAverages.length == 0) {

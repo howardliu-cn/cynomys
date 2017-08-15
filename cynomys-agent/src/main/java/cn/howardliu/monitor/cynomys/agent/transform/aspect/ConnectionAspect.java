@@ -21,15 +21,13 @@ import static cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper.*;
  * @since 0.0.1
  */
 public class ConnectionAspect {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final Set<String> hashCodeSet = Collections.synchronizedSet(new HashSet<String>());
 
     public static void constructorEnd(Connection connection) {
         assert connection != null;
         synchronized (USED_CONNECTION_INFORMATIONS) {
-            int uniqueIdOfConnection = ConnectionInformations.getUniqueIdOfConnection(connection);
-            if (USED_CONNECTION_INFORMATIONS.containsKey(
-                    uniqueIdOfConnection)) {
+            int uniqueIdOfConnection = System.identityHashCode(connection);
+            if (USED_CONNECTION_INFORMATIONS.containsKey(uniqueIdOfConnection)) {
                 return;
             }
 

@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @Author Jack
  * @Create In 2015年9月6日
  */
+// TODO replace this class
 public class SLACountManager {
 
     private static SLACountManager slam = null;
