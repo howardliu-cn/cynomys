@@ -20,6 +20,13 @@ public class SLACounter {
     private static final Map<String, AtomicLong> responseMap = new HashMap<>(6, 1);
 
     static {
+        responseMap.put("1xx", new AtomicLong());
+        responseMap.put("2xx", new AtomicLong());
+        responseMap.put("3xx", new AtomicLong());
+        responseMap.put("4xx", new AtomicLong());
+        responseMap.put("5xx", new AtomicLong());
+        responseMap.put("xxx", new AtomicLong());
+
         init();
     }
 
@@ -30,29 +37,32 @@ public class SLACounter {
     private AtomicLong sumErrDealRequestTime = new AtomicLong();
     private AtomicLong sumDealRequestTime = new AtomicLong();
     private AtomicLong peerDealRequestTime = new AtomicLong();
-    private AtomicBoolean isDebug = new AtomicBoolean();
+    private AtomicBoolean isDebug = new AtomicBoolean(IS_DEBUG);
     private Date peerDate;
 
     private SLACounter() {
     }
 
     public static void init() {
-        _COUNTER.setDebug(IS_DEBUG);
         _COUNTER.setSumInboundRequestCounts(0);
         _COUNTER.setSumOutboundRequestCounts(0);
         _COUNTER.setSumDealRequestCounts(0);
         _COUNTER.setSumErrDealRequestCounts(0);
         _COUNTER.setSumErrDealRequestTime(0);
         _COUNTER.setSumDealRequestTime(0);
-        SLACounter.setPeerDealRequestTime(0);
         _COUNTER.setPeerDate(new Date());
+        setPeerDealRequestTime(0);
 
-        responseMap.put("1xx", new AtomicLong());
-        responseMap.put("2xx", new AtomicLong());
-        responseMap.put("3xx", new AtomicLong());
-        responseMap.put("4xx", new AtomicLong());
-        responseMap.put("5xx", new AtomicLong());
-        responseMap.put("xxx", new AtomicLong());
+        resetResponseMap();
+    }
+
+    private static void resetResponseMap() {
+        responseMap.get("1xx").set(0);
+        responseMap.get("2xx").set(0);
+        responseMap.get("3xx").set(0);
+        responseMap.get("4xx").set(0);
+        responseMap.get("5xx").set(0);
+        responseMap.get("xxx").set(0);
     }
 
     public static SLACounter instance() {
