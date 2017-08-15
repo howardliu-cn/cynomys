@@ -4,8 +4,6 @@ import cn.howardliu.monitor.cynomys.agent.conf.Constant;
 import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
 import cn.howardliu.monitor.cynomys.agent.dto.JavaInformations;
 import cn.howardliu.monitor.cynomys.agent.handler.MonitorChecker;
-import cn.howardliu.monitor.cynomys.agent.handler.factory.SLACountManager;
-import cn.howardliu.monitor.cynomys.agent.handler.wrapper.RequestWrapper;
 
 import static cn.howardliu.monitor.cynomys.agent.common.Constant.*;
 
@@ -47,7 +45,7 @@ public class MonitorStarter {
 
             SERVER_PORT = port;
 
-            SLACountManager.init();
+            SLACounter.init();
 
             // TODO read config server
             new MonitorChecker(port, SERVLET_CONTEXT).startHealth("Active");

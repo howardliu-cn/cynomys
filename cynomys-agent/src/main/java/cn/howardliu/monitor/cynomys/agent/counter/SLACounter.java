@@ -1,9 +1,9 @@
 package cn.howardliu.monitor.cynomys.agent.counter;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static cn.howardliu.monitor.cynomys.agent.common.Constant.IS_DEBUG;
@@ -17,26 +17,21 @@ import static cn.howardliu.monitor.cynomys.agent.common.Constant.IS_DEBUG;
  */
 public class SLACounter {
     private static final SLACounter _COUNTER = new SLACounter();
-    private volatile long sumInboundRequestCounts;
-    private volatile long sumOutboundRequestCounts;
-    private volatile long sumDealRequestCounts;
-    private volatile long sumErrDealRequestCounts;
-    private volatile long sumErrDealRequestTime;
-    private volatile long sumDealRequestTime;
-    private volatile long peerDealRequestTime;
-    private volatile boolean isDebug;
-    private Date peerDate;
-    private static final Map<String, AtomicLong> responseMap = Collections
-            .synchronizedMap(new HashMap<String, AtomicLong>(6, 1));
+    private static final Map<String, AtomicLong> responseMap = new HashMap<>(6, 1);
 
     static {
-        responseMap.put("1xx", new AtomicLong());
-        responseMap.put("2xx", new AtomicLong());
-        responseMap.put("3xx", new AtomicLong());
-        responseMap.put("4xx", new AtomicLong());
-        responseMap.put("5xx", new AtomicLong());
-        responseMap.put("xxx", new AtomicLong());
+        init();
     }
+
+    private AtomicLong sumInboundRequestCounts = new AtomicLong();
+    private AtomicLong sumOutboundRequestCounts = new AtomicLong();
+    private AtomicLong sumDealRequestCounts = new AtomicLong();
+    private AtomicLong sumErrDealRequestCounts = new AtomicLong();
+    private AtomicLong sumErrDealRequestTime = new AtomicLong();
+    private AtomicLong sumDealRequestTime = new AtomicLong();
+    private AtomicLong peerDealRequestTime = new AtomicLong();
+    private AtomicBoolean isDebug = new AtomicBoolean();
+    private Date peerDate;
 
     private SLACounter() {
     }
@@ -51,6 +46,13 @@ public class SLACounter {
         _COUNTER.setSumDealRequestTime(0);
         SLACounter.setPeerDealRequestTime(0);
         _COUNTER.setPeerDate(new Date());
+
+        responseMap.put("1xx", new AtomicLong());
+        responseMap.put("2xx", new AtomicLong());
+        responseMap.put("3xx", new AtomicLong());
+        responseMap.put("4xx", new AtomicLong());
+        responseMap.put("5xx", new AtomicLong());
+        responseMap.put("xxx", new AtomicLong());
     }
 
     public static SLACounter instance() {
@@ -58,33 +60,27 @@ public class SLACounter {
     }
 
     public static void addSumInboundRequestCounts() {
-        _COUNTER.sumInboundRequestCounts++;
+        _COUNTER.sumInboundRequestCounts.incrementAndGet();
     }
 
     public static void addSumDealRequestCounts() {
-        _COUNTER.sumDealRequestCounts++;
+        _COUNTER.sumDealRequestCounts.incrementAndGet();
     }
 
     public static void addSumDealRequestTime(long dealTime) {
-        assert dealTime >= 0;
-        _COUNTER.sumDealRequestTime += dealTime;
-    }
-
-    public static void setPeerDealRequestTime(long peerDealRequestTime) {
-        _COUNTER.peerDealRequestTime = peerDealRequestTime;
+        _COUNTER.sumDealRequestTime.addAndGet(dealTime);
     }
 
     public static void addSumErrDealRequestTime(long dealTime) {
-        assert dealTime >= 0;
-        _COUNTER.sumErrDealRequestTime += dealTime;
+        _COUNTER.sumErrDealRequestTime.addAndGet(dealTime);
     }
 
     public static void addSumErrDealRequestCounts() {
-        _COUNTER.sumErrDealRequestCounts++;
+        _COUNTER.sumErrDealRequestCounts.incrementAndGet();
     }
 
     public static void addSumOutboundRequestCounts() {
-        _COUNTER.sumOutboundRequestCounts++;
+        _COUNTER.sumOutboundRequestCounts.incrementAndGet();
     }
 
     public static void addHttpStatus(int httpStatus) {
@@ -104,63 +100,67 @@ public class SLACounter {
     }
 
     public long getSumInboundRequestCounts() {
-        return sumInboundRequestCounts;
+        return sumInboundRequestCounts.get();
     }
 
     public void setSumInboundRequestCounts(long sumInboundRequestCounts) {
-        this.sumInboundRequestCounts = sumInboundRequestCounts;
+        this.sumInboundRequestCounts.set(sumInboundRequestCounts);
     }
 
     public long getSumOutboundRequestCounts() {
-        return sumOutboundRequestCounts;
+        return sumOutboundRequestCounts.get();
     }
 
     public void setSumOutboundRequestCounts(long sumOutboundRequestCounts) {
-        this.sumOutboundRequestCounts = sumOutboundRequestCounts;
+        this.sumOutboundRequestCounts.set(sumOutboundRequestCounts);
     }
 
     public long getSumDealRequestCounts() {
-        return sumDealRequestCounts;
+        return sumDealRequestCounts.get();
     }
 
     public void setSumDealRequestCounts(long sumDealRequestCounts) {
-        this.sumDealRequestCounts = sumDealRequestCounts;
+        this.sumDealRequestCounts.set(sumDealRequestCounts);
     }
 
     public long getSumErrDealRequestCounts() {
-        return sumErrDealRequestCounts;
+        return sumErrDealRequestCounts.get();
     }
 
     public void setSumErrDealRequestCounts(long sumErrDealRequestCounts) {
-        this.sumErrDealRequestCounts = sumErrDealRequestCounts;
+        this.sumErrDealRequestCounts.set(sumErrDealRequestCounts);
     }
 
     public long getSumErrDealRequestTime() {
-        return sumErrDealRequestTime;
+        return sumErrDealRequestTime.get();
     }
 
     public void setSumErrDealRequestTime(long sumErrDealRequestTime) {
-        this.sumErrDealRequestTime = sumErrDealRequestTime;
+        this.sumErrDealRequestTime.set(sumErrDealRequestTime);
     }
 
     public long getSumDealRequestTime() {
-        return sumDealRequestTime;
+        return sumDealRequestTime.get();
     }
 
     public void setSumDealRequestTime(long sumDealRequestTime) {
-        this.sumDealRequestTime = sumDealRequestTime;
+        this.sumDealRequestTime.set(sumDealRequestTime);
     }
 
     public long getPeerDealRequestTime() {
-        return peerDealRequestTime;
+        return peerDealRequestTime.get();
+    }
+
+    public static void setPeerDealRequestTime(long peerDealRequestTime) {
+        _COUNTER.peerDealRequestTime.set(peerDealRequestTime);
     }
 
     public boolean isDebug() {
-        return isDebug;
+        return isDebug.get();
     }
 
     public void setDebug(boolean isDebug) {
-        this.isDebug = isDebug;
+        this.isDebug.set(isDebug);
     }
 
     public Date getPeerDate() {

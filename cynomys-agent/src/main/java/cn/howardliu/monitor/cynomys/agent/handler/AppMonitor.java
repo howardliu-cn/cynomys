@@ -5,8 +5,8 @@ import cn.howardliu.gear.monitor.core.os.OsInfo;
 import cn.howardliu.monitor.cynomys.agent.conf.Constant;
 import cn.howardliu.monitor.cynomys.agent.conf.PropertyAdapter;
 import cn.howardliu.monitor.cynomys.agent.conf.SystemPropertyConfig;
+import cn.howardliu.monitor.cynomys.agent.counter.SLACounter;
 import cn.howardliu.monitor.cynomys.agent.dto.*;
-import cn.howardliu.monitor.cynomys.agent.handler.factory.SLACountManager;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.RequestWrapper;
 import com.alibaba.fastjson.JSON;
@@ -21,9 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static cn.howardliu.monitor.cynomys.agent.conf.EnvPropertyConfig.getContextProperty;
-import static cn.howardliu.monitor.cynomys.common.Constant.SYS_CODE;
-import static cn.howardliu.monitor.cynomys.common.Constant.SYS_DESC;
-import static cn.howardliu.monitor.cynomys.common.Constant.SYS_NAME;
+import static cn.howardliu.monitor.cynomys.common.Constant.*;
 
 /**
  * @author Jack
@@ -197,13 +195,13 @@ public class AppMonitor {
             appInfo.setSysInfo(sysInfo);
             appInfo.setUpdateTime(fmt.format(new Date()));
 
-            appInfo.setPeerDealReqTime(SLACountManager.instance().getPeerDealRequestTime().longValue());
-            appInfo.setSumInboundReqCounts(SLACountManager.instance().getSumInboundRequestCounts().longValue());
-            appInfo.setSumOutboundReqCounts(SLACountManager.instance().getSumOutboundRequestCounts().longValue());
-            appInfo.setSumDealReqCounts(SLACountManager.instance().getSumDealRequestCounts().longValue());
-            appInfo.setSumDealReqTime(SLACountManager.instance().getSumDealRequestTime().longValue());
-            appInfo.setSumErrDealReqCounts(SLACountManager.instance().getSumErrDealRequestCounts().longValue());
-            appInfo.setSumErrDealReqTime(SLACountManager.instance().getSumErrDealRequestTime().longValue());
+            appInfo.setPeerDealReqTime(SLACounter.instance().getPeerDealRequestTime());
+            appInfo.setSumInboundReqCounts(SLACounter.instance().getSumInboundRequestCounts());
+            appInfo.setSumOutboundReqCounts(SLACounter.instance().getSumOutboundRequestCounts());
+            appInfo.setSumDealReqCounts(SLACounter.instance().getSumDealRequestCounts());
+            appInfo.setSumDealReqTime(SLACounter.instance().getSumDealRequestTime());
+            appInfo.setSumErrDealReqCounts(SLACounter.instance().getSumErrDealRequestCounts());
+            appInfo.setSumErrDealReqTime(SLACounter.instance().getSumErrDealRequestTime());
 
             // 4.更新服务器名称及版本
             String svrInfo[] = this.sc.getServerInfo().split(Constant.SYSTEM_SEETING_SERVER_DEFALUT_NAME_VERSION_SPLIT);
@@ -298,13 +296,13 @@ public class AppMonitor {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
         try {
             Date cdS = new Date(System.currentTimeMillis());
-            Date pdD = SLACountManager.instance().getPeerDate();
+            Date pdD = SLACounter.instance().getPeerDate();
 
             Date currentDate = df.parse(df.format(cdS));
             Date startupDate = df.parse(df.format(pdD));
 
             if (currentDate.compareTo(startupDate) > 0) {
-                SLACountManager.init();
+                SLACounter.init();
             }
         } catch (ParseException e) {
             log.error("cannot refresh timer", e);

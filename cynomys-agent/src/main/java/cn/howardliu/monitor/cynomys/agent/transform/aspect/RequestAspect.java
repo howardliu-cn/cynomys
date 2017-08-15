@@ -1,7 +1,6 @@
 package cn.howardliu.monitor.cynomys.agent.transform.aspect;
 
 import cn.howardliu.monitor.cynomys.agent.counter.SLACounter;
-import cn.howardliu.monitor.cynomys.agent.handler.factory.SLACountManager;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.RequestWrapper;
 import cn.howardliu.monitor.cynomys.common.ThreadMXBeanUtils;
 import org.slf4j.Logger;
@@ -12,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static cn.howardliu.monitor.cynomys.common.Constant.HEADER_SERVER_TAG;
 import static cn.howardliu.monitor.cynomys.common.Constant.THIS_TAG;
@@ -27,9 +25,9 @@ import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
  * @since 0.0.1
  */
 public class RequestAspect {
-    private static Logger logger = LoggerFactory.getLogger(RequestAspect.class);
     private static final Map<Long, RequestDataWrapper> REQUEST_COUNTER_MAP =
             Collections.synchronizedMap(new HashMap<Long, RequestDataWrapper>());
+    private static Logger logger = LoggerFactory.getLogger(RequestAspect.class);
 
     public static void begin(long tid, HttpServletRequest request, HttpServletResponse response) {
         assert request != null;
@@ -45,9 +43,6 @@ public class RequestAspect {
         wrapper.setStartThreadCupTime(startThreadCupTime);
         REQUEST_COUNTER_MAP.put(tid, wrapper);
         SLACounter.addSumInboundRequestCounts();
-
-        // counter
-        SLACountManager.instance().getSumInboundRequestCounts().incrementAndGet();
     }
 
     public static void catchBlock(long tid, HttpServletRequest request, HttpServletResponse response,
@@ -76,34 +71,15 @@ public class RequestAspect {
                 SLACounter.addSumDealRequestCounts();
                 SLACounter.setPeerDealRequestTime(duration);
                 SLACounter.addSumDealRequestTime(duration);
-
-                // counter
-                SLACountManager.instance().getSumDealRequestCounts().incrementAndGet();
-                SLACountManager.instance().setPeerDealRequestTime(new AtomicLong(duration));
-                long sumDealTime = SLACountManager.instance().getSumDealRequestTime().get() + duration;
-                SLACountManager.instance().setSumDealRequestTime(new AtomicLong(sumDealTime));
             } else {
                 SLACounter.addSumErrDealRequestCounts();
                 SLACounter.addSumErrDealRequestTime(duration);
-
-                // counter
-                long sumDealTime = SLACountManager.instance().getSumErrDealRequestTime().get() + duration;
-                SLACountManager.instance().getSumErrDealRequestCounts().incrementAndGet();
-                SLACountManager.instance().setSumErrDealRequestTime(new AtomicLong(sumDealTime));
             }
             SLACounter.addSumOutboundRequestCounts();
-
-            // counter
-            SLACountManager.instance().getSumOutboundRequestCounts().incrementAndGet();
             RequestWrapper.SINGLETON.doExecute(request, response, startThreadCupTime, startTime);
         } else {
             SLACounter.addSumErrDealRequestCounts();
             SLACounter.addSumErrDealRequestTime(duration);
-
-            long sumDealTime = SLACountManager.instance().getSumErrDealRequestTime().get() + duration;
-            SLACountManager.instance().getSumErrDealRequestCounts().incrementAndGet();
-            SLACountManager.instance().setSumErrDealRequestTime(new AtomicLong(sumDealTime));
-
             RequestWrapper.SINGLETON.doError(response.getStatus(), startThreadCupTime, startTime);
         }
         if (logger.isDebugEnabled()) {
