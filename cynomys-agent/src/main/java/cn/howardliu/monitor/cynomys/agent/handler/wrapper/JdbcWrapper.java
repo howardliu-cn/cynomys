@@ -22,7 +22,6 @@ import cn.howardliu.monitor.cynomys.agent.dto.ConnectionInformations;
 import cn.howardliu.monitor.cynomys.agent.dto.Counter;
 
 import javax.naming.NamingException;
-import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
@@ -123,6 +122,14 @@ public final class JdbcWrapper {
 
     public boolean isConnectionInformationsEnabled() {
         return connectionInformationsEnabled;
+    }
+
+    @SuppressWarnings("unused")
+    public void fillDataSourceInfo(DataSource dataSource) {
+        assert dataSource != null;
+        JdbcWrapperHelper
+                .pullDataSourceProperties(dataSource.getClass().getName() + "@" + System.identityHashCode(dataSource),
+                        dataSource);
     }
 
     private static class DelegatingInvocationHandler implements InvocationHandler, Serializable {

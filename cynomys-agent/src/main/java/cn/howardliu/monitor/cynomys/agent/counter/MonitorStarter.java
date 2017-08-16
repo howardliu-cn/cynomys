@@ -4,7 +4,10 @@ import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
 import cn.howardliu.monitor.cynomys.agent.dto.JavaInformations;
 import cn.howardliu.monitor.cynomys.agent.handler.MonitorChecker;
 
-import static cn.howardliu.monitor.cynomys.agent.common.Constant.*;
+import static cn.howardliu.monitor.cynomys.agent.common.Constant.SERVLET_CONTEXT;
+import static cn.howardliu.monitor.cynomys.agent.common.Constant.started;
+import static cn.howardliu.monitor.cynomys.common.Constant.IS_DEBUG;
+import static cn.howardliu.monitor.cynomys.common.Constant.SERVER_PORT;
 
 /**
  * <br>created at 17-4-12

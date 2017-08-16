@@ -1,11 +1,13 @@
 package cn.howardliu.monitor.cynomys.agent.conf;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.MessageFormat;
 import java.util.Properties;
 
 /**
@@ -30,57 +32,47 @@ public class PropertyAdapter {
         }
     }
 
-    /**
-     * 返回指定属性的值
-     *
-     * @param name 属性的Key
-     * @return 值
-     * @Methods Name getContextProperty
-     * @Create In 2015年8月25日 By Jack
-     */
+    protected boolean addFile(String filePath) {
+        System.err.println("filePath: " + filePath);
+        if (filePath == null || StringUtils.isBlank(filePath)) {
+            return false;
+        }
+        try {
+            File file = new File(filePath);
+            if (!file.exists() || file.isDirectory() || !file.isFile() || !file.canRead()) {
+                throw new IllegalArgumentException("Config file cannot read!");
+            }
+            Properties properties = new Properties();
+            properties.load(new FileInputStream(file));
+            pc.putAll(properties);
+            return true;
+        } catch (Exception e) {
+            logger.error("Load config file [{}] exception, please check again! Details: {}", filePath, e.getMessage());
+        }
+        return false;
+    }
+
+    protected void addAll(Properties properties) {
+        if (properties == null) {
+            return;
+        }
+        pc.putAll(properties);
+    }
+
     public String getContextProperty(String name) {
         return pc.getProperty(name);
     }
 
-    /**
-     * 返回指定属性的值
-     *
-     * @param name         属性的Key
-     * @param defaultValue 如果没找到的默认值
-     * @return 值，如没有返回defultValue
-     * @Methods Name getContextProperty
-     * @Create In 2015年8月25日 By Jack
-     */
     public String getContextProperty(String name, String defaultValue) {
         return pc.getProperty(name, defaultValue);
     }
 
-    public Boolean getBoolean(String name, Boolean defaultValue) {
-        return pc.contains(name) ? Boolean.valueOf(getContextProperty(name)) : defaultValue;
-    }
-
-    /**
-     * 设置属性值
-     *
-     * @param name  属性的Key
-     * @param value 属性的值
-     * @Methods Name setContextProperty
-     * @Create In 2015年8月25日 By Jack
-     */
     public void setContextProperty(String name, String value) {
         pc.setProperty(name, value);
     }
 
-    /**
-     * 格式化字符串
-     *
-     * @param source  待替换字符串 ｛0｝起
-     * @param targets 需要替换的内容
-     * @return String
-     * @Methods Name formatter
-     * @Create In 2015年8月25日 By Jack
-     */
-    public static String formatter(String source, Object[] targets) {
-        return MessageFormat.format(source, targets);
+    @Override
+    public String toString() {
+        return pc.toString();
     }
 }

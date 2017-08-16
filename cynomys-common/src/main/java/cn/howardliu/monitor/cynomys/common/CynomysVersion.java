@@ -9,6 +9,7 @@ package cn.howardliu.monitor.cynomys.common;
  */
 public class CynomysVersion {
     public static final int CURRENT_VERSION = Version.V0_0_1_SNAPSHOT.ordinal();
+    public static final int CURRENT_VERSION_CODE = Version.V0_0_1_SNAPSHOT.code;
 
     public static String getVersionDesc(int value) {
         try {
@@ -20,6 +21,12 @@ public class CynomysVersion {
     }
 
     public enum Version {
-        V0_0_1_SNAPSHOT
+        V0_0_1_SNAPSHOT(0x0000_0_0_1);
+
+        int code;
+
+        Version(int code) {
+            this.code = code;
+        }
     }
 }

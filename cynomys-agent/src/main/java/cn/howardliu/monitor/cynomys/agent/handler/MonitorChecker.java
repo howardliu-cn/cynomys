@@ -1,6 +1,5 @@
 package cn.howardliu.monitor.cynomys.agent.handler;
 
-import cn.howardliu.monitor.cynomys.agent.conf.PropertyAdapter;
 import cn.howardliu.monitor.cynomys.client.ClientConfig;
 import cn.howardliu.monitor.cynomys.client.CynomysClient;
 import cn.howardliu.monitor.cynomys.client.CynomysClientManager;
@@ -19,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.ServletContext;
 import java.io.Closeable;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
 
 import static cn.howardliu.monitor.cynomys.common.Constant.*;
@@ -253,7 +253,7 @@ public class MonitorChecker implements Health, Closeable {
             // 更新自身节点状态
             Object[] tagArgs = {status};
             String rootDesc = SYS_DESC;
-            rootDesc = PropertyAdapter.formatter(rootDesc, tagArgs);
+            rootDesc = MessageFormat.format(rootDesc, tagArgs);
             System.err.println(rootDesc);
             // TODO check this function
         } catch (Exception e) {

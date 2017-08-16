@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static cn.howardliu.monitor.cynomys.agent.common.Constant.IS_DEBUG;
+import static cn.howardliu.monitor.cynomys.common.Constant.IS_DEBUG;
 
 /**
  * <br>created at 17-4-11

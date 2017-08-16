@@ -37,8 +37,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static cn.howardliu.monitor.cynomys.net.struct.MessageCode.*;
-
 /**
  * <br>created at 17-8-9
  *
@@ -255,16 +253,18 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
     public Message sync(final Message request, final long timeoutMillis)
             throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException {
         final Channel channel = this.getAndCreateUseAddressChoosen();
+        String remoteAddress = NetHelper.remoteAddress(channel);
+        if (remoteAddress.isEmpty()) {
+            remoteAddress = addressChoosen.get();
+        }
         if (channel != null && channel.isActive()) {
             try {
                 return this.invokeSync(channel, request, timeoutMillis);
             } catch (NetSendRequestException e) {
-                logger.warn("sync: send request exception, so close the channel[{}]",
-                        NetHelper.remoteAddress(channel));
+                logger.warn("sync: send request exception, so close the channel[{}]", remoteAddress);
                 this.closeChannel(channel);
                 throw e;
             } catch (NetTimeoutException e) {
-                String remoteAddress = NetHelper.remoteAddress(channel);
                 if (this.nettyClientConfig.isClientCloseSocketIfTimeout()) {
                     this.closeChannel(channel);
                     logger.warn("sync: close socket because of timeout, {}ms, {}", timeoutMillis, remoteAddress);
@@ -274,7 +274,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             }
         } else {
             closeChannel(channel);
-            throw new NetConnectException(NetHelper.remoteAddress(channel));
+            throw new NetConnectException(remoteAddress);
         }
     }
 
@@ -290,18 +290,18 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             throws InterruptedException, NetConnectException, NetTooMuchRequestException, NetSendRequestException,
             NetTimeoutException {
         final Channel channel = this.getAndCreateUseAddressChoosen();
+        String remoteAddress = NetHelper.remoteAddress(channel);
         if (channel != null && channel.isActive()) {
             try {
                 this.invokeAsync(channel, request, timeoutMills, invokeCallBack);
             } catch (NetSendRequestException e) {
-                logger.warn("async: send request exception, so close the channel [{}]",
-                        NetHelper.remoteAddress(channel));
+                logger.warn("async: send request exception, so close the channel [{}]", remoteAddress);
                 this.closeChannel(channel);
                 throw e;
             }
         } else {
             this.closeChannel(channel);
-            throw new NetConnectException(NetHelper.remoteAddress(channel));
+            throw new NetConnectException(remoteAddress);
         }
     }
 

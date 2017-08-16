@@ -3,7 +3,6 @@ package cn.howardliu.monitor.cynomys.agent.handler;
 import cn.howardliu.gear.monitor.core.os.NetworkInterfaceInfo;
 import cn.howardliu.gear.monitor.core.os.OsInfo;
 import cn.howardliu.monitor.cynomys.agent.conf.Constant;
-import cn.howardliu.monitor.cynomys.agent.conf.PropertyAdapter;
 import cn.howardliu.monitor.cynomys.agent.conf.SystemPropertyConfig;
 import cn.howardliu.monitor.cynomys.agent.counter.SLACounter;
 import cn.howardliu.monitor.cynomys.agent.dto.*;
@@ -16,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -83,7 +83,7 @@ public class AppMonitor {
         if (!isMonitorRootExist) {
             Object[] tagArgs = {"Active"};
             String rootDesc = SYS_DESC;
-            rootDesc = PropertyAdapter.formatter(rootDesc, tagArgs);
+            rootDesc = MessageFormat.format(rootDesc, tagArgs);
             // TODO 发送初始化状态
             System.out.println(rootDesc);
         }
@@ -102,7 +102,7 @@ public class AppMonitor {
         // 3. 创建本次实例的临时节点，利用临时节点特性，完成系统监控
         Object[] tagArgs = {status};
         String rootDesc = SYS_DESC;
-        rootDesc = PropertyAdapter.formatter(rootDesc, tagArgs);
+        rootDesc = MessageFormat.format(rootDesc, tagArgs);
         // TODO write data
         System.out.println(rootDesc);
         return "";
@@ -124,7 +124,7 @@ public class AppMonitor {
             // 1. 获取目前节点基础信息
             Object[] tagArgs = {"Active"};
             rootDesc = SYS_DESC;
-            rootDesc = PropertyAdapter.formatter(rootDesc, tagArgs);
+            rootDesc = MessageFormat.format(rootDesc, tagArgs);
             appInfo = JSON.parseObject(rootDesc, ApplicationInfo.class);
 
             // 2.开始获取实例基本信息及机器基本信息

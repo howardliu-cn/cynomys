@@ -54,6 +54,7 @@ public final class JdbcWrapperHelper {
         SPRING_DATASOURCES.put(name, dataSource);
     }
 
+    @SuppressWarnings("unused")
     public static void registerCommonDataSource(String name, DataSource dataSource) {
         COMMON_DATASOURCES.put(name, dataSource);
     }
@@ -167,27 +168,25 @@ public final class JdbcWrapperHelper {
         return Collections.emptyMap();
     }
 
-    // CHECKSTYLE:OFF
     public static void pullDataSourceProperties(String name, DataSource dataSource) {
-        // CHECKSTYLE:ON
         final String dataSourceClassName = dataSource.getClass().getName();
-        if ("org.apache.tomcat.dbcp.dbcp.BasicDataSource"
-                .equals(dataSourceClassName) && dataSource instanceof org.apache.tomcat.dbcp.dbcp.BasicDataSource) {
+        if ("org.apache.tomcat.dbcp.dbcp.BasicDataSource".equals(dataSourceClassName)
+                && dataSource instanceof org.apache.tomcat.dbcp.dbcp.BasicDataSource) {
             pullTomcatDbcpDataSourceProperties(name, dataSource);
-        } else if ("org.apache.tomcat.dbcp.dbcp2.BasicDataSource"
-                .equals(dataSourceClassName) && dataSource instanceof org.apache.tomcat.dbcp.dbcp2.BasicDataSource) {
+        } else if ("org.apache.tomcat.dbcp.dbcp2.BasicDataSource".equals(dataSourceClassName)
+                && dataSource instanceof org.apache.tomcat.dbcp.dbcp2.BasicDataSource) {
             pullTomcatDbcp2DataSourceProperties(name, dataSource);
-        } else if ("org.apache.commons.dbcp.BasicDataSource"
-                .equals(dataSourceClassName) && dataSource instanceof org.apache.commons.dbcp.BasicDataSource) {
+        } else if ("org.apache.commons.dbcp.BasicDataSource".equals(dataSourceClassName)
+                && dataSource instanceof org.apache.commons.dbcp.BasicDataSource) {
             pullCommonsDbcpDataSourceProperties(name, dataSource);
-        } else if ("org.apache.commons.dbcp2.BasicDataSource"
-                .equals(dataSourceClassName) && dataSource instanceof org.apache.commons.dbcp2.BasicDataSource) {
+        } else if ("org.apache.commons.dbcp2.BasicDataSource".equals(dataSourceClassName)
+                && dataSource instanceof org.apache.commons.dbcp2.BasicDataSource) {
             pullCommonsDbcp2DataSourceProperties(name, dataSource);
-        } else if ("org.apache.tomcat.jdbc.pool.DataSource"
-                .equals(dataSourceClassName) && dataSource instanceof org.apache.tomcat.jdbc.pool.DataSource) {
+        } else if ("org.apache.tomcat.jdbc.pool.DataSource".equals(dataSourceClassName)
+                && dataSource instanceof org.apache.tomcat.jdbc.pool.DataSource) {
             pullTomcatJdbcDataSourceProperties(name, dataSource);
-        } else if ("com.alibaba.druid.pool.DruidDataSource"
-                .equals(dataSourceClassName) && dataSource instanceof com.alibaba.druid.pool.DruidDataSource) {
+        } else if ("com.alibaba.druid.pool.DruidDataSource".equals(dataSourceClassName)
+                && dataSource instanceof com.alibaba.druid.pool.DruidDataSource) {
             pullAlibabaDataSourceProperties(name, dataSource);
         }
     }
