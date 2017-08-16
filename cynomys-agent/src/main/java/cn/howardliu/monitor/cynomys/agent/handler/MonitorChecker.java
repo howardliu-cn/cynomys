@@ -15,7 +15,6 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletContext;
 import java.io.Closeable;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -41,9 +40,9 @@ public class MonitorChecker implements Health, Closeable {
     private volatile boolean isMonitorStop = false;
     private AppMonitor appMonitor;
 
-    public MonitorChecker(Integer p, ServletContext sc) {
+    public MonitorChecker(Integer p) {
         this.appName = SYS_NAME;
-        appMonitor = AppMonitor.instance(p, sc);
+        appMonitor = AppMonitor.instance(p);
         cynomysClient = CynomysClientManager.INSTANCE
                 .getAndCreateCynomysClient(
                         new ClientConfig(),
@@ -251,7 +250,7 @@ public class MonitorChecker implements Health, Closeable {
     public void updateHealth(String status) {
         try {
             // 更新自身节点状态
-            Object[] tagArgs = {status};
+            Object[] tagArgs = {SYS_NAME, SYS_CODE, status};
             String rootDesc = SYS_DESC;
             rootDesc = MessageFormat.format(rootDesc, tagArgs);
             System.err.println(rootDesc);

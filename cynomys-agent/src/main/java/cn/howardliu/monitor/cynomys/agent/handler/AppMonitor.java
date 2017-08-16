@@ -2,8 +2,6 @@ package cn.howardliu.monitor.cynomys.agent.handler;
 
 import cn.howardliu.gear.monitor.core.os.NetworkInterfaceInfo;
 import cn.howardliu.gear.monitor.core.os.OsInfo;
-import cn.howardliu.monitor.cynomys.agent.conf.Constant;
-import cn.howardliu.monitor.cynomys.agent.conf.SystemPropertyConfig;
 import cn.howardliu.monitor.cynomys.agent.counter.SLACounter;
 import cn.howardliu.monitor.cynomys.agent.dto.*;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
@@ -13,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletContext;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -31,16 +28,13 @@ import static cn.howardliu.monitor.cynomys.common.Constant.*;
 public class AppMonitor {
     private static final String timeFmtPattern = "yyyy-MM-dd HH:mm:ss";
     private static AppMonitor appMonitor = null;
-    private final ServletContext sc;
     private Logger log = LoggerFactory.getLogger(this.getClass());
     private Integer port;
     private JavaInformations javaInfor;
 
-    private AppMonitor(Integer p, ServletContext sc) {
+    private AppMonitor(Integer p) {
         this.port = p;
-        this.sc = sc;
-
-        javaInfor = JavaInformations.instance(sc, true);
+        javaInfor = JavaInformations.instance(true);
     }
 
     /**
@@ -51,11 +45,11 @@ public class AppMonitor {
      * @Methods Name instance
      * @Create In 2015年11月10日 By Jack
      */
-    public static AppMonitor instance(Integer p, ServletContext sc) {
+    public static AppMonitor instance(Integer p) {
         if (appMonitor != null) {
             return appMonitor;
         } else {
-            appMonitor = new AppMonitor(p, sc);
+            appMonitor = new AppMonitor(p);
             return appMonitor;
         }
     }
@@ -81,7 +75,7 @@ public class AppMonitor {
         // TODO 确认ProxyServer是否连通
         boolean isMonitorRootExist = false;
         if (!isMonitorRootExist) {
-            Object[] tagArgs = {"Active"};
+            Object[] tagArgs = {SYS_NAME, SYS_CODE, "Active"};
             String rootDesc = SYS_DESC;
             rootDesc = MessageFormat.format(rootDesc, tagArgs);
             // TODO 发送初始化状态
@@ -94,13 +88,8 @@ public class AppMonitor {
         // TODO check this function
         System.out.println(systemDesc);
 
-        // TODO 获取实例数量，并给出标号
-        int instanceID = 0;
-        SystemPropertyConfig.setContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_INSTANCE_KEY,
-                SYS_NAME + "-i" + String.valueOf(++instanceID));
-
         // 3. 创建本次实例的临时节点，利用临时节点特性，完成系统监控
-        Object[] tagArgs = {status};
+        Object[] tagArgs = {SYS_NAME, SYS_CODE, status};
         String rootDesc = SYS_DESC;
         rootDesc = MessageFormat.format(rootDesc, tagArgs);
         // TODO write data
@@ -119,13 +108,16 @@ public class AppMonitor {
             SystemInfo sysInfo = new SystemInfo();
             // 0. 判断是否当天计数，如已不是当天，重置计数器，但每个实例目前存在一个5分钟的计数延迟待处理
             compareDate();
-            javaInfor.rebuildJavaInfo(sc, true);
+            javaInfor.rebuildJavaInfo(true);
 
             // 1. 获取目前节点基础信息
-            Object[] tagArgs = {"Active"};
+            Object[] tagArgs = {SYS_NAME, SYS_CODE, "Active"};
             rootDesc = SYS_DESC;
             rootDesc = MessageFormat.format(rootDesc, tagArgs);
             appInfo = JSON.parseObject(rootDesc, ApplicationInfo.class);
+            if (appInfo.getDesc() == null) {
+                appInfo.setDesc(SYS_NAME);
+            }
 
             // 2.开始获取实例基本信息及机器基本信息
             // =======================通过java来获取相关系统状态============================
@@ -197,9 +189,14 @@ public class AppMonitor {
             appInfo.setSumErrDealReqTime(SLACounter.instance().getSumErrDealRequestTime());
 
             // 4.更新服务器名称及版本
-            String svrInfo[] = this.sc.getServerInfo().split("/");
-            appInfo.setServerName(svrInfo[0]);
-            appInfo.setServerVersion(svrInfo.length > 1 ? svrInfo[1] : "unknown");
+            if (SERVLET_CONTEXT == null) {
+                appInfo.setServerName("unknown");
+                appInfo.setServerVersion("unknown");
+            } else {
+                String svrInfo[] = SERVLET_CONTEXT.getServerInfo().split("/");
+                appInfo.setServerName(svrInfo[0]);
+                appInfo.setServerVersion(svrInfo.length > 1 ? svrInfo[1] : "unknown");
+            }
 
             appInfo.setTransactionCount(javaInfor.getTransactionCount());
             appInfo.setPid(javaInfor.getPID());
@@ -209,9 +206,6 @@ public class AppMonitor {
             appInfo.setStartupDate(fmt.format(javaInfor.getStartDate()));
             appInfo.setUnixMaxFileDescriptorCount(javaInfor.getUnixMaxFileDescriptorCount());
             appInfo.setUnixOpenFileDescriptorCount(javaInfor.getUnixOpenFileDescriptorCount());
-
-            appInfo.setDesc(
-                    SystemPropertyConfig.getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_INSTANCE_KEY));
 
             // 更新自身节点状态
             return JSON.toJSONString(appInfo);

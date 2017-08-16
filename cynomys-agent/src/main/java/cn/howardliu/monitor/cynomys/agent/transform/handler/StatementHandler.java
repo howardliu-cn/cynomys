@@ -20,7 +20,7 @@ public class StatementHandler extends SqlHandler {
     @Override
     public void doWeave(CtClass ctClass) {
         if (isStatement(ctClass)) {
-            System.err.println("begin to wrap Statement");
+            logger.info("begin to wrap Statement");
             // TODO weave Statement's method
 //        execute
 //        executeQuery

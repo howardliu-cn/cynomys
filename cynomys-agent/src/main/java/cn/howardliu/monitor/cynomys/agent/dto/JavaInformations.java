@@ -43,6 +43,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static cn.howardliu.gear.monitor.core.Constants.*;
+import static cn.howardliu.monitor.cynomys.common.Constant.SERVLET_CONTEXT;
 import static org.apache.commons.lang3.SystemUtils.*;
 import static org.apache.commons.lang3.SystemUtils.OS_ARCH;
 import static org.apache.commons.lang3.SystemUtils.OS_NAME;
@@ -69,13 +70,13 @@ public class JavaInformations implements Serializable {
     private static final int FAULTLENGTH = 10;
     private static final long serialVersionUID = 3281861236369720876L;
     private static final boolean SYSTEM_CPU_LOAD_ENABLED = "1.7".compareTo(SystemUtils.JAVA_VERSION) < 0;
-    private static boolean localWebXmlExists = true; // true par défaut
-    private static boolean localPomXmlExists = true; // true par défaut
+
     private static JavaInformations JavaInfo = null;
+
+    private static boolean localWebXmlExists = true;
+    private static boolean localPomXmlExists = true;
     private MemoryInformations memoryInformations;
-    @SuppressWarnings("all")
-    private List<TomcatInformations> tomcatInformationsList = Collections
-            .synchronizedList(new ArrayList<TomcatInformations>());
+    private List<TomcatInformations> tomcatInformationsList = Collections.synchronizedList(new ArrayList<>());
     private int sessionCount;
     private long sessionAgeSum;
     private int activeThreadCount;
@@ -127,16 +128,16 @@ public class JavaInformations implements Serializable {
     private boolean webXmlExists = localWebXmlExists;
     private boolean pomXmlExists = localPomXmlExists;
 
-    private JavaInformations(ServletContext servletContext, boolean includeDetails) {
+    private JavaInformations(boolean includeDetails) {
         super();
-        buildJavaInfo(servletContext, includeDetails);
+        buildJavaInfo(includeDetails);
     }
 
-    public static JavaInformations instance(ServletContext servletContext, boolean includeDetails) {
+    public static JavaInformations instance(boolean includeDetails) {
         if (JavaInfo != null) {
             return JavaInfo;
         } else {
-            JavaInfo = new JavaInformations(servletContext, includeDetails);
+            JavaInfo = new JavaInformations(includeDetails);
             return JavaInfo;
         }
     }
@@ -473,15 +474,10 @@ public class JavaInformations implements Serializable {
 
     /**
      * 重建监控信息
-     *
-     * @param servletContext
-     * @param includeDetails void
-     * @Methods Name rebuildJavaInfo
-     * @Create In 2016年3月26日 By Jack
      */
-    public void rebuildJavaInfo(ServletContext servletContext, boolean includeDetails) {
+    public void rebuildJavaInfo(boolean includeDetails) {
         clearJavaInfo();
-        buildJavaInfo(servletContext, includeDetails);
+        buildJavaInfo(includeDetails);
     }
 
     /**
@@ -548,13 +544,7 @@ public class JavaInformations implements Serializable {
         totalCompliationTime = 0;
     }
 
-    /**
-     * @param servletContext
-     * @param includeDetails void
-     * @Methods Name buildJavaInfo
-     * @Create In 2016年3月26日 By Jack
-     */
-    private void buildJavaInfo(ServletContext servletContext, boolean includeDetails) {
+    private void buildJavaInfo(boolean includeDetails) {
         JvmStats jvmStats = JvmStats.stats();
         OsStats osStats = OsStats.stats();
         ProcessStats processStats = ProcessStats.stats();
@@ -607,16 +597,16 @@ public class JavaInformations implements Serializable {
         compliationName = jvmStats.getCompilationInfo().getName();
         totalCompliationTime = jvmStats.getCompilationInfo().getCompilationTime();
 
-        if (servletContext == null) {
+        if (SERVLET_CONTEXT == null) {
             serverInfo = null;
             contextPath = null;
             contextDisplayName = null;
             dependenciesList = null;
         } else {
-            serverInfo = servletContext.getServerInfo();
-            contextPath = Parameters.getContextPath(servletContext);
-            contextDisplayName = servletContext.getServletContextName();
-            dependenciesList = buildDependenciesList(servletContext);
+            serverInfo = SERVLET_CONTEXT.getServerInfo();
+            contextPath = Parameters.getContextPath(SERVLET_CONTEXT);
+            contextDisplayName = SERVLET_CONTEXT.getServletContextName();
+            dependenciesList = buildDependenciesList(SERVLET_CONTEXT);
         }
 
         startDate = START_TIME;

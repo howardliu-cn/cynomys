@@ -1,7 +1,5 @@
 package cn.howardliu.monitor.cynomys.agent.common;
 
-import javax.servlet.ServletContext;
-
 /**
  * <br>created at 17-4-11
  *
@@ -23,7 +21,6 @@ public final class Constant {
     public static final String SYSTEM_SETTING_SERVER_PORT = "system.setting.server.port";
     public static final String SYSTEM_SETTING_SERVER_CONTEXT = "system.setting.server.context";
 
-    public static ServletContext SERVLET_CONTEXT = null;
     public static volatile boolean started = false;
 
     private Constant() {

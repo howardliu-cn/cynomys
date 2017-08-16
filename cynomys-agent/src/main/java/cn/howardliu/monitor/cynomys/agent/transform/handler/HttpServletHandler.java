@@ -56,7 +56,6 @@ public class HttpServletHandler extends MethodRewriteHandler {
             ctMethod.insertAfter(
                     "if(cn.howardliu.monitor.cynomys.agent.common.Constant.SERVLET_CONTEXT == null) {" +
                             "cn.howardliu.monitor.cynomys.agent.common.Constant.SERVLET_CONTEXT = $0.getServletContext();" +
-                            "cn.howardliu.monitor.cynomys.agent.counter.MonitorStarter.run();" +
                             "}"
             );
         } catch (NotFoundException ignored) {

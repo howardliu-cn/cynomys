@@ -24,30 +24,22 @@ import javax.servlet.ServletContext;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-
 /**
  * Classe d'accès aux paramètres du monitoring.
  *
  * @author Emeric Vernat
  */
 public final class Parameters {
-    private static ServletContext servletContext;
     private static boolean dnsLookupsDisabled;
 
     private Parameters() {
     }
 
-    public static void initialize(ServletContext context) {
+    public static void initialize() {
         if ("1.7".compareTo(SystemUtils.JAVA_VERSION) > 0) {
             throw new IllegalStateException("the minimal JDK version is 1.7, current is " + SystemUtils.JAVA_VERSION);
         }
-        servletContext = context;
         dnsLookupsDisabled = false;
-    }
-
-    public static ServletContext getServletContext() {
-        assert servletContext != null;
-        return servletContext;
     }
 
     public static String getHostName() {

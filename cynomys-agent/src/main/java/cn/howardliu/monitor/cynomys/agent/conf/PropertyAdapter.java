@@ -33,7 +33,6 @@ public class PropertyAdapter {
     }
 
     protected boolean addFile(String filePath) {
-        System.err.println("filePath: " + filePath);
         if (filePath == null || StringUtils.isBlank(filePath)) {
             return false;
         }

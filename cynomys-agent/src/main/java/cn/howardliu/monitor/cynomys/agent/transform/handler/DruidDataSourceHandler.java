@@ -19,7 +19,7 @@ public class DruidDataSourceHandler extends DataSourceHandler {
     @Override
     public void doWeave(CtClass ctClass) {
         if (isDruidDataSource(ctClass)) {
-            System.err.println("begin to wrap DruidDataSource");
+            logger.info("begin to wrap DruidDataSource");
             doWeaveInit(ctClass);
         } else if (this.getHandler() != null) {
             this.getHandler().doWeave(ctClass);

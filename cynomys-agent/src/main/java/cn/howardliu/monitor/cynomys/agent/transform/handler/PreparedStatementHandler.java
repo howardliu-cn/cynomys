@@ -20,7 +20,7 @@ public class PreparedStatementHandler extends SqlHandler {
     @Override
     public void doWeave(CtClass ctClass) {
         if (isPreparedStatement(ctClass)) {
-            System.err.println("begin to wrap PreparedStatement");
+            logger.info("begin to wrap PreparedStatement");
             doWeave(ctClass, "execute");
             doWeave(ctClass, "executeQuery");
             doWeave(ctClass, "executeUpdate");

@@ -29,7 +29,7 @@ public class ConnectionHandler extends SqlHandler {
                 } catch (CannotCompileException ignored) {
                 }
             }
-            System.err.println("begin to wrap Connection");
+            logger.info("begin to wrap Connection");
             prepareMethodWeave(ctClass, "prepareStatement");
             prepareMethodWeave(ctClass, "prepareCall");
         } else if (this.getHandler() != null) {

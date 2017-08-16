@@ -35,21 +35,16 @@ public final class SystemPropertyConfig {
     // 1. the config file is in jar:/conf/default-cynomys-monitor.properties
     // 2. the config file is in ~/.cynomys/cynomys-monitor.properties
     // 3. the config file is in current path: cynomys-monitor.properties
-    // 3. the config file is jvm parameter: -Dcynomys-monitor.properties=/path/to/xxx.properties
-    // 4. the config file is javaagent argument: -javaagent:xxx.jar=/path/to/xxx.properties
+    // 3. the config file is javaagent argument: -javaagent:xxx.jar=/path/to/xxx.properties
+    // 4. the config file is jvm parameter: -Dcynomys-monitor.properties=/path/to/xxx.properties
     // 5. the config properties load System.getProperties()
     public static void init(String agentArgs) {
         _config.add(DEFAULT_MONITOR_PROPERTIES_FILE);
-        System.err.println(_config);
 
         boolean extract1 = _config.addFile(SYS_CUSTOM_MONITOR_PROPERTIES_FILE);
-        System.err.println(_config);
         boolean extract2 = _config.addFile(CURRENT_MONITOR_PROPERTIES_FILE);
-        System.err.println(_config);
-        boolean extract3 = _config.addFile(ATTRIBUTE_MONITOR_PROPERTIES_FILE);
-        System.err.println(_config);
         boolean extract4 = _config.addFile(agentArgs);
-        System.err.println(_config);
+        boolean extract3 = _config.addFile(ATTRIBUTE_MONITOR_PROPERTIES_FILE);
 
         _config.addAll(System.getProperties());
 
@@ -61,19 +56,11 @@ public final class SystemPropertyConfig {
     }
 
     private static void loadConfig() {
-        System.err.println("isDebug: " + getContextProperty(SYSTEM_SETTING_MONITOR_IS_DEBUG));
-        System.err.println("isDebug: " + Boolean.valueOf(getContextProperty(SYSTEM_SETTING_MONITOR_IS_DEBUG)));
         Constant.IS_DEBUG = getBoolean(SYSTEM_SETTING_MONITOR_IS_DEBUG, Constant.IS_DEBUG);
         Constant.SYS_NAME = getContextProperty(SYSTEM_SETTING_CONTEXT_NAME, Constant.SYS_NAME);
         Constant.SYS_CODE = getContextProperty(SYSTEM_SETTING_CONTEXT_CODE, Constant.SYS_CODE);
         Constant.SYS_DESC = getContextProperty(SYSTEM_SETTING_CONTEXT_DESC, Constant.SYS_DESC);
         Constant.SERVER_LIST = getContextProperty(SYSTEM_SETTING_MONITOR_SERVERS, Constant.SERVER_LIST);
-
-        System.err.println(Constant.IS_DEBUG);
-        System.err.println(Constant.SYS_NAME);
-        System.err.println(Constant.SYS_CODE);
-        System.err.println(Constant.SYS_DESC);
-        System.err.println(Constant.SERVER_LIST);
     }
 
     private static void extractDefaultProperties() {

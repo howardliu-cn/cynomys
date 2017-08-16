@@ -4,9 +4,7 @@ import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
 import cn.howardliu.monitor.cynomys.agent.dto.JavaInformations;
 import cn.howardliu.monitor.cynomys.agent.handler.MonitorChecker;
 
-import static cn.howardliu.monitor.cynomys.agent.common.Constant.SERVLET_CONTEXT;
 import static cn.howardliu.monitor.cynomys.agent.common.Constant.started;
-import static cn.howardliu.monitor.cynomys.common.Constant.IS_DEBUG;
 import static cn.howardliu.monitor.cynomys.common.Constant.SERVER_PORT;
 
 /**
@@ -19,24 +17,8 @@ import static cn.howardliu.monitor.cynomys.common.Constant.SERVER_PORT;
 public class MonitorStarter {
     public static void run() {
         if (!started) {
-            Thread t = new Thread(new MonitorStarterRunner());
-            t.setDaemon(true);
-            t.setName("monitor-starter-thread");
-            t.start();
-            started = true;
-        }
-    }
-
-    static class MonitorStarterRunner implements Runnable {
-        @Override
-        public void run() {
-            if (IS_DEBUG) {
-                return;
-            }
-            // TODO 暂时将监控代码放在下面，需要更优雅的写法
-            JavaInformations javaInformations = JavaInformations.instance(SERVLET_CONTEXT, true);
-            Parameters.initialize(SERVLET_CONTEXT);
-
+            JavaInformations javaInformations = JavaInformations.instance(true);
+            Parameters.initialize();
             int port;
             if (javaInformations.getTomcatInformationsList().isEmpty()) {
                 // TODO read port use System.getProperty(String, String)
@@ -44,13 +26,10 @@ public class MonitorStarter {
             } else {
                 port = Integer.valueOf(javaInformations.getTomcatInformationsList().get(0).getHttpPort());
             }
-
             SERVER_PORT = port;
-
             SLACounter.init();
-
-            // TODO read config server
-            new MonitorChecker(port, SERVLET_CONTEXT).startHealth("Active");
+            new MonitorChecker(port).startHealth("Active");
+            started = true;
         }
     }
 }

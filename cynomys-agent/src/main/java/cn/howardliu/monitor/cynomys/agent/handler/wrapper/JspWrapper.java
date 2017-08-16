@@ -30,6 +30,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
+import static cn.howardliu.monitor.cynomys.common.Constant.SERVLET_CONTEXT;
+
 /**
  * Wrapping de l'interface javax.servlet.RequestDispatcher pour avoir les temps moyens de rendu
  * des pages JSP.
@@ -56,8 +58,6 @@ final class JspWrapper implements InvocationHandler {
         super();
         assert path != null;
         assert requestDispatcher != null;
-        // quand ce RequestDispatcher est utilisé, le compteur est affiché
-        // sauf si le paramètre displayed-counters dit le contraire
         JSP_COUNTER.setDisplayed(!COUNTER_HIDDEN);
         JSP_COUNTER.setUsed(true);
         this.path = path;
@@ -68,7 +68,7 @@ final class JspWrapper implements InvocationHandler {
         if (DISABLED || COUNTER_HIDDEN) {
             return request;
         }
-        if (Parameters.getServletContext().getMajorVersion() >= 3) {
+        if (SERVLET_CONTEXT == null || SERVLET_CONTEXT.getMajorVersion() >= 3) {
             return new HttpRequestWrapper3(request, response);
         }
         return new HttpRequestWrapper(request);
