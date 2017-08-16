@@ -17,9 +17,6 @@
  */
 package cn.howardliu.monitor.cynomys.agent.handler.wrapper;
 
-import cn.howardliu.monitor.cynomys.agent.conf.Parameter;
-import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
-
 import javax.naming.*;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
@@ -102,7 +99,7 @@ public final class JdbcWrapperHelper {
 
     public static Map<String, DataSource> getJndiDataSources() throws NamingException {
         final Map<String, DataSource> dataSources = new LinkedHashMap<>(2);
-        final String datasourcesParameter = Parameters.getParameter(Parameter.DATASOURCES);
+        final String datasourcesParameter = null;
         if (datasourcesParameter == null) {
             dataSources.putAll(getJndiDataSourcesAt("java:comp/env/jdbc"));
             dataSources.putAll(getJndiDataSourcesAt("java:/jdbc"));

@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
  * @since 0.0.1
  */
 public class SqlCounter extends Counter {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
     protected final String counterName = "sql";
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected SqlCounter(String name) {
         super(name);

@@ -17,11 +17,7 @@
  */
 package cn.howardliu.monitor.cynomys.agent.dto;
 
-import cn.howardliu.monitor.cynomys.agent.conf.Parameter;
-import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
-
 import java.io.Serializable;
-import java.sql.Connection;
 import java.util.*;
 
 /**
@@ -35,8 +31,7 @@ public class ConnectionInformations implements Serializable {
     private static final long serialVersionUID = -6063966419161604125L;
     private static final String OWN_PACKAGE = ConnectionInformations.class.getName()
             .substring(0, ConnectionInformations.class.getName().lastIndexOf('.'));
-    private static final boolean CONNECTIONS_STACK_TRACES_DISABLED = Boolean
-            .parseBoolean(Parameters.getParameter(Parameter.CONNECTIONS_STACK_TRACES_DISABLED));
+    private static final boolean CONNECTIONS_STACK_TRACES_DISABLED = Boolean.FALSE;
     private final long openingTime;
     private final StackTraceElement[] openingStackTrace;
     private final long threadId;

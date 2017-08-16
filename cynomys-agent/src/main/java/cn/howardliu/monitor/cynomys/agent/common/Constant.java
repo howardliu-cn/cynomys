@@ -1,7 +1,5 @@
 package cn.howardliu.monitor.cynomys.agent.common;
 
-import org.apache.commons.lang3.SystemUtils;
-
 import javax.servlet.ServletContext;
 
 import static org.apache.commons.lang3.SystemUtils.USER_HOME;
@@ -14,7 +12,6 @@ import static org.apache.commons.lang3.SystemUtils.USER_HOME;
  * @since 0.0.1
  */
 public class Constant {
-    public static final String DEFAULT_ENV_PROPERTIES_FILE = "/env/monitor-env-setting-default.properties";
     public static final String DEFAULT_MONITOR_PROPERTIES_FILE = "/conf/default-cynomys-monitor.properties";
     public static final String CUSTOM_MONITOR_PROPERTIES_FILE = USER_HOME + ".cynomys/cynomys-monitor.properties";
     public static final String SYSTEM_SETTING_MONITOR_IS_DEBUG = "system.setting.monitor.isDebug";

@@ -1,6 +1,5 @@
 package cn.howardliu.monitor.cynomys.agent.counter;
 
-import cn.howardliu.monitor.cynomys.agent.conf.Constant;
 import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
 import cn.howardliu.monitor.cynomys.agent.dto.JavaInformations;
 import cn.howardliu.monitor.cynomys.agent.handler.MonitorChecker;
@@ -37,8 +36,8 @@ public class MonitorStarter {
 
             int port;
             if (javaInformations.getTomcatInformationsList().isEmpty()) {
-                port = Integer.valueOf(System.getProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_SERVER_PORT,
-                        SERVER_PORT + ""));
+                // TODO read port use System.getProperty(String, String)
+                port = Integer.valueOf(System.getProperty("server.port", SERVER_PORT + ""));
             } else {
                 port = Integer.valueOf(javaInformations.getTomcatInformationsList().get(0).getHttpPort());
             }

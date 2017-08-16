@@ -27,21 +27,18 @@ import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
 import cn.howardliu.monitor.cynomys.common.ThreadMXBeanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.management.MBeanServerConnection;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -71,7 +68,7 @@ public class JavaInformations implements Serializable {
     private static final int PERCENT = 100;
     private static final int FAULTLENGTH = 10;
     private static final long serialVersionUID = 3281861236369720876L;
-    private static final boolean SYSTEM_CPU_LOAD_ENABLED = "1.7".compareTo(Parameters.JAVA_VERSION) < 0;
+    private static final boolean SYSTEM_CPU_LOAD_ENABLED = "1.7".compareTo(SystemUtils.JAVA_VERSION) < 0;
     private static boolean localWebXmlExists = true; // true par défaut
     private static boolean localPomXmlExists = true; // true par défaut
     private static JavaInformations JavaInfo = null;
@@ -300,40 +297,21 @@ public class JavaInformations implements Serializable {
         return deadlockedThreads;
     }
 
+    // TODO build DataBase information when get connection
     private static String buildDataBaseVersion() {
         if (Parameters.isNoDatabase()) {
             return null;
         }
         final StringBuilder result = new StringBuilder();
         try {
-            //我们首先看到是否使用JDBC驱动程序
-            //因为如果没有数据源将引发异常
-            if (Parameters.getLastConnectUrl() != null) {
-                final Connection connection = DriverManager
-                        .getConnection(Parameters.getLastConnectUrl(), Parameters.getLastConnectInfo());
-                connection.setAutoCommit(false);
-                try {
-                    appendDataBaseVersion(result, connection);
-                } finally {
-                    // rollback inutile ici car on ne fait que lire les
-                    // meta-data (+ cf issue 38)
-                    connection.close();
-                }
-                return result.toString();
-            }
-
             // 我们正在寻找一个datasource与initialcontext显示名称
-            //版本/和BDD +名称和版本的JDBC驱动程序
-            ///（名称中查找JNDI是datasource属
+            // 版本/和BDD +名称和版本的JDBC驱动程序
+            //（名称中查找JNDI是datasource属
             // JDBC / XXX是一名datasource）标准图<字符串>，datasource datasources = jdbcwrapp
             final Map<String, DataSource> dataSources = JdbcWrapper.getJndiAndSpringDataSources();
             for (final Map.Entry<String, DataSource> entry : dataSources.entrySet()) {
                 final String name = entry.getKey();
                 final DataSource dataSource = entry.getValue();
-                // on ne doit pas changer autoCommit pour la connection d'une
-                // DataSource
-                // (ou alors il faudrait remettre l'autoCommit après, issue 233)
-                // connection.setAutoCommit(false);
                 try (Connection connection = dataSource.getConnection()) {
                     if (result.length() > 0) {
                         result.append("\n\n");
@@ -341,9 +319,6 @@ public class JavaInformations implements Serializable {
                     result.append(name).append(":\n");
                     appendDataBaseVersion(result, connection);
                 }
-                // rollback inutile ici car on ne fait que lire les
-                // meta-data (+ cf issue 38)
-
             }
         } catch (final Exception e) {
             result.append(e.toString());
@@ -655,7 +630,7 @@ public class JavaInformations implements Serializable {
         currentThreadUserTime = jvmStats.getThreads().getCurrentUserTime();
 
         // TODO java.io.tmpdir free space
-        freeDiskSpaceInTemp = Parameters.TEMPORARY_DIRECTORY.getFreeSpace();
+        freeDiskSpaceInTemp = new File(SystemUtils.JAVA_IO_TMPDIR).getFreeSpace();
 
         if (includeDetails) {
             dataBaseVersion = buildDataBaseVersion();

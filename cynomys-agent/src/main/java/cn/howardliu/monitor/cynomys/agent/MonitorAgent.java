@@ -1,6 +1,5 @@
 package cn.howardliu.monitor.cynomys.agent;
 
-import cn.howardliu.monitor.cynomys.agent.conf.EnvPropertyConfig;
 import cn.howardliu.monitor.cynomys.agent.conf.SystemPropertyConfig;
 import cn.howardliu.monitor.cynomys.agent.counter.SLACounter;
 import cn.howardliu.monitor.cynomys.agent.transform.MonitoringTransformer;
@@ -40,7 +39,6 @@ public class MonitorAgent {
             }
         }
 
-        EnvPropertyConfig.init();
         if (args == null || args.isEmpty()) {
             SystemPropertyConfig.init();
         } else {

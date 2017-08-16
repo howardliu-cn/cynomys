@@ -20,7 +20,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static cn.howardliu.monitor.cynomys.agent.conf.EnvPropertyConfig.getContextProperty;
 import static cn.howardliu.monitor.cynomys.common.Constant.*;
 
 /**
@@ -79,26 +78,20 @@ public class AppMonitor {
      */
     public String buildMonitorRootInfo(String status) throws InterruptedException {
         // 1. 判断用于监控的父节点是否存在，如不存在则建立，每个集成Netty-WFJ-Base的服务均会检查此配置，争抢建立,利用Zookeeper的原生节点创建锁完成
-        String rootPath = getContextProperty(
-                Constant.SYSTEM_SEETING_SERVER_DEFAULT_SERVER_MONITOR_ROOT_PATH);
         // TODO 确认ProxyServer是否连通
         boolean isMonitorRootExist = false;
         if (!isMonitorRootExist) {
             Object[] tagArgs = {"Active"};
-            String rootDesc =
-                    getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_SERVER_MONITOR_ROOT_DESC);
+            String rootDesc = SYS_DESC;
             rootDesc = PropertyAdapter.formatter(rootDesc, tagArgs);
             // TODO 发送初始化状态
             System.out.println(rootDesc);
         }
 
         // 2. 判断用于监控的系统本身的父节点是否存在，如不存在则建立，建立过程每个此系统的实例争抢创建，利用Zookeeper的原生节点创建锁完成
-        String systemPath = rootPath + "/" + SYS_NAME + "-" + SYS_CODE;
-
         String systemDesc = SYS_NAME + "-" + SYS_CODE;
 
         // TODO check this function
-        System.out.println(systemPath);
         System.out.println(systemDesc);
 
         // TODO 获取实例数量，并给出标号
@@ -204,7 +197,7 @@ public class AppMonitor {
             appInfo.setSumErrDealReqTime(SLACounter.instance().getSumErrDealRequestTime());
 
             // 4.更新服务器名称及版本
-            String svrInfo[] = this.sc.getServerInfo().split(Constant.SYSTEM_SEETING_SERVER_DEFALUT_NAME_VERSION_SPLIT);
+            String svrInfo[] = this.sc.getServerInfo().split("/");
             appInfo.setServerName(svrInfo[0]);
             appInfo.setServerVersion(svrInfo.length > 1 ? svrInfo[1] : "unknown");
 
@@ -221,7 +214,6 @@ public class AppMonitor {
                     SystemPropertyConfig.getContextProperty(Constant.SYSTEM_SEETING_SERVER_DEFAULT_INSTANCE_KEY));
 
             // 更新自身节点状态
-            // TODO write data
             return JSON.toJSONString(appInfo);
         } catch (Exception e) {
             log.error("cannot load monitor info", e);

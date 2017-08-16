@@ -17,7 +17,6 @@
  */
 package cn.howardliu.monitor.cynomys.agent.handler.wrapper;
 
-import cn.howardliu.monitor.cynomys.agent.conf.Parameter;
 import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
 import cn.howardliu.monitor.cynomys.agent.dto.Counter;
 
@@ -42,62 +41,10 @@ final class JspWrapper implements InvocationHandler {
     private static final Counter JSP_COUNTER = new Counter(Counter.JSP_COUNTER_NAME, "jsp.png",
             JdbcWrapper.SINGLETON.getSqlCounter());
     private static final boolean COUNTER_HIDDEN = Parameters.isCounterHidden(JSP_COUNTER.getName());
-    private static final boolean DISABLED = Boolean.parseBoolean(Parameters.getParameter(Parameter.DISABLED));
+    private static final boolean DISABLED = Boolean.FALSE;
 
     private final String path;
     private final RequestDispatcher requestDispatcher;
-
-    private static class HttpRequestWrapper extends HttpServletRequestWrapper {
-        /**
-         * Constructs a request object wrapping the given request.
-         *
-         * @param request HttpServletRequest
-         */
-        HttpRequestWrapper(HttpServletRequest request) {
-            super(request);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public RequestDispatcher getRequestDispatcher(String path) {
-            final RequestDispatcher requestDispatcher = super.getRequestDispatcher(path);
-            if (requestDispatcher == null) {
-                return null;
-            }
-            // il n'est pas dit que path soit non null
-            final InvocationHandler invocationHandler = new JspWrapper(String.valueOf(path),
-                    requestDispatcher);
-            return JdbcWrapper.createProxy(requestDispatcher, invocationHandler);
-        }
-    }
-
-    private static class HttpRequestWrapper3 extends HttpRequestWrapper {
-        private final HttpServletResponse response;
-
-        /**
-         * Constructs a request object wrapping the given request.
-         *
-         * @param request  HttpServletRequest
-         * @param response HttpServletResponse
-         */
-        HttpRequestWrapper3(HttpServletRequest request, HttpServletResponse response) {
-            super(request);
-            this.response = response;
-        }
-
-        @Override
-        public AsyncContext startAsync() {
-            // issue 217: after MonitoringFilter.doFilter, response is instance of CounterServletResponseWrapper,
-            // and if response.getWriter() has been called before calling request.startAsync(),
-            // then asyncContext.getResponse() should return the instance of CounterServletResponseWrapper
-            // and not the initial response without the wrapper,
-            // otherwise asyncContext.getResponse().getWriter() will throw something like
-            // "IllegalStateException: getOutputStream() has already been called for this response"
-            return super.startAsync(this, response);
-        }
-    }
 
     /**
      * Constructeur.
@@ -168,6 +115,58 @@ final class JspWrapper implements InvocationHandler {
         } finally {
             // on enregistre la requête dans les statistiques
             JSP_COUNTER.addRequestForCurrentContext(systemError);
+        }
+    }
+
+    private static class HttpRequestWrapper extends HttpServletRequestWrapper {
+        /**
+         * Constructs a request object wrapping the given request.
+         *
+         * @param request HttpServletRequest
+         */
+        HttpRequestWrapper(HttpServletRequest request) {
+            super(request);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public RequestDispatcher getRequestDispatcher(String path) {
+            final RequestDispatcher requestDispatcher = super.getRequestDispatcher(path);
+            if (requestDispatcher == null) {
+                return null;
+            }
+            // il n'est pas dit que path soit non null
+            final InvocationHandler invocationHandler = new JspWrapper(String.valueOf(path),
+                    requestDispatcher);
+            return JdbcWrapper.createProxy(requestDispatcher, invocationHandler);
+        }
+    }
+
+    private static class HttpRequestWrapper3 extends HttpRequestWrapper {
+        private final HttpServletResponse response;
+
+        /**
+         * Constructs a request object wrapping the given request.
+         *
+         * @param request  HttpServletRequest
+         * @param response HttpServletResponse
+         */
+        HttpRequestWrapper3(HttpServletRequest request, HttpServletResponse response) {
+            super(request);
+            this.response = response;
+        }
+
+        @Override
+        public AsyncContext startAsync() {
+            // issue 217: after MonitoringFilter.doFilter, response is instance of CounterServletResponseWrapper,
+            // and if response.getWriter() has been called before calling request.startAsync(),
+            // then asyncContext.getResponse() should return the instance of CounterServletResponseWrapper
+            // and not the initial response without the wrapper,
+            // otherwise asyncContext.getResponse().getWriter() will throw something like
+            // "IllegalStateException: getOutputStream() has already been called for this response"
+            return super.startAsync(this, response);
         }
     }
 }
