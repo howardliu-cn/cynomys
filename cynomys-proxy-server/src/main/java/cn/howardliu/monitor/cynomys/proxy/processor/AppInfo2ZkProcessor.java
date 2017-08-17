@@ -2,6 +2,7 @@ package cn.howardliu.monitor.cynomys.proxy.processor;
 
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
+import cn.howardliu.monitor.cynomys.net.struct.MessageCode;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
@@ -27,6 +28,8 @@ public class AppInfo2ZkProcessor extends AbstractInfo2ZkProcessor {
             logger.debug("{}-{}-{} send application info",
                     header.getSysCode(), header.getSysName(), header.getTag());
         }
-        return send(ctx, request, "/" + header.getSysName() + "-" + header.getSysCode());
+        Message response = send(ctx, request, "/" + header.getSysName() + "-" + header.getSysCode());
+        response.getHeader().setCode(MessageCode.APP_INFO_RESP.value());
+        return response;
     }
 }

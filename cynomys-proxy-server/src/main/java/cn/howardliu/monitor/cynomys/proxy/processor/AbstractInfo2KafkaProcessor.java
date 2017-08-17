@@ -4,6 +4,7 @@ import cn.howardliu.gear.kafka.KafkaProducerWrapper;
 import cn.howardliu.monitor.cynomys.net.netty.NettyRequestProcessor;
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
+import cn.howardliu.monitor.cynomys.net.struct.MessageCode;
 import cn.howardliu.monitor.cynomys.net.struct.MessageType;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -25,7 +26,7 @@ public abstract class AbstractInfo2KafkaProcessor implements NettyRequestProcess
         return false;
     }
 
-    protected void send(ChannelHandlerContext ctx, Message request, String topic) {
+    protected void send(ChannelHandlerContext ctx, Message request, String topic, MessageCode messageCode) {
         Header header = request.getHeader();
         int opaque = header.getOpaque();
         kafkaProducerWrapper.send(
