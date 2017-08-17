@@ -7,6 +7,7 @@
 package cn.howardliu.monitor.cynomys.agent.dto;
 
 import cn.howardliu.gear.monitor.core.jvm.JvmStats;
+import cn.howardliu.gear.monitor.core.jvm.JvmStats.GarbageCollector;
 import cn.howardliu.gear.monitor.core.memory.MemoryUsage;
 
 import java.util.List;
@@ -82,7 +83,7 @@ public class SystemInfo {
 
     private List<JvmStats.MemoryPool> memPoolInfos;
 
-    private List<JvmStats.GarbageCollector> GCInfos;
+    private List<GarbageCollector> GCInfos;
 
     /**
      * @Return the double systemCpuRatio
@@ -521,14 +522,14 @@ public class SystemInfo {
     /**
      * @Return the List<GCInfo> GCInfos
      */
-    public List<JvmStats.GarbageCollector> getGCInfos() {
+    public List<GarbageCollector> getGCInfos() {
         return GCInfos;
     }
 
     /**
      * @Param List<GCInfo> gCInfos to set
      */
-    public void setGCInfos(List<JvmStats.GarbageCollector> gCInfos) {
+    public void setGCInfos(List<GarbageCollector> gCInfos) {
         GCInfos = gCInfos;
     }
 

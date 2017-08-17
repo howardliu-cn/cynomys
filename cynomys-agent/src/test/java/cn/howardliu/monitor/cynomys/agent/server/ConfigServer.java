@@ -6,6 +6,7 @@ import cn.howardliu.monitor.cynomys.net.codec.MessageEncoder;
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
 import cn.howardliu.monitor.cynomys.net.struct.MessageCode;
+import cn.howardliu.monitor.cynomys.net.struct.MessageType;
 import com.alibaba.fastjson.JSON;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -63,7 +64,8 @@ public class ConfigServer {
                                                             new Message()
                                                                     .setHeader(
                                                                             new Header()
-                                                                                    .setType(MessageCode.CONFIG_RESP
+                                                                                    .setType(MessageType.RESPONSE.value())
+                                                                                    .setCode(MessageCode.CONFIG_RESP
                                                                                             .value())
                                                                                     .setLength(list.length()))
                                                                     .setBody(list)

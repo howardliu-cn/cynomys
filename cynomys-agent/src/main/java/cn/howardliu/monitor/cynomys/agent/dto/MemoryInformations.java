@@ -49,10 +49,10 @@ public class MemoryInformations implements Serializable {
     private final String memoryDetails;
 
     public MemoryInformations(JvmStats jvmStats, OsStats osStats, ProcessStats processStats) {
-        totalMemory = jvmStats.getMem().getJvmMemoryInfo().getTotalMemory().getSize();
-        freeMemory = jvmStats.getMem().getJvmMemoryInfo().getFreeMemory().getSize();
-        usedMemory = jvmStats.getMem().getJvmMemoryInfo().getUsedMemory().getSize();
-        maxMemory = jvmStats.getMem().getJvmMemoryInfo().getMaxMemory().getSize();
+        totalMemory = jvmStats.getMem().getJvmMemoryInfo().getTotalMemory();
+        freeMemory = jvmStats.getMem().getJvmMemoryInfo().getFreeMemory();
+        usedMemory = jvmStats.getMem().getJvmMemoryInfo().getUsedMemory();
+        maxMemory = jvmStats.getMem().getJvmMemoryInfo().getMaxMemory();
 
         heapMemoryUsage = jvmStats.getMem().getHeapMemoryUsage();
         nonHeapMemoryUsage = jvmStats.getMem().getNonHeapMemoryUsage();
@@ -113,7 +113,7 @@ public class MemoryInformations implements Serializable {
         }
         long result = 0;
         for (JvmStats.BufferPool bufferPool : bufferPools) {
-            result += bufferPool.getUsed().getSize();
+            result += bufferPool.getUsed();
         }
         return result;
     }
@@ -121,7 +121,7 @@ public class MemoryInformations implements Serializable {
     private long buildGarbageCollectionTimeMillis(List<GarbageCollector> gcs) {
         long garbageCollectionTime = 0;
         for (GarbageCollector gc : gcs) {
-            garbageCollectionTime += gc.getCollectionTime().getDuration();
+            garbageCollectionTime += gc.getCollectionTimeValue().getDuration();
         }
         return garbageCollectionTime;
     }

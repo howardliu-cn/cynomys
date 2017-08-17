@@ -11,6 +11,7 @@ import cn.howardliu.monitor.cynomys.net.exception.NetTooMuchRequestException;
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
 import cn.howardliu.monitor.cynomys.net.struct.MessageCode;
+import cn.howardliu.monitor.cynomys.net.struct.MessageType;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,7 +192,8 @@ public class MonitorChecker implements Health, Closeable {
                                                         .setSysName(SYS_NAME)
                                                         .setSysCode(SYS_CODE)
                                                         .setLength(appInfo.length())
-                                                        .setType(MessageCode.APP_INFO_REQ.value())
+                                                        .setType(MessageType.REQUEST.value())
+                                                        .setCode(MessageCode.APP_INFO_REQ.value())
                                         )
                                         .setBody(appInfo)
                         );
@@ -207,7 +209,8 @@ public class MonitorChecker implements Health, Closeable {
                                                         .setSysName(SYS_NAME)
                                                         .setSysCode(SYS_CODE)
                                                         .setLength(sqlInfo.length())
-                                                        .setType(MessageCode.SQL_INFO_REQ.value())
+                                                        .setType(MessageType.REQUEST.value())
+                                                        .setCode(MessageCode.SQL_INFO_REQ.value())
                                         )
                                         .setBody(sqlInfo)
                         );
@@ -223,7 +226,8 @@ public class MonitorChecker implements Health, Closeable {
                                                         .setSysName(SYS_NAME)
                                                         .setSysCode(SYS_CODE)
                                                         .setLength(requestInfo.length())
-                                                        .setType(MessageCode.REQUEST_INFO_REQ.value())
+                                                        .setType(MessageType.REQUEST.value())
+                                                        .setCode(MessageCode.REQUEST_INFO_REQ.value())
                                         )
                                         .setBody(requestInfo)
                         );
