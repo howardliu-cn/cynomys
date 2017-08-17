@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>cynomys</artifactId>
+        <groupId>cn.howardliu.monitor</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>cynomys-spring</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <modules>
+        <module>spring-boot-starter-cynomys</module>
+        <module>spring-boot-autoconfigure-cynomys</module>
+        <module>cynomys-spring-web-plugin</module>
+    </modules>
+    <properties>
+        <spring.version>4.3.4.RELEASE</spring.version>
+        <servlet.version>3.0</servlet.version>
+        <spring-boot.version>1.4.2.RELEASE</spring-boot.version>
+    </properties>
+
+    <packaging>pom</packaging>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
+                <version>${spring.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-autoconfigure</artifactId>
+                <version>${spring-boot.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>cn.howardliu.monitor</groupId>
+                <artifactId>spring-boot-autoconfigure-cynomys</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

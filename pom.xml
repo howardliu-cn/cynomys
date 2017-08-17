@@ -13,6 +13,7 @@
         <module>cynomys-agent</module>
         <module>cynomys-config-server</module>
         <module>cynomys-proxy-server</module>
+        <module>cynomys-spring</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -127,6 +128,12 @@
                 <classifier>jdk7</classifier>
             </dependency>
             <dependency>
+                <groupId>cn.howardliu</groupId>
+                <artifactId>gear-monitor-tomcat</artifactId>
+                <version>${my-gear.version}</version>
+                <classifier>jdk7</classifier>
+            </dependency>
+            <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
                 <artifactId>okhttp</artifactId>
                 <version>${okhttp.version}</version>
@@ -172,6 +179,25 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>inner</id>
+            <distributionManagement>
+                <repository>
+                    <id>releases</id>
+                    <layout>default</layout>
+                    <name>本地Release仓库</name>
+                    <uniqueVersion>false</uniqueVersion>
+                    <url>http://nexus-server:8081/nexus/content/repositories/releases/</url>
+                </repository>
+                <snapshotRepository>
+                    <id>snapshots</id>
+                    <layout>default</layout>
+                    <name>本地Snapshot仓库</name>
+                    <uniqueVersion>false</uniqueVersion>
+                    <url>http://nexus-server:8081/nexus/content/repositories/snapshots/</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
         <profile>
             <id>release</id>
             <build>
