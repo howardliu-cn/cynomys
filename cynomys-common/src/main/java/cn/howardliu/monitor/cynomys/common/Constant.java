@@ -19,7 +19,7 @@ public final class Constant {
     public static volatile boolean IS_DEBUG = Boolean.TRUE;
     public static String SYS_NAME = "cynomys-monitor-project-default-name";
     public static String SYS_CODE = "000";
-    public static String SYS_DESC = "";
+    public static String SYS_DESC = "'{'\"name\":\"{0}\",\"code\":\"{1}\",\"version\":\"1.0\",\"desc\":\"https://github.com/howardliu-cn/cynomys\",\"status\":\"{2}\"'}'";
     public static volatile String SERVER_LIST = "127.0.0.1:7911";
 
     public static volatile int SERVER_PORT = 8080;
