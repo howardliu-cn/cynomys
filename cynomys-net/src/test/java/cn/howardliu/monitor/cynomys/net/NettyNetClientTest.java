@@ -5,6 +5,7 @@ import cn.howardliu.monitor.cynomys.net.netty.NettyNetClient;
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
 import cn.howardliu.monitor.cynomys.net.struct.MessageCode;
+import cn.howardliu.monitor.cynomys.net.struct.MessageType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +43,8 @@ public class NettyNetClientTest {
                                 new Header()
                                         .setSysCode("001")
                                         .setSysName("test-client")
-                                        .setType(MessageCode.HEARTBEAT_REQ.value())
+                                        .setType(MessageType.REQUEST.value())
+                                        .setCode(MessageCode.HEARTBEAT_REQ.value())
                         )
         );
 

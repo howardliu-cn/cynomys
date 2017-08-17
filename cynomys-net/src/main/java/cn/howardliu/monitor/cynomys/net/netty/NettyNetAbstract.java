@@ -165,7 +165,7 @@ public abstract class NettyNetAbstract {
                         }
                         response.getHeader().setOpaque(opaque);
                         response.getHeader().setType(MessageType.RESPONSE.value());
-                        ctx.writeAndFlush(request);
+                        ctx.writeAndFlush(response);
                     } else {
                         processor.processRequest(ctx, request);
                     }
