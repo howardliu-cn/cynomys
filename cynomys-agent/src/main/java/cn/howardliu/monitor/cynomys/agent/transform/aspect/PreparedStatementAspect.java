@@ -18,6 +18,7 @@ import java.util.Map;
  * @version 0.0.1
  * @since 0.0.1
  */
+@SuppressWarnings("unused")
 public class PreparedStatementAspect {
     private static final Logger logger = LoggerFactory.getLogger(PreparedStatementAspect.class);
     private static final Map<Long, ExecuteRunnerWrapper> RUNNER_MAP =

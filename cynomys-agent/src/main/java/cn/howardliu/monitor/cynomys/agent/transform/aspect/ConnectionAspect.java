@@ -3,13 +3,8 @@ package cn.howardliu.monitor.cynomys.agent.transform.aspect;
 import cn.howardliu.monitor.cynomys.agent.common.SqlHolder;
 import cn.howardliu.monitor.cynomys.agent.dto.ConnectionInformations;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import static cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper.*;
 
@@ -20,9 +15,8 @@ import static cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper.*;
  * @version 0.0.1
  * @since 0.0.1
  */
+@SuppressWarnings("unused")
 public class ConnectionAspect {
-    private static final Set<String> hashCodeSet = Collections.synchronizedSet(new HashSet<String>());
-
     public static void constructorEnd(Connection connection) {
         assert connection != null;
         synchronized (USED_CONNECTION_INFORMATIONS) {
