@@ -5,8 +5,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.util.CharsetUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * <br>created at 17-5-11
@@ -16,8 +14,6 @@ import org.slf4j.LoggerFactory;
  * @since 0.0.1
  */
 public class MessageEncoder extends MessageToByteEncoder<Message> {
-    private static final Logger logger = LoggerFactory.getLogger(MessageEncoder.class);
-
     @Override
     protected void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception {
         if (msg == null || msg.getHeader() == null) {

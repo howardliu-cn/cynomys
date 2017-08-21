@@ -55,9 +55,9 @@ public abstract class HeartbeatHandler extends SimpleChannelInboundHandler<Messa
                                         .setCode(HEARTBEAT_REQ.value())
                         )
         );
-        long count = HEARTBEAT_COUNTER.incrementAndGet();
+        HEARTBEAT_COUNTER.incrementAndGet();
         if (logger.isDebugEnabled()) {
-            logger.debug(name + " send PING single message to " + ctx.channel().remoteAddress() + ", count: " + count);
+            logger.debug(name + " send PING single message to " + ctx.channel().remoteAddress());
         }
     }
 
@@ -69,9 +69,9 @@ public abstract class HeartbeatHandler extends SimpleChannelInboundHandler<Messa
                                         .setType(RESPONSE.value())
                                         .setCode(HEARTBEAT_RESP.value()))
         );
-        long count = HEARTBEAT_COUNTER.incrementAndGet();
+        HEARTBEAT_COUNTER.incrementAndGet();
         if (logger.isDebugEnabled()) {
-            logger.debug(name + " send PONG single message to " + ctx.channel().remoteAddress() + ", count: " + count);
+            logger.debug(name + " send PONG single message to " + ctx.channel().remoteAddress());
         }
     }
 

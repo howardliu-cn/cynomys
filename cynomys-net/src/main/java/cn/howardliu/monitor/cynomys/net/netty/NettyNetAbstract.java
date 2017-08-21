@@ -104,7 +104,8 @@ public abstract class NettyNetAbstract {
                                 responseFuture.release();
                             }
 
-                            logger.warn("send a request to channel <{}> failed!", NetHelper.remoteAddress(channel));
+                            logger.warn("send a request to channel <{}> failed!", NetHelper.remoteAddress(channel),
+                                    future.cause());
                         });
             } catch (Exception e) {
                 responseFuture.release();

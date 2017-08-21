@@ -1,7 +1,5 @@
 package cn.howardliu.monitor.cynomys.net.struct;
 
-import java.io.Serializable;
-
 /**
  * <br>created at 17-5-11
  *
@@ -9,7 +7,7 @@ import java.io.Serializable;
  * @version 0.0.1
  * @since 0.0.1
  */
-public class Message implements Serializable {
+public class Message {
     private Header header;
     private String body;
 
