@@ -14,23 +14,17 @@ import javassist.NotFoundException;
  */
 public class MethodRewriteHandler {
     private static final MethodRewriteHandler _HANDLER = new MethodRewriteHandler();
+    private static volatile boolean isInit = false;
     protected MethodRewriteHandler handler = null;
 
-    static {
-        _HANDLER.addLast(HttpServletHandler.instance())
-                .addLast(SqlHandler.instance())
-        ;
-    }
-
-    public static MethodRewriteHandler instance() {
-        return _HANDLER;
-    }
-
-    public void doWeave(CtClass ctClass) {
-        assert ctClass != null;
-        if (this.getHandler() != null) {
-            this.getHandler().doWeave(ctClass);
+    public static synchronized MethodRewriteHandler instance() {
+        if (!isInit) {
+            _HANDLER.addLast(HttpServletHandler.instance())
+                    .addLast(SqlHandler.instance())
+            ;
+            isInit = true;
         }
+        return _HANDLER;
     }
 
     protected static boolean isChild(CtClass ctClass, Class<?> clazz) {
@@ -80,6 +74,13 @@ public class MethodRewriteHandler {
         } catch (NotFoundException ignored) {
         }
         return false;
+    }
+
+    public void doWeave(CtClass ctClass) {
+        assert ctClass != null;
+        if (this.getHandler() != null) {
+            this.getHandler().doWeave(ctClass);
+        }
     }
 
     public MethodRewriteHandler getHandler() {
