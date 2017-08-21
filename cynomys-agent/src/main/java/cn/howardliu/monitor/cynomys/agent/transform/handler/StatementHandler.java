@@ -1,11 +1,8 @@
 package cn.howardliu.monitor.cynomys.agent.transform.handler;
 
-import cn.howardliu.monitor.cynomys.agent.transform.MethodRewriteHandler;
 import javassist.CtClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.sql.Statement;
 
 /**
  * <br>created at 17-4-11
@@ -33,7 +30,7 @@ public class StatementHandler extends SqlHandler {
         }
     }
 
-    protected boolean isStatement(CtClass ctClass) {
-        return MethodRewriteHandler.isImpl(ctClass, Statement.class) || isChild(ctClass, Statement.class);
+    private boolean isStatement(CtClass ctClass) {
+        return isImpl(ctClass, "java.sql.Statement") || isChild(ctClass, "java.sql.Statement");
     }
 }

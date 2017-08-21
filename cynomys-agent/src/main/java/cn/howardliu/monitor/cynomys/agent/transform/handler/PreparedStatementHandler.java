@@ -57,7 +57,8 @@ public class PreparedStatementHandler extends SqlHandler {
         try {
             CtMethod[] ctMethods = ctClass.getDeclaredMethods("close");
             for (CtMethod ctMethod : ctMethods) {
-                ctMethod.insertAfter("cn.howardliu.monitor.cynomys.agent.transform.aspect.PreparedStatementAspect.close($0);");
+                ctMethod.insertAfter(
+                        "cn.howardliu.monitor.cynomys.agent.transform.aspect.PreparedStatementAspect.close($0);");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -65,7 +66,7 @@ public class PreparedStatementHandler extends SqlHandler {
         }
     }
 
-    protected boolean isPreparedStatement(CtClass ctClass) {
+    private boolean isPreparedStatement(CtClass ctClass) {
         return isImpl(ctClass, "java.sql.PreparedStatement") || isChild(ctClass, "java.sql.PreparedStatement");
     }
 }

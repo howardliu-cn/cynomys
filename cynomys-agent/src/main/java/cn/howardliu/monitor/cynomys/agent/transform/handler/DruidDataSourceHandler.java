@@ -26,7 +26,7 @@ public class DruidDataSourceHandler extends DataSourceHandler {
         }
     }
 
-    public void doWeaveInit(CtClass ctClass) {
+    private void doWeaveInit(CtClass ctClass) {
         try {
             CtMethod ctMethod = ctClass.getDeclaredMethod("init");
             ctMethod.insertAfter(

@@ -49,7 +49,7 @@ public class ConnectionHandler extends SqlHandler {
         }
     }
 
-    protected boolean isConnection(CtClass ctClass) {
+    private boolean isConnection(CtClass ctClass) {
         return isImpl(ctClass, Connection.class) || isChild(ctClass, Connection.class);
     }
 }
