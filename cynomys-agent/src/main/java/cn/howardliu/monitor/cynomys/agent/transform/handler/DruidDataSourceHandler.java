@@ -1,8 +1,10 @@
 package cn.howardliu.monitor.cynomys.agent.transform.handler;
 
 import javassist.CtClass;
+import javassist.CtConstructor;
 import javassist.CtMethod;
 import javassist.NotFoundException;
+import javassist.bytecode.Descriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,9 +22,27 @@ public class DruidDataSourceHandler extends DataSourceHandler {
     public void doWeave(CtClass ctClass) {
         if (isDruidDataSource(ctClass)) {
             logger.info("begin to wrap DruidDataSource");
+            doWeaveConstruct(ctClass);
             doWeaveInit(ctClass);
         } else if (this.getHandler() != null) {
             this.getHandler().doWeave(ctClass);
+        }
+    }
+
+    private void doWeaveConstruct(CtClass ctClass) {
+        String desc = Descriptor.ofConstructor(new CtClass[]{CtClass.booleanType});
+        try {
+            CtConstructor constructor = ctClass.getConstructor(desc);
+            constructor.insertAfter(
+                    "cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapperHelper.registerCommonDataSource($0.getClass().getName() + \"@\" + System.identityHashCode($0), $0);"
+            );
+        } catch (NotFoundException e) {
+            e.printStackTrace();
+            logger.info("not found Constructor[" + desc + "] in " + ctClass.getName());
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.warn(
+                    "SKIPPED Constructor[" + desc + "] in " + ctClass.getName() + ", the reason is " + e.getMessage());
         }
     }
 

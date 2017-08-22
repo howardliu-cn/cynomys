@@ -298,7 +298,6 @@ public class JavaInformations implements Serializable {
         return deadlockedThreads;
     }
 
-    // TODO build DataBase information when get connection
     private static String buildDataBaseVersion() {
         if (Parameters.isNoDatabase()) {
             return null;
