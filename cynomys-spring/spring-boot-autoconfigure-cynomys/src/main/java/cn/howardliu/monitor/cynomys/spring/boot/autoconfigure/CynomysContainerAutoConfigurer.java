@@ -18,8 +18,8 @@ import javax.servlet.ServletContext;
  */
 @Configuration
 @ConditionalOnClass({Constant.class, ServletContext.class})
-public class CynomysAutoConfigurer implements ApplicationListener<EmbeddedServletContainerInitializedEvent> {
-    private static final Logger logger = LoggerFactory.getLogger(CynomysAutoConfigurer.class);
+public class CynomysContainerAutoConfigurer implements ApplicationListener<EmbeddedServletContainerInitializedEvent> {
+    private static final Logger logger = LoggerFactory.getLogger(CynomysContainerAutoConfigurer.class);
 
     @Override
     public void onApplicationEvent(EmbeddedServletContainerInitializedEvent event) {

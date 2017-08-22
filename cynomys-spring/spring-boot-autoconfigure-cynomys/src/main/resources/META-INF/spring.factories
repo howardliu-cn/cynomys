@@ -1,3 +1,4 @@
 # Auto Configure
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  cn.howardliu.monitor.cynomys.spring.boot.autoconfigure.CynomysAutoConfigurer
+  cn.howardliu.monitor.cynomys.spring.boot.autoconfigure.CynomysContainerAutoConfigurer,\
+  cn.howardliu.monitor.cynomys.spring.boot.autoconfigure.CynomysContextRefreshedAutoConfigurer
