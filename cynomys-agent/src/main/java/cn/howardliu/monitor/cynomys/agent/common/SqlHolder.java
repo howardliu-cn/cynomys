@@ -12,8 +12,8 @@ import java.util.Map;
  * @since 0.0.1
  */
 public class SqlHolder {
-    public static final Map<String, String> STATEMENT_HASHCODE_SQL_MAP = Collections
-            .synchronizedMap(new HashMap<String, String>());
+    private static final Map<String, String> STATEMENT_HASHCODE_SQL_MAP =
+            Collections.synchronizedMap(new HashMap<String, String>());
 
     public static boolean contains(int hashCode) {
         return STATEMENT_HASHCODE_SQL_MAP.containsKey(hashCode + "");

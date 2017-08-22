@@ -32,13 +32,12 @@ public class ConnectionInformations implements Serializable {
     private static final String OWN_PACKAGE = ConnectionInformations.class.getName()
             .substring(0, ConnectionInformations.class.getName().lastIndexOf('.'));
     private static final boolean CONNECTIONS_STACK_TRACES_DISABLED = Boolean.FALSE;
-    private final long openingTime;
+    private final long openingTime = System.currentTimeMillis();
     private final StackTraceElement[] openingStackTrace;
     private final long threadId;
 
     public ConnectionInformations() {
         super();
-        this.openingTime = System.currentTimeMillis();
         final Thread currentThread = Thread.currentThread();
         if (CONNECTIONS_STACK_TRACES_DISABLED) {
             this.openingStackTrace = null;
