@@ -44,7 +44,8 @@ public class PreparedStatementHandler extends SqlHandler {
                 );
                 ctMethod.insertAfter(
                         "cn.howardliu.monitor.cynomys.agent.transform.aspect.PreparedStatementAspect.end(Thread.currentThread().getId(), \"" + ctMethod
-                                .getLongName() + "\");"
+                                .getLongName() + "\", $0);",
+                        true
                 );
             }
         } catch (Exception e) {
