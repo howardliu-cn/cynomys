@@ -2,7 +2,6 @@ package cn.howardliu.monitor.cynomys.agent.transform.aspect;
 
 import cn.howardliu.monitor.cynomys.agent.counter.SLACounter;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.RequestWrapper;
-import cn.howardliu.monitor.cynomys.common.ThreadMXBeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,23 +24,19 @@ import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
  * @since 0.0.1
  */
 public class RequestAspect {
+    private static final Logger logger = LoggerFactory.getLogger(RequestAspect.class);
     private static final Map<Long, RequestDataWrapper> REQUEST_COUNTER_MAP =
             Collections.synchronizedMap(new HashMap<Long, RequestDataWrapper>());
-    private static Logger logger = LoggerFactory.getLogger(RequestAspect.class);
 
     public static void begin(long tid, HttpServletRequest request, HttpServletResponse response) {
         assert request != null;
         assert response != null;
-        long startTime = System.currentTimeMillis();
-        long startThreadCupTime = ThreadMXBeanUtils.getThreadCpuTime(tid);
         response.setHeader(HEADER_SERVER_TAG, THIS_TAG);
-        RequestDataWrapper wrapper = new RequestDataWrapper();
-        wrapper.setTid(tid);
-        wrapper.setRequest(request);
-        wrapper.setResponse(response);
-        wrapper.setStartTime(startTime);
-        wrapper.setStartThreadCupTime(startThreadCupTime);
-        REQUEST_COUNTER_MAP.put(tid, wrapper);
+        if (REQUEST_COUNTER_MAP.containsKey(tid)) {
+            return;
+        } else {
+            REQUEST_COUNTER_MAP.put(tid, new RequestDataWrapper(tid));
+        }
         SLACounter.addSumInboundRequestCounts();
     }
 
@@ -51,6 +46,9 @@ public class RequestAspect {
         assert response != null;
         assert cause != null;
         RequestDataWrapper wrapper = REQUEST_COUNTER_MAP.get(tid);
+        if (wrapper == null) {
+            return;
+        }
         wrapper.setCause(cause);
     }
 
@@ -58,7 +56,10 @@ public class RequestAspect {
         assert request != null;
         assert response != null;
         long endTime = System.currentTimeMillis();
-        RequestDataWrapper wrapper = REQUEST_COUNTER_MAP.get(tid);
+        RequestDataWrapper wrapper = REQUEST_COUNTER_MAP.remove(tid);
+        if (wrapper == null) {
+            return;
+        }
         long startTime = wrapper.getStartTime();
         long startThreadCupTime = wrapper.getStartThreadCupTime();
         long duration = endTime - startTime;
@@ -85,80 +86,11 @@ public class RequestAspect {
         if (logger.isDebugEnabled()) {
             logger.debug("the request counter is : " + SLACounter.instance());
         }
-        REQUEST_COUNTER_MAP.remove(tid);
     }
 
-    static class RequestDataWrapper {
-        private long tid;
-        private HttpServletRequest request;
-        private HttpServletResponse response;
-        private long startTime;
-        private long startThreadCupTime;
-        private Throwable cause;
-
-        public long getTid() {
-            return tid;
-        }
-
-        public void setTid(long tid) {
-            this.tid = tid;
-        }
-
-        public HttpServletRequest getRequest() {
-            return request;
-        }
-
-        public void setRequest(HttpServletRequest request) {
-            this.request = request;
-        }
-
-        public HttpServletResponse getResponse() {
-            return response;
-        }
-
-        public void setResponse(HttpServletResponse response) {
-            this.response = response;
-        }
-
-        public long getStartTime() {
-            return startTime;
-        }
-
-        public void setStartTime(long startTime) {
-            this.startTime = startTime;
-        }
-
-        public long getStartThreadCupTime() {
-            return startThreadCupTime;
-        }
-
-        public void setStartThreadCupTime(long startThreadCupTime) {
-            this.startThreadCupTime = startThreadCupTime;
-        }
-
-        public Throwable getCause() {
-            return cause;
-        }
-
-        public void setCause(Throwable cause) {
-            this.cause = cause;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            RequestDataWrapper that = (RequestDataWrapper) o;
-            return tid == that.tid;
-        }
-
-        @Override
-        public int hashCode() {
-            return (int) (tid ^ (tid >>> 32));
+    static class RequestDataWrapper extends RunnerWrapper {
+        RequestDataWrapper(long tid) {
+            super(tid);
         }
     }
 }
