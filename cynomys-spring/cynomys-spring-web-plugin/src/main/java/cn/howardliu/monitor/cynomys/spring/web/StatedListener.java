@@ -2,8 +2,11 @@ package cn.howardliu.monitor.cynomys.spring.web;
 
 import cn.howardliu.gear.monitor.tomcat.TomcatInfoUtils;
 import cn.howardliu.monitor.cynomys.common.Constant;
+import cn.howardliu.monitor.cynomys.common.LaunchLatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.ServletContextAware;
 
@@ -16,7 +19,7 @@ import javax.servlet.ServletContext;
  * @since 0.0.1
  */
 @Component
-public class StatedListener implements ServletContextAware {
+public class StatedListener implements ServletContextAware, ApplicationListener<ContextRefreshedEvent> {
     private static final Logger logger = LoggerFactory.getLogger(StatedListener.class);
 
     @Override
@@ -38,5 +41,10 @@ public class StatedListener implements ServletContextAware {
                     + "\n\t server context name = " + Constant.SERVLET_CONTEXT.getServletContextName()
             );
         }
+    }
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        LaunchLatch.LATCH.start();
     }
 }
