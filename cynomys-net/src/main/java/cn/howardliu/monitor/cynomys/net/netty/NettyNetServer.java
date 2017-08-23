@@ -262,17 +262,14 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
 
     class NettyConnectManageHandler extends ChannelDuplexHandler {
         @Override
-        public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             final String remoteAddress = NetHelper.remoteAddress(ctx.channel());
-            logger.info("NETTY SERVER PIPELINE: channelRegistered {}", remoteAddress);
-            super.channelRegistered(ctx);
-        }
-
-        @Override
-        public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-            final String remoteAddress = NetHelper.remoteAddress(ctx.channel());
-            logger.info("NETTY SERVER PIPELINE: channelUnregistered {}", remoteAddress);
-            super.channelUnregistered(ctx);
+            logger.info("NETTY SERVER PIPELINE: channelRead {}", remoteAddress);
+            super.channelRead(ctx, msg);
+            if (channelEventListener != null && msg instanceof Message) {
+                Message m = (Message) msg;
+                putNettyEvent(new NettyEvent(NettyEventType.READ, remoteAddress, ctx.channel(), m.getHeader()));
+            }
         }
 
         @Override

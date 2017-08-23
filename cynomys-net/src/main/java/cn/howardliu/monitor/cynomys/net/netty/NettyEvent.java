@@ -1,5 +1,6 @@
 package cn.howardliu.monitor.cynomys.net.netty;
 
+import cn.howardliu.monitor.cynomys.net.struct.Header;
 import io.netty.channel.Channel;
 
 /**
@@ -14,16 +15,26 @@ public class NettyEvent {
     private final String remoteAddress;
     private final Channel channel;
     private final Throwable cause;
+    private final Header header;
 
     public NettyEvent(NettyEventType type, String remoteAddress, Channel channel) {
-        this(type, remoteAddress, channel, null);
+        this(type, remoteAddress, channel, null, null);
+    }
+
+    public NettyEvent(NettyEventType type, String remoteAddress, Channel channel, Header header) {
+        this(type, remoteAddress, channel, null, header);
     }
 
     public NettyEvent(NettyEventType type, String remoteAddress, Channel channel, Throwable cause) {
+        this(type, remoteAddress, channel, cause, null);
+    }
+
+    public NettyEvent(NettyEventType type, String remoteAddress, Channel channel, Throwable cause, Header header) {
         this.type = type;
         this.remoteAddress = remoteAddress;
         this.channel = channel;
         this.cause = cause;
+        this.header = header;
     }
 
     public NettyEventType getType() {
@@ -42,12 +53,18 @@ public class NettyEvent {
         return cause;
     }
 
+    public Header getHeader() {
+        return header;
+    }
+
     @Override
     public String toString() {
         return "NettyEvent{" +
                 "type=" + type +
                 ", remoteAddress='" + remoteAddress + '\'' +
                 ", channel=" + channel +
+                ", cause=" + cause +
+                ", header=" + header +
                 '}';
     }
 }
