@@ -21,6 +21,7 @@ public class MonitorAgent {
             return;
         }
         inst.addTransformer(new MonitoringTransformer());
+        Constant.onlyException = false;
         MonitorStarter.run();
     }
 }

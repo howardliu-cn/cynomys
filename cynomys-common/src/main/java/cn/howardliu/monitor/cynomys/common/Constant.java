@@ -22,6 +22,7 @@ public final class Constant {
     public static String SYS_DESC = "'{'\"name\":\"{0}\",\"code\":\"{1}\",\"version\":\"1.0\",\"desc\":\"https://github.com/howardliu-cn/cynomys\",\"status\":\"{2}\"'}'";
     public static volatile String SERVER_LIST = "127.0.0.1:7911";
 
+    public static volatile boolean onlyException = true;
     public static volatile int SERVER_PORT = 8080;
     public static ServletContext SERVLET_CONTEXT = null;
 
