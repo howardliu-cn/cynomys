@@ -311,6 +311,9 @@ public abstract class NettyNetAbstract {
                                 listener.onChannelException(event.getRemoteAddress(), event.getChannel(),
                                         event.getCause());
                                 break;
+                            case READ:
+                                listener.onChannelRead(event.getRemoteAddress(), event.getChannel(), event.getHeader());
+                                break;
                             default:
                                 break;
                         }

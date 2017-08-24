@@ -1,5 +1,6 @@
 package cn.howardliu.monitor.cynomys.net;
 
+import cn.howardliu.monitor.cynomys.net.struct.Header;
 import io.netty.channel.Channel;
 
 /**
@@ -17,4 +18,6 @@ public interface ChannelEventListener {
     void onChannelException(final String address, final Channel channel, Throwable cause);
 
     void onChannelIdle(final String address, final Channel channel);
+
+    void onChannelRead(final String address, final Channel channel, final Header header);
 }

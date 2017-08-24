@@ -1,5 +1,6 @@
 package cn.howardliu.monitor.cynomys.net;
 
+import cn.howardliu.monitor.cynomys.net.struct.Header;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,5 +33,11 @@ public class SimpleChannelEventListener implements ChannelEventListener {
     @Override
     public void onChannelIdle(String address, Channel channel) {
         logger.debug("got IDLE event, the remote address is {}, the channel is {}", address, channel);
+    }
+
+    @Override
+    public void onChannelRead(String address, Channel channel, Header header) {
+        logger.debug("got READ event, the remote address is {}, the channel is {}, the header is {}",
+                address, channel, header);
     }
 }
