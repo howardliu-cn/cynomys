@@ -8,8 +8,9 @@ import cn.howardliu.monitor.cynomys.net.netty.NettyNetServer;
 import cn.howardliu.monitor.cynomys.net.netty.NettyServerConfig;
 import cn.howardliu.monitor.cynomys.proxy.ServerContext;
 import cn.howardliu.monitor.cynomys.proxy.config.ServerConfig;
-import cn.howardliu.monitor.cynomys.proxy.net.*;
+import cn.howardliu.monitor.cynomys.proxy.net.LinkCatchHandler;
 import cn.howardliu.monitor.cynomys.proxy.processor.AppInfo2ZkProcessor;
+import cn.howardliu.monitor.cynomys.proxy.processor.HeartbeatProcessor;
 import cn.howardliu.monitor.cynomys.proxy.processor.RequestInfo2KafkaProcessor;
 import cn.howardliu.monitor.cynomys.proxy.processor.SqlInfo2KafkaProcessor;
 import io.netty.channel.ChannelHandler;
@@ -44,6 +45,7 @@ public class ProxyServer extends AbstractServer {
 
     private ServerContext context;
 
+    private ExecutorService heartbeatExecutor;
     private ExecutorService appInfoActionExecutor;
     private ExecutorService requestInfoActionExecutor;
     private ExecutorService sqlInfoActionExecutor;
@@ -83,6 +85,10 @@ public class ProxyServer extends AbstractServer {
     }
 
     public void initialize() {
+        heartbeatExecutor = Executors.newFixedThreadPool(
+                this.serverConfig.getHeartbeatActionThreadPoolNums(),
+                new DefaultThreadFactory("heartbeat-action-thread")
+        );
         appInfoActionExecutor = Executors.newFixedThreadPool(
                 this.serverConfig.getAppInfoActionThreadPoolNums(),
                 new DefaultThreadFactory("app-info-action-thread")
@@ -98,6 +104,7 @@ public class ProxyServer extends AbstractServer {
     }
 
     public void registProcessor() {
+        this.netServer.registProcessor(HEARTBEAT_REQ.value(), new HeartbeatProcessor(), heartbeatExecutor);
         this.netServer.registProcessor(APP_INFO_REQ.value(), new AppInfo2ZkProcessor(zkClient), appInfoActionExecutor);
         this.netServer.registProcessor(REQUEST_INFO_REQ.value(), new RequestInfo2KafkaProcessor(kafkaProducerWrapper),
                 requestInfoActionExecutor);

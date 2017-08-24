@@ -7,7 +7,6 @@ import cn.howardliu.monitor.cynomys.net.NetServer;
 import cn.howardliu.monitor.cynomys.net.codec.MessageDecoder;
 import cn.howardliu.monitor.cynomys.net.codec.MessageEncoder;
 import cn.howardliu.monitor.cynomys.net.handler.OtherInfoHandler;
-import cn.howardliu.monitor.cynomys.net.handler.SimpleHeartbeatHandler;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -158,12 +157,6 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
                         .addLast(new MessageEncoder())
                         .addLast(new NettyConnectManageHandler())
                         .addLast(additionalChannelHandler())
-                        .addLast(new SimpleHeartbeatHandler(nettyServerConfig.getServerName()) {
-                            @Override
-                            protected void handlerIdle(ChannelHandlerContext ctx) {
-                                NetHelper.closeChannel(ctx.channel());
-                            }
-                        })
                         .addLast(additionalChannelHandler2())
                         .addLast(new OtherInfoHandler() {
                             @Override
@@ -265,11 +258,11 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             final String remoteAddress = NetHelper.remoteAddress(ctx.channel());
             logger.info("NETTY SERVER PIPELINE: channelRead {}", remoteAddress);
-            super.channelRead(ctx, msg);
             if (channelEventListener != null && msg instanceof Message) {
                 Message m = (Message) msg;
                 putNettyEvent(new NettyEvent(NettyEventType.READ, remoteAddress, ctx.channel(), m.getHeader()));
             }
+            super.channelRead(ctx, msg);
         }
 
         @Override

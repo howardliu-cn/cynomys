@@ -13,6 +13,7 @@ public class ServerConfig {
     private int listenPort = ProxyConfig.PROXY_CONFIG.getPort();
     private int ctrlPort = ProxyConfig.PROXY_CONFIG.getCport();
 
+    private int heartbeatActionThreadPoolNums = 16 + Runtime.getRuntime().availableProcessors() * 2;
     private int appInfoActionThreadPoolNums = 16 + Runtime.getRuntime().availableProcessors() * 2;
     private int requestInfoActionThreadPoolNums = 16 + Runtime.getRuntime().availableProcessors() * 2;
     private int sqlInfoActionThreadPoolNums = 16 + Runtime.getRuntime().availableProcessors() * 2;
@@ -41,6 +42,15 @@ public class ServerConfig {
 
     public ServerConfig setCtrlPort(int ctrlPort) {
         this.ctrlPort = ctrlPort;
+        return this;
+    }
+
+    public int getHeartbeatActionThreadPoolNums() {
+        return heartbeatActionThreadPoolNums;
+    }
+
+    public ServerConfig setHeartbeatActionThreadPoolNums(int heartbeatActionThreadPoolNums) {
+        this.heartbeatActionThreadPoolNums = heartbeatActionThreadPoolNums;
         return this;
     }
 

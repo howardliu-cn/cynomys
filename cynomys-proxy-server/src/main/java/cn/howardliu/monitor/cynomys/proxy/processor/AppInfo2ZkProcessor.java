@@ -26,7 +26,7 @@ public class AppInfo2ZkProcessor extends AbstractInfo2ZkProcessor {
         Header header = request.getHeader();
         if (logger.isDebugEnabled()) {
             logger.debug("{}-{}-{} send application info",
-                    header.getSysCode(), header.getSysName(), header.getTag());
+                    header.getSysName(), header.getSysCode(), header.getTag());
         }
         Message response = send(ctx, request, "/" + header.getSysName() + "-" + header.getSysCode());
         response.getHeader().setCode(MessageCode.APP_INFO_RESP.value());
