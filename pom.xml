@@ -11,7 +11,7 @@
         <module>cynomys-net</module>
         <module>cynomys-client-common</module>
         <module>cynomys-agent</module>
-        <!--<module>cynomys-warn</module>-->
+        <module>cynomys-warn</module>
         <module>cynomys-spring</module>
         <!--<module>cynomys-config-server</module>-->
         <module>cynomys-proxy-server</module>
