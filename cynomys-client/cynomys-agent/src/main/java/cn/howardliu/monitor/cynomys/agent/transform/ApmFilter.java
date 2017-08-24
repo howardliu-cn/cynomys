@@ -5,9 +5,7 @@ import cn.howardliu.monitor.cynomys.agent.conf.SystemPropertyConfig;
 import java.util.HashSet;
 import java.util.Set;
 
-import static cn.howardliu.monitor.cynomys.agent.common.Constant.SYSTEM_SETTING_EXCLUDE_CLASS_LOADER;
-import static cn.howardliu.monitor.cynomys.agent.common.Constant.SYSTEM_SETTING_EXCLUDE_PACKAGE;
-import static cn.howardliu.monitor.cynomys.agent.common.Constant.SYSTEM_SETTING_INCLUDE_PACKAGE;
+import static cn.howardliu.monitor.cynomys.agent.common.Constant.*;
 
 /**
  * <br>created at 17-3-22

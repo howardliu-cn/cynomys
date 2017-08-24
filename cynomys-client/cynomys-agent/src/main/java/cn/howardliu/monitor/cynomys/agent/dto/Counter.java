@@ -19,7 +19,6 @@ package cn.howardliu.monitor.cynomys.agent.dto;
 
 import cn.howardliu.monitor.cynomys.common.ThreadMXBeanUtils;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

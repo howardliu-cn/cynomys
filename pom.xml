@@ -9,9 +9,7 @@
     <modules>
         <module>cynomys-common</module>
         <module>cynomys-net</module>
-        <module>cynomys-client-common</module>
-        <module>cynomys-agent</module>
-        <module>cynomys-warn</module>
+        <module>cynomys-client</module>
         <module>cynomys-spring</module>
         <!--<module>cynomys-config-server</module>-->
         <module>cynomys-proxy-server</module>
@@ -154,6 +152,22 @@
                 <groupId>org.xerial</groupId>
                 <artifactId>sqlite-jdbc</artifactId>
                 <version>${sqlite-jdbc.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>log4j-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
