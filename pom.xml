@@ -11,7 +11,6 @@
         <module>cynomys-net</module>
         <module>cynomys-client</module>
         <module>cynomys-spring</module>
-        <!--<module>cynomys-config-server</module>-->
         <module>cynomys-proxy-server</module>
     </modules>
     <packaging>pom</packaging>
