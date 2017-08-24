@@ -46,7 +46,7 @@ public class PropertyAdapter {
             pc.putAll(properties);
             return true;
         } catch (Exception e) {
-            logger.error("Load config file [{}] exception, please check again! Details: {}", filePath, e.getMessage());
+            logger.debug("Load config file [{}] exception, please check again!", filePath, e);
         }
         return false;
     }
