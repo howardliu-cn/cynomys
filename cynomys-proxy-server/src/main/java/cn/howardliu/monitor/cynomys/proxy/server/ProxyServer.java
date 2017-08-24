@@ -8,12 +8,8 @@ import cn.howardliu.monitor.cynomys.net.netty.NettyNetServer;
 import cn.howardliu.monitor.cynomys.net.netty.NettyServerConfig;
 import cn.howardliu.monitor.cynomys.proxy.ServerContext;
 import cn.howardliu.monitor.cynomys.proxy.config.ServerConfig;
-import cn.howardliu.monitor.cynomys.proxy.net.LinkCatchHandler;
-import cn.howardliu.monitor.cynomys.proxy.processor.AppInfo2ZkProcessor;
-import cn.howardliu.monitor.cynomys.proxy.processor.HeartbeatProcessor;
-import cn.howardliu.monitor.cynomys.proxy.processor.RequestInfo2KafkaProcessor;
-import cn.howardliu.monitor.cynomys.proxy.processor.SqlInfo2KafkaProcessor;
-import io.netty.channel.ChannelHandler;
+import cn.howardliu.monitor.cynomys.proxy.listener.LinkEventListener;
+import cn.howardliu.monitor.cynomys.proxy.processor.*;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
@@ -49,6 +45,7 @@ public class ProxyServer extends AbstractServer {
     private ExecutorService appInfoActionExecutor;
     private ExecutorService requestInfoActionExecutor;
     private ExecutorService sqlInfoActionExecutor;
+    private ExecutorService exceptionInfoActionExecutor;
 
     public ProxyServer(ServerConfig serverConfig) {
         super(serverConfig.getListenPort(), serverConfig.getCtrlPort());
@@ -74,14 +71,7 @@ public class ProxyServer extends AbstractServer {
         nettyServerConfig.setListenPort(port);
         nettyServerConfig.setServerSocketMaxFrameLength(PROXY_CONFIG.getMaxFrameLength());
         nettyServerConfig.setServerChannelMaxIdleTimeSeconds(PROXY_CONFIG.getTimeoutSeconds());
-        this.netServer = new NettyNetServer(nettyServerConfig) {
-            @Override
-            protected ChannelHandler[] additionalChannelHandler() {
-                return new ChannelHandler[]{
-                        new LinkCatchHandler(zkClient)
-                };
-            }
-        };
+        this.netServer = new NettyNetServer(nettyServerConfig, new LinkEventListener(zkClient));
     }
 
     public void initialize() {
@@ -101,6 +91,10 @@ public class ProxyServer extends AbstractServer {
                 this.serverConfig.getSqlInfoActionThreadPoolNums(),
                 new DefaultThreadFactory("sql-info-action-thread")
         );
+        exceptionInfoActionExecutor = Executors.newFixedThreadPool(
+                this.serverConfig.getExceptionInfoActionThreadPoolNums(),
+                new DefaultThreadFactory("exception-info-action-thread")
+        );
     }
 
     public void registProcessor() {
@@ -110,6 +104,9 @@ public class ProxyServer extends AbstractServer {
                 requestInfoActionExecutor);
         this.netServer.registProcessor(SQL_INFO_REQ.value(), new SqlInfo2KafkaProcessor(kafkaProducerWrapper),
                 sqlInfoActionExecutor);
+        this.netServer
+                .registProcessor(EXCEPTION_INFO_REQ.value(), new ExceptionInfo2KafkaProcessor(kafkaProducerWrapper),
+                        exceptionInfoActionExecutor);
     }
 
     @Override

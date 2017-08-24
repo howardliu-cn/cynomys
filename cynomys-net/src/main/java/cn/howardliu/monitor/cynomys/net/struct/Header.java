@@ -1,5 +1,7 @@
 package cn.howardliu.monitor.cynomys.net.struct;
 
+import cn.howardliu.monitor.cynomys.common.Constant;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static cn.howardliu.monitor.cynomys.common.Constant.CRC_CODE;
@@ -23,6 +25,7 @@ public class Header {
     private int length;
     private byte type;
     private byte code;
+    private byte monitorPath = (byte) (Constant.onlyException ? 0 : 1);
 
     public int getOpaque() {
         return opaque;
@@ -96,6 +99,15 @@ public class Header {
         return this;
     }
 
+    public byte getMonitorPath() {
+        return monitorPath;
+    }
+
+    public Header setMonitorPath(byte monitorPath) {
+        this.monitorPath = monitorPath;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -131,6 +143,7 @@ public class Header {
                 ", length=" + length +
                 ", type=" + type +
                 ", code=" + code +
+                ", monitorPath=" + monitorPath +
                 '}';
     }
 }
