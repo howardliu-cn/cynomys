@@ -17,6 +17,7 @@ public class ServerConfig {
     private int appInfoActionThreadPoolNums = 16 + Runtime.getRuntime().availableProcessors() * 2;
     private int requestInfoActionThreadPoolNums = 16 + Runtime.getRuntime().availableProcessors() * 2;
     private int sqlInfoActionThreadPoolNums = 16 + Runtime.getRuntime().availableProcessors() * 2;
+    private int exceptionInfoActionThreadPoolNums = 16 + Runtime.getRuntime().availableProcessors() * 2;
 
     public String getServerName() {
         return serverName;
@@ -78,6 +79,15 @@ public class ServerConfig {
 
     public ServerConfig setSqlInfoActionThreadPoolNums(int sqlInfoActionThreadPoolNums) {
         this.sqlInfoActionThreadPoolNums = sqlInfoActionThreadPoolNums;
+        return this;
+    }
+
+    public int getExceptionInfoActionThreadPoolNums() {
+        return exceptionInfoActionThreadPoolNums;
+    }
+
+    public ServerConfig setExceptionInfoActionThreadPoolNums(int exceptionInfoActionThreadPoolNums) {
+        this.exceptionInfoActionThreadPoolNums = exceptionInfoActionThreadPoolNums;
         return this;
     }
 }

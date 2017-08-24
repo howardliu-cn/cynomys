@@ -18,11 +18,13 @@ public enum MessageCode {
     SQL_INFO_REQ((byte) 6),
     SQL_INFO_RESP((byte) 7),
     REQUEST_INFO_REQ((byte) 8),
-    REQUEST_INFO_RESP((byte) 9);
+    REQUEST_INFO_RESP((byte) 9),
+    EXCEPTION_INFO_REQ((byte) 10),
+    EXCEPTION_INFO_RESP((byte) 11);
 
     private byte value;
 
-    private MessageCode(byte value) {
+    MessageCode(byte value) {
         this.value = value;
     }
 

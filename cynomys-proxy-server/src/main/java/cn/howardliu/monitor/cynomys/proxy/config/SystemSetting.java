@@ -83,6 +83,10 @@ public enum SystemSetting {
         return param.getKafkaTopicRequest();
     }
 
+    public String getKafkaTopicException() {
+        return param.getKafkaTopicException();
+    }
+
     public static class SystemSettingParam {
         @Key("system.setting.zk.addresses")
         private String zkAddresses;
@@ -109,6 +113,8 @@ public enum SystemSetting {
         private String kafkaTopicSql;
         @Key("system.setting.kafka.topic.request")
         private String kafkaTopicRequest;
+        @Key("system.setting.kafka.topic.exception")
+        private String kafkaTopicException;
 
         public String getZkAddresses() {
             return zkAddresses;
@@ -204,6 +210,15 @@ public enum SystemSetting {
 
         public void setKafkaTopicRequest(String kafkaTopicRequest) {
             this.kafkaTopicRequest = kafkaTopicRequest;
+        }
+
+        public String getKafkaTopicException() {
+            return kafkaTopicException;
+        }
+
+        public SystemSettingParam setKafkaTopicException(String kafkaTopicException) {
+            this.kafkaTopicException = kafkaTopicException;
+            return this;
         }
     }
 }
