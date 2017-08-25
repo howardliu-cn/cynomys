@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
  * @since 0.0.1
  */
 public enum LaunchLatch {
-    LATCH;
+    STARTED, CLIENT_INIT;
 
     private final CountDownLatch latch;
 
