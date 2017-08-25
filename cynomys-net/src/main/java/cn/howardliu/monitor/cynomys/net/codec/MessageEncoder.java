@@ -34,6 +34,7 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
 
         out.writeByte(msg.getHeader().getType());
         out.writeByte(msg.getHeader().getCode());
+        out.writeByte(msg.getHeader().getFlagPath());
 
         if (msg.getBody() == null) {
             out.writeInt(0);

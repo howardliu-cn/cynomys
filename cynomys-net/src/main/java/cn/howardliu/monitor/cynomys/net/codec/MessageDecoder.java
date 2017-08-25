@@ -40,6 +40,7 @@ public class MessageDecoder extends LengthFieldBasedFrameDecoder {
                                 .setSysCode(frame.readCharSequence(frame.readInt(), CharsetUtil.UTF_8).toString())
                                 .setType(frame.readByte())
                                 .setCode(frame.readByte())
+                                .setFlagPath(frame.readByte())
                 );
         if (frame.readableBytes() > 4) {
             message.setBody(frame.readCharSequence(frame.readInt(), CharsetUtil.UTF_8).toString());

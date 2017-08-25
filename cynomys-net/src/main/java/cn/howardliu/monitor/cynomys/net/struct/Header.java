@@ -25,7 +25,7 @@ public class Header {
     private int length;
     private byte type;
     private byte code;
-    private byte monitorPath = (byte) (Constant.onlyException ? 0 : 1);
+    private byte flagPath = (byte) (Constant.NO_FLAG ? 0 : 1);
 
     public int getOpaque() {
         return opaque;
@@ -99,12 +99,12 @@ public class Header {
         return this;
     }
 
-    public byte getMonitorPath() {
-        return monitorPath;
+    public byte getFlagPath() {
+        return flagPath;
     }
 
-    public Header setMonitorPath(byte monitorPath) {
-        this.monitorPath = monitorPath;
+    public Header setFlagPath(byte flagPath) {
+        this.flagPath = flagPath;
         return this;
     }
 
@@ -143,7 +143,7 @@ public class Header {
                 ", length=" + length +
                 ", type=" + type +
                 ", code=" + code +
-                ", monitorPath=" + monitorPath +
+                ", flagPath=" + flagPath +
                 '}';
     }
 }
