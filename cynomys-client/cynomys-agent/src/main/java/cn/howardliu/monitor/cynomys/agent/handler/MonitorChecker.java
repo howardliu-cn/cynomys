@@ -1,8 +1,8 @@
 package cn.howardliu.monitor.cynomys.agent.handler;
 
-import cn.howardliu.monitor.cynomys.client.ClientConfig;
-import cn.howardliu.monitor.cynomys.client.CynomysClient;
-import cn.howardliu.monitor.cynomys.client.CynomysClientManager;
+import cn.howardliu.monitor.cynomys.client.common.ClientConfig;
+import cn.howardliu.monitor.cynomys.client.common.CynomysClient;
+import cn.howardliu.monitor.cynomys.client.common.CynomysClientManager;
 import cn.howardliu.monitor.cynomys.net.SimpleChannelEventListener;
 import cn.howardliu.monitor.cynomys.net.exception.NetConnectException;
 import cn.howardliu.monitor.cynomys.net.exception.NetSendRequestException;

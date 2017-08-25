@@ -7,7 +7,7 @@ import cn.howardliu.monitor.cynomys.common.LaunchLatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static cn.howardliu.monitor.cynomys.agent.common.Constant.started;
+import static cn.howardliu.monitor.cynomys.client.common.Constant.started;
 import static cn.howardliu.monitor.cynomys.common.Constant.SERVER_PORT;
 
 /**

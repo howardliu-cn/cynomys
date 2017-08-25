@@ -1,4 +1,4 @@
-package cn.howardliu.monitor.cynomys.agent.conf;
+package cn.howardliu.monitor.cynomys.client.common;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

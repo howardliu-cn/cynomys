@@ -1,4 +1,4 @@
-package cn.howardliu.monitor.cynomys.agent.common;
+package cn.howardliu.monitor.cynomys.client.common;
 
 /**
  * <br>created at 17-4-11

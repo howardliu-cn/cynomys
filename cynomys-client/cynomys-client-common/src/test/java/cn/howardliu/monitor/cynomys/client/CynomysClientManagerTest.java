@@ -1,5 +1,8 @@
 package cn.howardliu.monitor.cynomys.client;
 
+import cn.howardliu.monitor.cynomys.client.common.ClientConfig;
+import cn.howardliu.monitor.cynomys.client.common.CynomysClient;
+import cn.howardliu.monitor.cynomys.client.common.CynomysClientManager;
 import cn.howardliu.monitor.cynomys.net.SimpleChannelEventListener;
 import io.netty.channel.Channel;
 import org.junit.Assert;

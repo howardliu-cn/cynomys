@@ -1,11 +1,11 @@
 package cn.howardliu.monitor.cynomys.agent.transform;
 
-import cn.howardliu.monitor.cynomys.agent.conf.SystemPropertyConfig;
+import cn.howardliu.monitor.cynomys.client.common.SystemPropertyConfig;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static cn.howardliu.monitor.cynomys.agent.common.Constant.*;
+import static cn.howardliu.monitor.cynomys.client.common.Constant.*;
 
 /**
  * <br>created at 17-3-22

@@ -1,4 +1,4 @@
-package cn.howardliu.monitor.cynomys.client;
+package cn.howardliu.monitor.cynomys.client.common;
 
 import cn.howardliu.monitor.cynomys.common.CynomysVersion;
 import cn.howardliu.monitor.cynomys.net.ChannelEventListener;

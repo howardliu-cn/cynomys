@@ -1,4 +1,4 @@
-package cn.howardliu.monitor.cynomys.agent.conf;
+package cn.howardliu.monitor.cynomys.client.common;
 
 import cn.howardliu.monitor.cynomys.common.Constant;
 import org.apache.commons.io.FileUtils;
@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static cn.howardliu.monitor.cynomys.agent.common.Constant.*;
+import static cn.howardliu.monitor.cynomys.client.common.Constant.*;
 import static org.apache.commons.lang3.SystemUtils.USER_HOME;
 
 /**

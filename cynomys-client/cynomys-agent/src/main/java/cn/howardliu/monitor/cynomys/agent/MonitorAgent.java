@@ -1,8 +1,8 @@
 package cn.howardliu.monitor.cynomys.agent;
 
-import cn.howardliu.monitor.cynomys.agent.conf.SystemPropertyConfig;
 import cn.howardliu.monitor.cynomys.agent.counter.MonitorStarter;
 import cn.howardliu.monitor.cynomys.agent.transform.MonitoringTransformer;
+import cn.howardliu.monitor.cynomys.client.common.SystemPropertyConfig;
 import cn.howardliu.monitor.cynomys.common.Constant;
 
 import java.lang.instrument.Instrumentation;
