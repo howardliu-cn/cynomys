@@ -32,6 +32,10 @@ public final class SystemPropertyConfig {
     private SystemPropertyConfig() {
     }
 
+    public static void init() {
+        init(null);
+    }
+
     // 1. the config file is in jar:/conf/default-cynomys-monitor.properties
     // 2. the config file is in ~/.cynomys/cynomys-monitor.properties
     // 3. the config file is in current path: cynomys-monitor.properties

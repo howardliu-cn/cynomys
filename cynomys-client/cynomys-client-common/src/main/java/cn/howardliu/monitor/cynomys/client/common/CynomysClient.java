@@ -38,7 +38,7 @@ public class CynomysClient implements NetClient {
     private final NetClient netClient;
 
     public CynomysClient(final NettyClientConfig nettyClientConfig, final ChannelEventListener channelEventListener) {
-        this.nettyClientConfig =nettyClientConfig;
+        this.nettyClientConfig = nettyClientConfig;
         this.netClient = new NettyNetClient(nettyClientConfig, channelEventListener) {
             @Override
             protected ChannelFutureListener connectListener(String address) {
@@ -84,7 +84,7 @@ public class CynomysClient implements NetClient {
 
     @Override
     public boolean isStopped() {
-        return false;
+        return this.netClient.isStopped();
     }
 
     @Override

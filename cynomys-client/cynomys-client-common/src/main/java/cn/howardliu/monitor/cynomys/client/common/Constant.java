@@ -18,9 +18,6 @@ public final class Constant {
     public static final String SYSTEM_SETTING_INCLUDE_PACKAGE = "system.setting.include.package";
     public static final String SYSTEM_SETTING_EXCLUDE_CLASS_LOADER = "system.setting.exclude.ClassLoader";
 
-    public static final String SYSTEM_SETTING_SERVER_PORT = "system.setting.server.port";
-    public static final String SYSTEM_SETTING_SERVER_CONTEXT = "system.setting.server.context";
-
     public static volatile boolean started = false;
 
     private Constant() {

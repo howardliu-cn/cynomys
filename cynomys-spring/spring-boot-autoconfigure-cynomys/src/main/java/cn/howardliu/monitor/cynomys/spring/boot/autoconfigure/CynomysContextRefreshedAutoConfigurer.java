@@ -17,6 +17,6 @@ import org.springframework.context.event.ContextRefreshedEvent;
 public class CynomysContextRefreshedAutoConfigurer implements ApplicationListener<ContextRefreshedEvent> {
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        LaunchLatch.LATCH.start();
+        LaunchLatch.STARTED.start();
     }
 }

@@ -57,7 +57,7 @@ public enum LinkEventAction {
     }
 
     private void createLinkFlag(Header header) {
-        if (header == null || header.getMonitorPath() == 0) {
+        if (header == null || header.getFlagPath() == 0) {
             return;
         }
         try {

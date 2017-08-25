@@ -12,6 +12,8 @@ import org.springframework.web.context.ServletContextAware;
 
 import javax.servlet.ServletContext;
 
+import static cn.howardliu.monitor.cynomys.common.Constant.SERVER_PORT;
+
 /**
  * <br>created at 17-8-17
  *
@@ -25,12 +27,14 @@ public class StatedListener implements ServletContextAware, ApplicationListener<
     @Override
     public void setServletContext(ServletContext servletContext) {
         Constant.SERVLET_CONTEXT = servletContext;
-        if (TomcatInfoUtils.SERVER_IS_TOMCAT) {
-            try {
+        try {
+            if (TomcatInfoUtils.SERVER_IS_TOMCAT) {
                 Constant.SERVER_PORT = TomcatInfoUtils.getPort();
-            } catch (Exception e) {
-                logger.error("got tomcat's server port exception", e);
+            } else {
+                Constant.SERVER_PORT = Integer.valueOf(System.getProperty("server.port", SERVER_PORT + ""));
             }
+        } catch (Exception e) {
+            logger.error("got server port exception", e);
         }
         if (logger.isInfoEnabled()) {
             logger.info("the server info: "
@@ -45,6 +49,6 @@ public class StatedListener implements ServletContextAware, ApplicationListener<
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        LaunchLatch.LATCH.start();
+        LaunchLatch.STARTED.start();
     }
 }

@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static cn.howardliu.monitor.cynomys.client.common.Constant.started;
-import static cn.howardliu.monitor.cynomys.common.Constant.SERVER_PORT;
 
 /**
  * <br>created at 17-4-12
@@ -23,24 +22,16 @@ public class MonitorStarter {
     public static synchronized void run() {
         if (!started) {
             Thread thread = new Thread(() -> {
-                JavaInformations javaInformations = JavaInformations.instance(true);
+                JavaInformations.instance(true);
                 Parameters.initialize();
-                int port;
-                if (javaInformations.getTomcatInformationsList().isEmpty()) {
-                    port = Integer.valueOf(System.getProperty("server.port", SERVER_PORT + ""));
-                } else {
-                    port = Integer.valueOf(javaInformations.getTomcatInformationsList().get(0).getHttpPort());
-                }
-                SERVER_PORT = port;
                 SLACounter.init();
-
                 try {
-                    LaunchLatch.LATCH.waitForMillis(120_000);
+                    LaunchLatch.STARTED.waitForMillis(120_000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     logger.error("LaunchLatch was interrupted!", e);
                 }
-                new MonitorChecker(port).startHealth("Active");
+                new MonitorChecker().startHealth("Active");
             });
             thread.setName("monitor-starter-thread");
             thread.setDaemon(true);

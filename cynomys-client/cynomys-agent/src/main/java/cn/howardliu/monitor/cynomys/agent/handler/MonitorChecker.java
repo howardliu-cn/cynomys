@@ -3,6 +3,7 @@ package cn.howardliu.monitor.cynomys.agent.handler;
 import cn.howardliu.monitor.cynomys.client.common.ClientConfig;
 import cn.howardliu.monitor.cynomys.client.common.CynomysClient;
 import cn.howardliu.monitor.cynomys.client.common.CynomysClientManager;
+import cn.howardliu.monitor.cynomys.common.LaunchLatch;
 import cn.howardliu.monitor.cynomys.net.SimpleChannelEventListener;
 import cn.howardliu.monitor.cynomys.net.exception.NetConnectException;
 import cn.howardliu.monitor.cynomys.net.exception.NetSendRequestException;
@@ -41,9 +42,9 @@ public class MonitorChecker implements Health, Closeable {
     private volatile boolean isMonitorStop = false;
     private AppMonitor appMonitor;
 
-    public MonitorChecker(Integer p) {
+    public MonitorChecker() {
         this.appName = SYS_NAME;
-        appMonitor = AppMonitor.instance(p);
+        appMonitor = AppMonitor.instance(SERVER_PORT);
         cynomysClient = CynomysClientManager.INSTANCE
                 .getAndCreateCynomysClient(
                         new ClientConfig(),
@@ -65,11 +66,13 @@ public class MonitorChecker implements Health, Closeable {
                                     TimeUnit.MILLISECONDS
                                             .sleep(cynomysClient.getNettyClientConfig().getRelinkDelayMillis());
                                     cynomysClient.connect();
-                                } catch (InterruptedException ignored) {
+                                } catch (Exception e) {
+                                    logger.error("reconnect exception", e);
                                 }
                             }
                         }
                 );
+        LaunchLatch.CLIENT_INIT.start();
         cynomysClient.updateAddressList(SERVER_LIST);
         cynomysClient.start();
         try {

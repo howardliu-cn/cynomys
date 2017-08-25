@@ -207,6 +207,10 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
 
     @Override
     public void shutdown() {
+        if (!this.stop) {
+            logger.warn("NettyNetClient is stopped!");
+            return;
+        }
         this.stop = true;
 
         try {
