@@ -27,7 +27,7 @@ public class ResponseFuture {
     private final AtomicBoolean executeCallbackOnlyOnce = new AtomicBoolean(false);
 
     private volatile Message response;
-    private volatile boolean sendRequestOK = true;
+    private volatile boolean sendRequestOK;
     private volatile Throwable cause;
 
     public ResponseFuture(int opaque, long timeoutMillis,
