@@ -53,6 +53,10 @@ public class ExceptionLog implements WarnLog {
         return this;
     }
 
+    public void setErrLevelEnum(ErrorLevel errLevel) {
+        this.errLevel = errLevel.getCode();
+    }
+
     public String getSysCode() {
         return sysCode;
     }
@@ -150,5 +154,9 @@ public class ExceptionLog implements WarnLog {
     public ExceptionLog setProcessStatus(String processStatus) {
         this.processStatus = processStatus;
         return this;
+    }
+
+    public void setProcessStatusEnum(ProcessStatus processStatus) {
+        this.processStatus = processStatus.getCode();
     }
 }
