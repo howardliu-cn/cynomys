@@ -1,6 +1,6 @@
 package cn.howardliu.cynomys.warn;
 
-import cn.howardliu.cynomys.warn.log.exception.*;
+import cn.howardliu.cynomys.warn.exception.*;
 import cn.howardliu.monitor.cynomys.client.common.ClientConfig;
 import cn.howardliu.monitor.cynomys.client.common.CynomysClient;
 import cn.howardliu.monitor.cynomys.client.common.CynomysClientManager;

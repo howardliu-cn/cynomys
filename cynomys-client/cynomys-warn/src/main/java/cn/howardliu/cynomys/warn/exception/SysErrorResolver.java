@@ -1,4 +1,4 @@
-package cn.howardliu.cynomys.warn.log.exception;
+package cn.howardliu.cynomys.warn.exception;
 
 import javax.xml.crypto.NoSuchMechanismException;
 import javax.xml.ws.WebServiceException;

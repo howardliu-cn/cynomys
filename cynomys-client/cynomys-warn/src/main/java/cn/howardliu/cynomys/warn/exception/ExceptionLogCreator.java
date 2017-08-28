@@ -1,4 +1,4 @@
-package cn.howardliu.cynomys.warn.log.exception;
+package cn.howardliu.cynomys.warn.exception;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;

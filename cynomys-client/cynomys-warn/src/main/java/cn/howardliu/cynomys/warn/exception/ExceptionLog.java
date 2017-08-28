@@ -1,6 +1,6 @@
-package cn.howardliu.cynomys.warn.log.exception;
+package cn.howardliu.cynomys.warn.exception;
 
-import cn.howardliu.cynomys.warn.log.WarnLog;
+import cn.howardliu.cynomys.warn.WarnLog;
 
 import java.util.Date;
 
