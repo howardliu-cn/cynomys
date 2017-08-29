@@ -76,7 +76,7 @@ public class JavaInformations implements Serializable {
     private static boolean localWebXmlExists = true;
     private static boolean localPomXmlExists = true;
     private MemoryInformations memoryInformations;
-    private List<TomcatInformations> tomcatInformationsList = Collections.synchronizedList(new ArrayList<>());
+    private List<TomcatInformations> tomcatInformationsList = Collections.synchronizedList(new ArrayList<TomcatInformations>());
     private int sessionCount;
     private long sessionAgeSum;
     private int activeThreadCount;

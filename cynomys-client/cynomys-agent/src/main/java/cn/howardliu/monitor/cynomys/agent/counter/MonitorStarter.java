@@ -21,19 +21,21 @@ public class MonitorStarter {
 
     public static synchronized void run() {
         if (!started) {
-            Thread thread = new Thread(() -> {
-                JavaInformations.instance(true);
-                Parameters.initialize();
-                SLACounter.init();
-                try {
-                    LaunchLatch.STARTED.waitForMillis(120_000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    logger.error("LaunchLatch was interrupted!", e);
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    JavaInformations.instance(true);
+                    Parameters.initialize();
+                    SLACounter.init();
+                    try {
+                        LaunchLatch.STARTED.waitForMillis(120_000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        logger.error("LaunchLatch was interrupted!", e);
+                    }
+                    new MonitorChecker().startHealth("Active");
                 }
-                new MonitorChecker().startHealth("Active");
-            });
-            thread.setName("monitor-starter-thread");
+            }, "monitor-starter-thread");
             thread.setDaemon(true);
             thread.start();
 

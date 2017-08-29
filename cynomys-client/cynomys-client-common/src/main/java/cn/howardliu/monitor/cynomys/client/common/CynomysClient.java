@@ -11,6 +11,7 @@ import cn.howardliu.monitor.cynomys.net.exception.NetTooMuchRequestException;
 import cn.howardliu.monitor.cynomys.net.netty.NettyClientConfig;
 import cn.howardliu.monitor.cynomys.net.netty.NettyNetClient;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,15 +42,18 @@ public class CynomysClient implements NetClient {
         this.nettyClientConfig = nettyClientConfig;
         this.netClient = new NettyNetClient(nettyClientConfig, channelEventListener) {
             @Override
-            protected ChannelFutureListener connectListener(String address) {
-                return future -> {
-                    if (future.isSuccess()) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Connect to server [{}] successfully!", address);
-                        }
-                    } else {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Failed to connect to server [{}]!", address);
+            protected ChannelFutureListener connectListener(final String address) {
+                return new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        if (future.isSuccess()) {
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Connect to server [{}] successfully!", address);
+                            }
+                        } else {
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Failed to connect to server [{}]!", address);
+                            }
                         }
                     }
                 };

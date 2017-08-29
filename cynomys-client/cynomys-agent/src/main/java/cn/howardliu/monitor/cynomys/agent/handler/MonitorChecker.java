@@ -182,67 +182,70 @@ public class MonitorChecker implements Health, Closeable {
      */
     private void hearthCheck(final Long splitTime) {
         isMonitorStop = false;
-        this.m = new Thread(() -> {
-            try {
-                while (!isMonitorStop) {
-                    // 1.构建系统实时状态并存储
-                    String appInfo = appMonitor.buildAppInfo();
-                    if (appInfo != null) {
-                        sendData(
-                                new Message()
-                                        .setHeader(
-                                                new Header()
-                                                        .setSysName(SYS_NAME)
-                                                        .setSysCode(SYS_CODE)
-                                                        .setLength(appInfo.length())
-                                                        .setType(MessageType.REQUEST.value())
-                                                        .setCode(MessageCode.APP_INFO_REQ.value())
-                                        )
-                                        .setBody(appInfo)
-                        );
-                    }
+        this.m = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    while (!isMonitorStop) {
+                        // 1.构建系统实时状态并存储
+                        String appInfo = appMonitor.buildAppInfo();
+                        if (appInfo != null) {
+                            sendData(
+                                    new Message()
+                                            .setHeader(
+                                                    new Header()
+                                                            .setSysName(SYS_NAME)
+                                                            .setSysCode(SYS_CODE)
+                                                            .setLength(appInfo.length())
+                                                            .setType(MessageType.REQUEST.value())
+                                                            .setCode(MessageCode.APP_INFO_REQ.value())
+                                            )
+                                            .setBody(appInfo)
+                            );
+                        }
 
-                    // 2.SQL计数信息
-                    String sqlInfo = appMonitor.buildSQLCountsInfo();
-                    if (sqlInfo != null) {
-                        sendData(
-                                new Message()
-                                        .setHeader(
-                                                new Header()
-                                                        .setSysName(SYS_NAME)
-                                                        .setSysCode(SYS_CODE)
-                                                        .setLength(sqlInfo.length())
-                                                        .setType(MessageType.REQUEST.value())
-                                                        .setCode(MessageCode.SQL_INFO_REQ.value())
-                                        )
-                                        .setBody(sqlInfo)
-                        );
-                    }
+                        // 2.SQL计数信息
+                        String sqlInfo = appMonitor.buildSQLCountsInfo();
+                        if (sqlInfo != null) {
+                            sendData(
+                                    new Message()
+                                            .setHeader(
+                                                    new Header()
+                                                            .setSysName(SYS_NAME)
+                                                            .setSysCode(SYS_CODE)
+                                                            .setLength(sqlInfo.length())
+                                                            .setType(MessageType.REQUEST.value())
+                                                            .setCode(MessageCode.SQL_INFO_REQ.value())
+                                            )
+                                            .setBody(sqlInfo)
+                            );
+                        }
 
-                    // 3. 请求计数信息
-                    String requestInfo = appMonitor.buildRequestCountInfo();
-                    if (requestInfo != null) {
-                        sendData(
-                                new Message()
-                                        .setHeader(
-                                                new Header()
-                                                        .setSysName(SYS_NAME)
-                                                        .setSysCode(SYS_CODE)
-                                                        .setLength(requestInfo.length())
-                                                        .setType(MessageType.REQUEST.value())
-                                                        .setCode(MessageCode.REQUEST_INFO_REQ.value())
-                                        )
-                                        .setBody(requestInfo)
-                        );
-                    }
+                        // 3. 请求计数信息
+                        String requestInfo = appMonitor.buildRequestCountInfo();
+                        if (requestInfo != null) {
+                            sendData(
+                                    new Message()
+                                            .setHeader(
+                                                    new Header()
+                                                            .setSysName(SYS_NAME)
+                                                            .setSysCode(SYS_CODE)
+                                                            .setLength(requestInfo.length())
+                                                            .setType(MessageType.REQUEST.value())
+                                                            .setCode(MessageCode.REQUEST_INFO_REQ.value())
+                                            )
+                                            .setBody(requestInfo)
+                            );
+                        }
 
-                    // 4.进入休眠，等待下一次执行，默认5分钟执行一次
-                    Thread.sleep(splitTime);
+                        // 4.进入休眠，等待下一次执行，默认5分钟执行一次
+                        Thread.sleep(splitTime);
+                    }
+                    logger.debug("Health Monitor Service is Stop!");
+                } catch (InterruptedException e) {
+                    logger.error("cannot load monitor module", e);
+                    Thread.currentThread().interrupt();
                 }
-                logger.debug("Health Monitor Service is Stop!");
-            } catch (InterruptedException e) {
-                logger.error("cannot load monitor module", e);
-                Thread.currentThread().interrupt();
             }
         }, "monitor-agent-hearth-thread");
         m.setDaemon(true);
