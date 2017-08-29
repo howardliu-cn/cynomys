@@ -4,9 +4,8 @@ import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <br>created at 17-8-22
@@ -16,8 +15,7 @@ import java.util.Map;
  */
 public class StatementAspect {
     private static final Logger logger = LoggerFactory.getLogger(StatementAspect.class);
-    private static final Map<Long, StatementExecuteWrapper> RUNNER_MAP =
-            Collections.synchronizedMap(new HashMap<Long, StatementExecuteWrapper>());
+    private static final Map<Long, StatementExecuteWrapper> RUNNER_MAP = new ConcurrentHashMap<>();
 
     public static void begin(long tid, String sql) {
         if (RUNNER_MAP.containsKey(tid)) {

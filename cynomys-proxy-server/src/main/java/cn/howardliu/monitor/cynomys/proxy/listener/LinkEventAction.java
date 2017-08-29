@@ -10,9 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <br>created at 17-8-24
@@ -24,7 +23,7 @@ public enum LinkEventAction {
     ACTION(null);
 
     private static final Logger logger = LoggerFactory.getLogger(LinkEventAction.class);
-    private static final Map<Channel, Header> ctxSets = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<Channel, Header> ctxSets = new ConcurrentHashMap<>();
     private CuratorFramework zkClient;
 
     LinkEventAction(CuratorFramework zkClient) {

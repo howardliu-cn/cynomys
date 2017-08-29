@@ -6,9 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.PreparedStatement;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <br>created at 17-4-14
@@ -19,8 +18,7 @@ import java.util.Map;
  */
 public class PreparedStatementAspect {
     private static final Logger logger = LoggerFactory.getLogger(PreparedStatementAspect.class);
-    private static final Map<Long, ExecuteRunnerWrapper> RUNNER_MAP =
-            Collections.synchronizedMap(new HashMap<Long, ExecuteRunnerWrapper>());
+    private static final Map<Long, ExecuteRunnerWrapper> RUNNER_MAP = new ConcurrentHashMap<>();
 
     public static void begin(long tid, PreparedStatement stmt) {
         assert stmt != null;

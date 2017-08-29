@@ -1,8 +1,7 @@
 package cn.howardliu.monitor.cynomys.agent.common;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <br>created at 17-4-14
@@ -12,8 +11,7 @@ import java.util.Map;
  * @since 0.0.1
  */
 public class SqlHolder {
-    private static final Map<String, String> STATEMENT_HASHCODE_SQL_MAP =
-            Collections.synchronizedMap(new HashMap<String, String>());
+    private static final Map<String, String> STATEMENT_HASHCODE_SQL_MAP = new ConcurrentHashMap<>();
 
     public static boolean contains(int hashCode) {
         return STATEMENT_HASHCODE_SQL_MAP.containsKey(hashCode + "");

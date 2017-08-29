@@ -1,9 +1,8 @@
 package cn.howardliu.monitor.cynomys.agent.counter;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <br>created at 17-4-11
@@ -13,7 +12,7 @@ import java.util.UUID;
  * @since 0.0.1
  */
 public class Counter {
-    private static final Map<String, Counter> COUNTER_COLLECTOR = Collections.synchronizedMap(new HashMap<String, Counter>());
+    private static final Map<String, Counter> COUNTER_COLLECTOR = new ConcurrentHashMap<>();
 
     protected final String counterName = "default";
     protected final String id = UUID.randomUUID().toString();

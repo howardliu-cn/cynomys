@@ -7,9 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static cn.howardliu.monitor.cynomys.common.Constant.HEADER_SERVER_TAG;
 import static cn.howardliu.monitor.cynomys.common.Constant.THIS_TAG;
@@ -25,8 +24,7 @@ import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
  */
 public class RequestAspect {
     private static final Logger logger = LoggerFactory.getLogger(RequestAspect.class);
-    private static final Map<Long, RequestDataWrapper> REQUEST_COUNTER_MAP =
-            Collections.synchronizedMap(new HashMap<Long, RequestDataWrapper>());
+    private static final Map<Long, RequestDataWrapper> REQUEST_COUNTER_MAP = new ConcurrentHashMap<>();
 
     public static void begin(long tid, HttpServletRequest request, HttpServletResponse response) {
         assert request != null;
