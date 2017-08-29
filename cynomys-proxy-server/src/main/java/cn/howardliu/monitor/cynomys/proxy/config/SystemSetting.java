@@ -216,9 +216,8 @@ public enum SystemSetting {
             return kafkaTopicException;
         }
 
-        public SystemSettingParam setKafkaTopicException(String kafkaTopicException) {
+        public void setKafkaTopicException(String kafkaTopicException) {
             this.kafkaTopicException = kafkaTopicException;
-            return this;
         }
     }
 }
