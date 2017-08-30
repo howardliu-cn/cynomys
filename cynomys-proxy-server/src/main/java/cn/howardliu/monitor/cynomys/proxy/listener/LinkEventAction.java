@@ -35,10 +35,13 @@ public enum LinkEventAction {
     }
 
     public void link(Channel channel, Header header) {
-        if (ctxSets.get(channel) == null
-                || (header != null && header.equals(ctxSets.get(channel)))) {
-            logger.debug("link event from client, create monitor path, header={}, channel={}",
-                    channel.toString(), header);
+        if (logger.isDebugEnabled()) {
+            logger.debug("link event from client, create monitor path, channel={}", channel.toString());
+        }
+        if (header == null) {
+            return;
+        }
+        if (ctxSets.get(channel) == null || !ctxSets.get(channel).equals(header)) {
             ctxSets.put(channel, header);
         }
         createLinkFlag(header);
