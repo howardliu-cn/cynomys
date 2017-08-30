@@ -34,9 +34,26 @@ public class StatementHandler extends SqlHandler {
     }
 
     private void doWeave(CtClass ctClass, String methodName) {
+        String ctClassName = ctClass.getName();
         try {
             CtMethod[] ctMethods = ctClass.getDeclaredMethods(methodName);
             for (CtMethod ctMethod : ctMethods) {
+                CtClass[] parameterTypes = ctMethod.getParameterTypes();
+                if (parameterTypes.length == 0 || !parameterTypes[0].getName().equals("java.lang.String")) {
+                    if (!"org.sqlite.jdbc3.JDBC3PreparedStatement".equals(ctClassName)) {
+                        StringBuilder errMsg = new StringBuilder(ctClassName + "#" + methodName + "(");
+                        for (CtClass parameterType : parameterTypes) {
+                            errMsg.append(parameterType.getName()).append(", ");
+                        }
+                        errMsg.append(")");
+                        System.err.println("\n\n===========================================================");
+                        System.err.println("If you saw this line, email howardliu1988@163.com, please!" +
+                                " Or your application will be destroy by some unknown error!");
+                        System.err.println(errMsg);
+                        System.err.println("\n\n===========================================================");
+                    }
+                    return;
+                }
                 ctMethod.insertBefore(
                         "cn.howardliu.monitor.cynomys.agent.transform.aspect.StatementAspect.begin(Thread.currentThread().getId(), $1);"
                 );
@@ -52,7 +69,7 @@ public class StatementHandler extends SqlHandler {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            logger.warn("SKIPPED " + methodName + " in " + ctClass.getName() + ", the reason is " + e.getMessage());
+            logger.warn("SKIPPED " + methodName + " in " + ctClassName + ", the reason is " + e.getMessage());
         }
     }
 
