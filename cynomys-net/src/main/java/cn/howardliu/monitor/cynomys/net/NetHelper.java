@@ -116,12 +116,22 @@ public final class NetHelper {
         }
     }
 
+    public static String localAddress(final Channel channel) {
+        if (channel == null) {
+            return "";
+        }
+        return getAddress(channel.localAddress());
+    }
+
     public static String remoteAddress(final Channel channel) {
         if (channel == null) {
             return "";
         }
-        SocketAddress remote = channel.remoteAddress();
-        final String address = remote == null ? "" : remote.toString();
+        return getAddress(channel.remoteAddress());
+    }
+
+    private static String getAddress(SocketAddress socketAddress) {
+        final String address = socketAddress == null ? "" : socketAddress.toString();
         if (address.isEmpty()) {
             return "";
         } else if (address.contains("/")) {

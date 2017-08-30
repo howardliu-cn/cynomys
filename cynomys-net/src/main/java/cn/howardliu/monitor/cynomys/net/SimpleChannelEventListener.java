@@ -15,29 +15,43 @@ public class SimpleChannelEventListener implements ChannelEventListener {
     private static final Logger logger = LoggerFactory.getLogger(SimpleChannelEventListener.class);
 
     @Override
-    public void onChannelConnect(String address, Channel channel) {
-        logger.debug("got CONNECT event, the remote address is {}, the channel is {}", address, channel);
+    public void onChannelConnect(String remoteAddress, Channel channel) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("got CONNECT event, the remote address is {}, the local address is {}",
+                    remoteAddress, NetHelper.localAddress(channel));
+        }
     }
 
     @Override
-    public void onChannelClose(String address, Channel channel) {
-        logger.debug("got CLOSE event, the remote address is {}, the channel is {}", address, channel);
+    public void onChannelClose(String remoteAddress, Channel channel) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("got CLOSE event, the remote address is {}, the local address is {}",
+                    remoteAddress, NetHelper.localAddress(channel));
+        }
     }
 
     @Override
     public void onChannelException(String address, Channel channel, Throwable cause) {
-        logger.debug("got EXCEPTION event, the remote address is {}, the channel is {}, the cause is {}",
-                address, channel, cause);
+        if (logger.isDebugEnabled()) {
+            logger.debug("got EXCEPTION event, the remote address is {}, the local address is {}, the cause is {}",
+                    address, NetHelper.localAddress(channel), cause);
+        }
     }
 
     @Override
     public void onChannelIdle(String address, Channel channel) {
-        logger.debug("got IDLE event, the remote address is {}, the channel is {}", address, channel);
+        if (logger.isDebugEnabled()) {
+            logger.debug("got IDLE event, the remote address is {}, the local address is {}",
+                    address, NetHelper.localAddress(channel));
+        }
     }
 
     @Override
     public void onChannelRead(String address, Channel channel, Header header) {
-        logger.debug("got READ event, the remote address is {}, the channel is {}, the header is {}",
-                address, channel, header);
+        if (logger.isDebugEnabled()) {
+            logger.debug("got READ event, the remote address is {}, the local address is {}, the header is {}-{}-{}",
+                    address, NetHelper.localAddress(channel),
+                    header.getSysName(), header.getSysCode(), header.getTag());
+        }
     }
 }
