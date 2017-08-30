@@ -21,6 +21,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static cn.howardliu.monitor.cynomys.common.Constant.SERVER_LIST;
 
@@ -59,7 +60,7 @@ public enum WarnLoggingClient implements Closeable {
                         new ClientConfig(),
                         new SimpleChannelEventListener()
                 );
-        if(Constant.NO_FLAG) {
+        if (Constant.NO_FLAG) {
             cynomysClient.updateAddressList(SERVER_LIST);
             this.cynomysClient.start();
             try {
@@ -143,6 +144,10 @@ public enum WarnLoggingClient implements Closeable {
             while (!this.isStopped()) {
                 try {
                     List<ExceptionLog> list = ExceptionLogCaching.INSTANCE.list(0, 10);
+                    if (list.isEmpty()) {
+                        TimeUnit.MILLISECONDS.sleep(100);
+                        continue;
+                    }
                     for (ExceptionLog msg : list) {
                         try {
                             WarnLoggingClient.INSTANCE.log(msg);
@@ -153,6 +158,8 @@ public enum WarnLoggingClient implements Closeable {
                     }
                 } catch (SQLException e) {
                     logger.error("list exception log exception", e);
+                } catch (InterruptedException e) {
+                    logger.error("ExceptionLogCleanerExecutor is interrupted!", e);
                 }
             }
         }

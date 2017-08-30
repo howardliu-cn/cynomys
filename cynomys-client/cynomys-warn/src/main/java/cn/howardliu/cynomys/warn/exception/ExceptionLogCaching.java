@@ -70,7 +70,9 @@ public enum ExceptionLogCaching implements WarnLogCaching<ExceptionLog> {
                 stmt.setInt(1, rows);
                 stmt.setInt(2, from);
                 try (ResultSet rs = stmt.executeQuery()) {
-                    result.add(JSON.parseObject(rs.getString("exception_msg"), ExceptionLog.class));
+                    while (rs.next()) {
+                        result.add(JSON.parseObject(rs.getString("exception_msg"), ExceptionLog.class));
+                    }
                 }
             }
         }

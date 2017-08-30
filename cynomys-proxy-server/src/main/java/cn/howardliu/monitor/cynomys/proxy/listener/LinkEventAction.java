@@ -36,7 +36,7 @@ public enum LinkEventAction {
 
     public void link(Channel channel, Header header) {
         if (logger.isDebugEnabled()) {
-            logger.debug("link event from client, create monitor path, channel={}", channel.toString());
+            logger.debug("link event from client, channel={}", channel.toString());
         }
         if (header == null) {
             return;
