@@ -63,8 +63,8 @@ public class NettyEvent {
                 "type=" + type +
                 ", remoteAddress='" + remoteAddress + '\'' +
                 ", channel=" + channel +
-                ", cause=" + cause +
                 ", header=" + header +
+                ", cause=" + cause +
                 '}';
     }
 }

@@ -280,7 +280,7 @@ public abstract class NettyNetAbstract {
 
     class NettyEventExecutor extends ServiceThread {
         private final LinkedBlockingQueue<NettyEvent> eventQueue = new LinkedBlockingQueue<NettyEvent>();
-        private final int maxSize = 10000;
+        private final int maxSize = 1024;
 
         public void putNettyEvent(final NettyEvent event) {
             if (this.eventQueue.size() <= maxSize) {
