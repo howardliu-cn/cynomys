@@ -53,8 +53,6 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
     private int port = 0;
 
-    private volatile boolean stop = false;
-
     public NettyNetServer(final NettyServerConfig nettyServerConfig) {
         this(nettyServerConfig, null);
     }
@@ -99,6 +97,7 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
 
     @Override
     public void start() {
+        this.start = true;
         this.stop = false;
 
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(
@@ -191,6 +190,7 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
 
     @Override
     public void shutdown() {
+        this.start = false;
         this.stop = true;
 
         try {
@@ -221,6 +221,11 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
     @Override
     public boolean isStopped() {
         return this.stop;
+    }
+
+    @Override
+    public boolean isStarted() {
+        return this.start;
     }
 
     @Override

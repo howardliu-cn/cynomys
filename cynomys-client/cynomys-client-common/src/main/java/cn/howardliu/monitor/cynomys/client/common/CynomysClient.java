@@ -92,6 +92,11 @@ public class CynomysClient implements NetClient {
     }
 
     @Override
+    public boolean isStarted() {
+        return this.netClient.isStarted();
+    }
+
+    @Override
     public void connect() throws InterruptedException {
         this.netClient.connect();
     }

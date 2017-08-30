@@ -110,6 +110,11 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
 
     @Override
     public void start() {
+        if (this.start) {
+            logger.warn("NettyNetClient is started!");
+            return;
+        }
+        this.start = true;
         this.stop = false;
 
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(
@@ -211,6 +216,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             logger.warn("NettyNetClient is stopped!");
             return;
         }
+        this.start = false;
         this.stop = true;
 
         try {
@@ -245,6 +251,11 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
     @Override
     public boolean isStopped() {
         return this.stop;
+    }
+
+    @Override
+    public boolean isStarted() {
+        return this.start;
     }
 
     @Override

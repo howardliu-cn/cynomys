@@ -13,4 +13,6 @@ public interface NetService {
     void shutdown();
 
     boolean isStopped();
+
+    boolean isStarted();
 }

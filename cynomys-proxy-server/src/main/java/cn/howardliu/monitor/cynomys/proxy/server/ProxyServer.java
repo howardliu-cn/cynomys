@@ -115,7 +115,9 @@ public class ProxyServer extends AbstractServer {
         this.context = ServerContext.getInstance(this);
         try {
             ctrl();
-            this.netServer.start();
+            if (!this.netServer.isStarted()) {
+                this.netServer.start();
+            }
         } catch (Exception e) {
             logger.error("an exception thrown when server starting up", e);
         }

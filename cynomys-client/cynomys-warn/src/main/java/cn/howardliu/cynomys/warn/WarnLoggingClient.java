@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
+import static cn.howardliu.monitor.cynomys.common.Constant.SERVER_LIST;
+
 /**
  * <br>created at 17-8-25
  *
@@ -37,6 +39,10 @@ public enum WarnLoggingClient implements Closeable {
     private final ExceptionLogCleanerExecutor cleanerExecutor = new ExceptionLogCleanerExecutor();
 
     WarnLoggingClient() {
+        if (Constant.IS_DEBUG) {
+            this.cynomysClient = null;
+            return;
+        }
         // FIXME not gracefully, must refactor
         if (Constant.NO_FLAG) {
             SystemPropertyConfig.init();
@@ -53,6 +59,15 @@ public enum WarnLoggingClient implements Closeable {
                         new ClientConfig(),
                         new SimpleChannelEventListener()
                 );
+        if(Constant.NO_FLAG) {
+            cynomysClient.updateAddressList(SERVER_LIST);
+            this.cynomysClient.start();
+            try {
+                this.cynomysClient.connect();
+            } catch (InterruptedException e) {
+                logger.error("got an exception when connecting to Cynomys Server", e);
+            }
+        }
         this.cleanerExecutor.start();
     }
 
@@ -78,6 +93,9 @@ public enum WarnLoggingClient implements Closeable {
     }
 
     public void log(ExceptionLog log) {
+        if (Constant.IS_DEBUG) {
+            return;
+        }
         String logMsg = JSON.toJSONString(log);
         try {
             Message request = new Message()
@@ -141,7 +159,7 @@ public enum WarnLoggingClient implements Closeable {
 
         @Override
         public String getServiceName() {
-            return null;
+            return "exception-log-cleaner-executor";
         }
     }
 }

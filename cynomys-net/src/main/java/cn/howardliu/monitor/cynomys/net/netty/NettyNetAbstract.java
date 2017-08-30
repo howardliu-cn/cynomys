@@ -37,6 +37,9 @@ public abstract class NettyNetAbstract {
     protected final Map<Byte, Pair<NettyRequestProcessor, ExecutorService>> processorTable = new HashMap<>(64);
     protected Pair<NettyRequestProcessor, ExecutorService> defaultRequestProcessor;
 
+    protected volatile boolean start = false;
+    protected volatile boolean stop = false;
+
     public NettyNetAbstract(final int permitsAsync) {
         this.semaphoreAsync = new Semaphore(permitsAsync, true);
     }
