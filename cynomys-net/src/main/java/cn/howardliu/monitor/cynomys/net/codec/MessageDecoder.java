@@ -6,8 +6,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.util.CharsetUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * <br>created at 17-5-11
@@ -17,8 +15,6 @@ import org.slf4j.LoggerFactory;
  * @since 0.0.1
  */
 public class MessageDecoder extends LengthFieldBasedFrameDecoder {
-    private static final Logger logger = LoggerFactory.getLogger(MessageDecoder.class);
-
     public MessageDecoder(int maxFrameLength, int lengthFieldOffset, int lengthFieldLength) {
         super(maxFrameLength, lengthFieldOffset, lengthFieldLength);
     }
@@ -32,9 +28,9 @@ public class MessageDecoder extends LengthFieldBasedFrameDecoder {
         Message message = new Message()
                 .setHeader(
                         new Header()
-                                .setOpaque(frame.readInt())
                                 .setCrcCode(frame.readInt())
                                 .setLength(frame.readInt())
+                                .setOpaque(frame.readInt())
                                 .setTag(frame.readCharSequence(frame.readInt(), CharsetUtil.UTF_8).toString())
                                 .setSysName(frame.readCharSequence(frame.readInt(), CharsetUtil.UTF_8).toString())
                                 .setSysCode(frame.readCharSequence(frame.readInt(), CharsetUtil.UTF_8).toString())
