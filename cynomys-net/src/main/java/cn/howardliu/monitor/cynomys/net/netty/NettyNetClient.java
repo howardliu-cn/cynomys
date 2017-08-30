@@ -60,6 +60,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
 
     private final AtomicReference<List<String>> addressList = new AtomicReference<>();
     private final AtomicReference<String> addressChoosen = new AtomicReference<>();
+    private final AtomicInteger choosenFeed = new AtomicInteger(1);
     private final Lock lockAddressChannel = new ReentrantLock();
 
     private final ExecutorService publicExecutor;
@@ -360,7 +361,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                 }
 
                 if (addresses != null && !addresses.isEmpty()) {
-                    String _address = addresses.get(ThreadLocalRandom.current().nextInt(10) % addresses.size());
+                    String _address = addresses.get(this.choosenFeed.getAndIncrement() % addresses.size());
                     this.addressChoosen.set(_address);
                     Channel _channel = this.createChannel(_address);
                     if (_channel != null) {
@@ -383,7 +384,6 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
         if (cw != null && cw.isOK()) {
             return cw.getChannel();
         }
-
         if (this.lockChannelTables.tryLock(30_000, TimeUnit.MILLISECONDS)) {
             try {
                 boolean createNewConnection;
@@ -597,6 +597,12 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
     @Override
     public boolean isChannelWriteable(String address) {
         ChannelWrapper cw = this.channelTables.get(address);
+        return cw != null && cw.isOK() && cw.isWriteable();
+    }
+
+    @Override
+    public boolean isChannelWriteable() {
+        ChannelWrapper cw = this.channelTables.get(this.addressChoosen.get());
         return cw != null && cw.isOK() && cw.isWriteable();
     }
 

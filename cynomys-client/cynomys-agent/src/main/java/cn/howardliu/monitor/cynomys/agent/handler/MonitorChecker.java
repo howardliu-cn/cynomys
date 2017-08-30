@@ -51,12 +51,18 @@ public class MonitorChecker implements Health, Closeable {
                         new SimpleChannelEventListener() {
                             @Override
                             public void onChannelClose(String address, Channel channel) {
+                                if (cynomysClient.isChannelWriteable()) {
+                                    return;
+                                }
                                 super.onChannelClose(address, channel);
                                 reconnection();
                             }
 
                             @Override
                             public void onChannelException(String address, Channel channel, Throwable cause) {
+                                if (cynomysClient.isChannelWriteable()) {
+                                    return;
+                                }
                                 super.onChannelException(address, channel, cause);
                                 reconnection();
                             }

@@ -112,6 +112,11 @@ public class CynomysClient implements NetClient {
     }
 
     @Override
+    public boolean isChannelWriteable() {
+        return this.netClient.isChannelWriteable();
+    }
+
+    @Override
     public Message sync(Message request)
             throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException {
         if (this.netClient.isStopped()) {

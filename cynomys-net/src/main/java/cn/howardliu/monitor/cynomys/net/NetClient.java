@@ -26,6 +26,8 @@ public interface NetClient extends NetService {
 
     boolean isChannelWriteable(final String address);
 
+    boolean isChannelWriteable();
+
     Message sync(final Message request)
             throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException;
 
