@@ -1,12 +1,15 @@
 package cn.howardliu.monitor.cynomys.proxy.config;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import static cn.howardliu.monitor.cynomys.common.Constant.CYNOMYS_HOME;
 import static cn.howardliu.monitor.cynomys.proxy.Constants.*;
 
 /**
@@ -19,19 +22,19 @@ import static cn.howardliu.monitor.cynomys.proxy.Constants.*;
 public enum ProxyConfig {
     PROXY_CONFIG;
 
-    private static final Logger logger = LoggerFactory.getLogger(ProxyConfig.class);
-    private static final int port;
-    private static final int cport;
-    private static final int maxFrameLength;
-    private static final int timeoutSeconds;
+    private final Logger logger = LoggerFactory.getLogger(ProxyConfig.class);
+    private final int port;
+    private final int cport;
+    private final int maxFrameLength;
+    private final int timeoutSeconds;
 
-    static {
+    ProxyConfig() {
         int _port = 7911;
         int _cport = 52700;
         int _maxFrameLength = 1024 * 1024 * 100;
         int _timeoutSeconds = 50;
-        // TODO be sure config file path and load method
-        try (InputStream inputStream = ProxyConfig.class.getResourceAsStream("/conf/cynomys-config.properties")) {
+        try (InputStream inputStream = FileUtils
+                .openInputStream(new File(CYNOMYS_HOME + "/conf/cynomys-config.properties"))) {
             Properties properties = new Properties();
             properties.load(inputStream);
 
@@ -51,7 +54,7 @@ public enum ProxyConfig {
         timeoutSeconds = _timeoutSeconds;
     }
 
-    private static int readFromConfigAndProperty(Properties properties, String key, int defaultValue) {
+    private int readFromConfigAndProperty(Properties properties, String key, int defaultValue) {
         if (properties.containsKey(key)) {
             defaultValue = Integer.valueOf(properties.getProperty(key));
         }

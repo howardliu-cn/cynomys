@@ -11,6 +11,12 @@ import java.util.UUID;
  * @since 0.0.1
  */
 public final class Constant {
+    public static final String CYNOMYS_HOME_ENV = "CYNOMYS_HOME";
+    public static final String CYNOMYS_HOME_PROPERTY = "cynomys.home.dir";
+
+    public static final String CYNOMYS_HOME = System
+            .getProperty(CYNOMYS_HOME_PROPERTY, System.getenv(CYNOMYS_HOME_ENV));
+
     public static final String VERSION_KEY = "cynomys.net.version";
     public static final int CRC_CODE = CynomysVersion.CURRENT_VERSION_CODE;
     public static final String THIS_TAG;

@@ -2,12 +2,16 @@ package cn.howardliu.monitor.cynomys.proxy.config;
 
 import cn.howardliu.gear.commons.annotation.Key;
 import cn.howardliu.gear.commons.utils.PropertiesUtils;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
+import static cn.howardliu.monitor.cynomys.common.Constant.CYNOMYS_HOME;
 
 /**
  * <br>created at 17-7-29
@@ -23,7 +27,8 @@ public enum SystemSetting {
     private static SystemSettingParam param;
 
     static {
-        try (InputStream in = SystemSetting.class.getResourceAsStream("/conf/system-setting.properties")) {
+        try (InputStream in =  FileUtils
+                .openInputStream(new File(CYNOMYS_HOME + "/conf/system-setting.properties"))) {
             Properties properties = new Properties();
             properties.load(in);
             properties.putAll(System.getenv());
