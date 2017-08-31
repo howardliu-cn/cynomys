@@ -50,3 +50,6 @@ crashlytics-build.properties
 
 /target/
 target/
+
+# sonar-qube and sonar-scanner
+.scannerwork/
