@@ -255,7 +255,7 @@ elif [ "$1" = "stop" ]; then
           sleep 1
         fi
         if [ ${SLEEP} -eq 0 ];then
-          echo "Tomcat did not stop in time."
+          echo "Cynomys Server did not stop in time."
           if [ ${FORCE} -eq 0 ];then
             echo "PID file was not removed."
           fi
