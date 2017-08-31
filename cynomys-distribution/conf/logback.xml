@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+    <property name="log.home" value="${cynomys.base}/logs"/>
+    <property name="log.name" value="cynomys-server"/>
+
     <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-5le %d [%t] %C{30}.%M\(\) \(%F:%L\) - %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="filelog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.home}/${log.name}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.home}/${log.name}.%d{yyyy-MM-dd}.log.zip</fileNamePattern>
+        </rollingPolicy>
         <encoder>
             <pattern>%-5le %d [%t] %C{30}.%M\(\) \(%F:%L\) - %m%n</pattern>
         </encoder>
@@ -9,6 +22,7 @@
     <logger name="cn.howardliu.monitor" additivity="false">
         <level value="DEBUG"/>
         <appender-ref ref="stdout"/>
+        <appender-ref ref="filelog"/>
     </logger>
 
     <root level="INFO">
