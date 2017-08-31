@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>cynomys</artifactId>
+        <groupId>cn.howardliu.monitor</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>cynomys-distribution</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>cynomys-distribution ${project.version}</name>
+    <packaging>pom</packaging>
+
+    <profiles>
+        <profile>
+            <id>release-all</id>
+            <dependencies>
+                <dependency>
+                    <groupId>cn.howardliu.monitor</groupId>
+                    <artifactId>cynomys-proxy-server</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <finalName>cynomys-server</finalName>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>release-all</id>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>release.xml</descriptor>
+                                    </descriptors>
+                                    <appendAssemblyId>false</appendAssemblyId>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
