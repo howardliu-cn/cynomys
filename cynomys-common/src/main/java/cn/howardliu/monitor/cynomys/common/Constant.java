@@ -12,7 +12,7 @@ import java.util.UUID;
  */
 public final class Constant {
     public static final String CYNOMYS_HOME_ENV = "CYNOMYS_HOME";
-    public static final String CYNOMYS_HOME_PROPERTY = "cynomys.home.dir";
+    public static final String CYNOMYS_HOME_PROPERTY = "cynomys.home";
 
     public static final String CYNOMYS_HOME = System
             .getProperty(CYNOMYS_HOME_PROPERTY, System.getenv(CYNOMYS_HOME_ENV));

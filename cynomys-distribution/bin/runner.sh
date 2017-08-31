@@ -9,8 +9,6 @@ JAVA_HOME=${JAVA_HOME}
 if [ -z "${JAVA_HOME}" ]; then
     echo "JAVA_HOME not exists"
     exit 1
-else
-    echo "Using JAVA_HOME: ${JAVA_HOME}"
 fi
 
 # resolve links - $0 may be a softlink
@@ -38,13 +36,13 @@ PRGDIR=`dirname "$PRG"`
 # but allow them to be specified in setenv.sh, in rare case when it is needed.
 CLASSPATH=
 
-if [ -r "${CYNOMYS_BASE}/sbin/setenv.sh" ]; then
-  . "${CYNOMYS_BASE}/sbin/setenv.sh"
-elif [ -r "${CYNOMYS_HOME}/sbin/setenv.sh" ]; then
-  . "${CYNOMYS_HOME}/sbin/setenv.sh"
+if [ -r "${CYNOMYS_BASE}/bin/setenv.sh" ]; then
+  . "${CYNOMYS_BASE}/bin/setenv.sh"
+elif [ -r "${CYNOMYS_HOME}/bin/setenv.sh" ]; then
+  . "${CYNOMYS_HOME}/bin/setenv.sh"
 fi
 
-# Ensure that neither CATALINA_HOME nor CATALINA_BASE contains a colon
+# Ensure that neither CYNOMYS_HOME nor CYNOMYS_BASE contains a colon
 # as this is used as the separator in the classpath and Java provides no
 # mechanism for escaping if the same character appears in the path.
 case ${CYNOMYS_HOME} in
@@ -58,8 +56,8 @@ case ${CYNOMYS_BASE} in
        exit 1;
 esac
 
-if [ -r "$CYNOMYS_HOME"/sbin/setclasspath.sh ]; then
-    . "$CYNOMYS_HOME"/sbin/setclasspath.sh
+if [ -r "$CYNOMYS_HOME"/bin/setclasspath.sh ]; then
+    . "$CYNOMYS_HOME"/bin/setclasspath.sh
 else
     echo "Cannot find $CYNOMYS_HOME/bin/setclasspath.sh"
     echo "This file is needed to run this program"
@@ -69,6 +67,7 @@ fi
 if [ ! -z "${CLASSPATH}" ]; then
   CLASSPATH="${CLASSPATH}":
 fi
+CLASSPATH="${CLASSPATH}""${CYNOMYS_HOME}/lib/*"
 
 CYNOMYS_OUT=${CYNOMYS_OUT}
 if [ -z "${CYNOMYS_OUT}" ] ; then
@@ -82,7 +81,7 @@ fi
 
 LOGGING_CONFIG=${LOGGING_CONFIG}
 if [ -z "${LOGGING_CONFIG}" ];then
-  if [-r "${CYNOMYS_BASE}/conf/logback.xml" ];then
+  if [ -r "${CYNOMYS_BASE}/conf/logback.xml" ];then
     LOGGING_CONFIG="-Dlogback.configurationFile=${CYNOMYS_BASE}/conf/logback.xml"
   fi
 fi
@@ -102,21 +101,32 @@ if [ "$USE_NOHUP" = "true" ]; then
     _NOHUP=nohup
 fi
 
-# Execute The Requested Command
+# When no TTY is available, don't output to console
+have_tty=0
+if [ "`tty`" != "not a tty" ]; then
+    have_tty=1
+fi
 
 CYNOMYS_PID=${CYNOMYS_PID}
 if [ -z "$CYNOMYS_PID" ] ; then
   CYNOMYS_PID="${CYNOMYS_BASE}/conf/CYNOMYS_PID"
 fi
 
-if [ "$1" = "run" ];then
-  eval exec "\"${_RUN_JAVA}\"" "\"${LOGGING_CONFIG}\"" ${JAVA_OPTS} \
-    -classpath "\"${CLASSPATH}\""
-    -Dcynomys.base="\"${CYNOMYS_BASE}\""
-    -Dcynomys.home="\"${CYNOMYS_HOME}\""
-    -Djava.io.tmpdir="\"${CYNOMYS_TIMDIR}\""
-    cn.howardliu.monitor.cynomys.proxy.CynomysProxyServer "$@" start
-elif [ "$1" = "start" ]; then
+# Execute The Requested Command
+#only output this if we have a TTY
+if [ $have_tty -eq 1 ]; then
+  echo "Using CYNOMYS_BASE:   $CYNOMYS_BASE"
+  echo "Using CYNOMYS_HOME:   $CYNOMYS_HOME"
+  echo "Using CYNOMYS_TIMDIR: $CYNOMYS_TIMDIR"
+  echo "Using JAVA_HOME:       $JAVA_HOME"
+  echo "Using JRE_HOME:        $JRE_HOME"
+  echo "Using CLASSPATH:       $CLASSPATH"
+  if [ ! -z "$CYNOMYS_PID" ]; then
+    echo "Using CYNOMYS_PID:    $CYNOMYS_PID"
+  fi
+fi
+
+if [ "$1" = "start" ]; then
   if [ -z "${CYNOMYS_PID}" ];then
     if [ -f "${CYNOMYS_PID}" ];then
       if [ -s "${CYNOMYS_PID}" ];then
@@ -158,13 +168,13 @@ elif [ "$1" = "start" ]; then
   fi
 
   shift
-  touch "$CYNOMYS_OUT"
+  touch "${CYNOMYS_OUT}"
 
   eval ${_NOHUP} "\"${_RUN_JAVA}\"" "\"${LOGGING_CONFIG}\"" ${JAVA_OPTS} \
-    -classpath "\"${CLASSPATH}\""
-    -Dcynomys.base="\"${CYNOMYS_BASE}\""
-    -Dcynomys.home="\"${CYNOMYS_HOME}\""
-    -Djava.io.tmpdir="\"${CYNOMYS_TIMDIR}\""
+    -classpath "\"${CLASSPATH}\"" \
+    -Dcynomys.base="\"${CYNOMYS_BASE}\"" \
+    -Dcynomys.home="\"${CYNOMYS_HOME}\"" \
+    -Djava.io.tmpdir="\"${CYNOMYS_TIMDIR}\"" \
     cn.howardliu.monitor.cynomys.proxy.CynomysProxyServer "$@" start \
     >> "${CYNOMYS_OUT}" 2>&1 &
 
@@ -186,7 +196,7 @@ elif [ "$1" = "stop" ]; then
   fi
 
   FORCE=0
-  if [ "$1" == "-force" ];then
+  if [ "$1" = "-force" ];then
     FORCE=1
     shift
   fi
@@ -208,11 +218,11 @@ elif [ "$1" = "stop" ]; then
     fi
   fi
 
-  eval "\"${_RUN_JAVA}\""
-    -classpath "\"${CLASSPATH}\""
-    -Dcynomys.base="\"${CYNOMYS_BASE}\""
-    -Dcynomys.home="\"${CYNOMYS_HOME}\""
-    -Djava.io.tmpdir="\"${CYNOMYS_TIMDIR}\""
+  eval "\"${_RUN_JAVA}\"" \
+    -classpath "\"${CLASSPATH}\"" \
+    -Dcynomys.base="\"${CYNOMYS_BASE}\"" \
+    -Dcynomys.home="\"${CYNOMYS_HOME}\"" \
+    -Djava.io.tmpdir="\"${CYNOMYS_TIMDIR}\"" \
     cn.howardliu.monitor.cynomys.proxy.CynomysProxyServer "$@" stop
 
   # stop failed. Shutdown port disabled? Try a normal kill.
@@ -225,7 +235,7 @@ elif [ "$1" = "stop" ]; then
 
   if [ ! -z "${CYNOMYS_PID}" ];then
     if [ -f "${CYNOMYS_PID}" ];then
-      while [ ${SLEEP} -ge 0 ];do
+      while [ ${SLEEP} -ge 0 ]; do
         kill -0 `cat "${CYNOMYS_PID}"` > /dev/null 2>&1
         if [ $? -gt 0 ];then
           rm -f "${CYNOMYS_PID}" > /dev/null 2>&1
@@ -252,7 +262,7 @@ elif [ "$1" = "stop" ]; then
           echo "To aid diagnostics a thread dump has been written to standard out."
           kill -3 `cat "${CYNOMYS_PID}"`
         fi
-        SLEEP=`expr ${SLEEP} -1`
+        SLEEP=`expr ${SLEEP} - 1`
       done
     fi
   fi
