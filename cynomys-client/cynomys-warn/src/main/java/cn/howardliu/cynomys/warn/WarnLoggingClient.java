@@ -132,7 +132,7 @@ public enum WarnLoggingClient implements Closeable {
         if (this.cynomysClient != null) {
             this.cynomysClient.shutdown();
         }
-        if (this.cleanerExecutor != null && !this.cleanerExecutor.isStopped()) {
+        if (!this.cleanerExecutor.isStopped()) {
             this.cleanerExecutor.shutdown();
         }
     }
@@ -148,18 +148,22 @@ public enum WarnLoggingClient implements Closeable {
                         continue;
                     }
                     for (ExceptionLog msg : list) {
-                        try {
-                            WarnLoggingClient.INSTANCE.log(msg);
-                            ExceptionLogCaching.INSTANCE.delete(msg.getErrId());
-                        } catch (Exception e) {
-                            logger.error("resend Exception Log to Cynomys Server exception", e);
-                        }
+                        resendMsgLog(msg);
                     }
                 } catch (SQLException e) {
                     logger.error("list exception log exception", e);
                 } catch (InterruptedException e) {
                     logger.error("ExceptionLogCleanerExecutor is interrupted!", e);
                 }
+            }
+        }
+
+        private void resendMsgLog(ExceptionLog msg) {
+            try {
+                WarnLoggingClient.INSTANCE.log(msg);
+                ExceptionLogCaching.INSTANCE.delete(msg.getErrId());
+            } catch (Exception e) {
+                logger.error("resend Exception Log to Cynomys Server exception", e);
             }
         }
 

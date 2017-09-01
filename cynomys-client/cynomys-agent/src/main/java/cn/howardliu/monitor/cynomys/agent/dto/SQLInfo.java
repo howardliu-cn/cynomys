@@ -14,40 +14,23 @@ import java.util.List;
  * @Author Jack
  * @Create In 2016年3月29日
  */
-public enum SQLInfo {
-    INSTANCE;
+public class SQLInfo extends BaseInfo {
+    private static final SQLInfo INSTANCE = new SQLInfo();
+    private String dataBaseVersion = "";
+    private String dataSourceDetails = "";
+    private Integer activeConnectionCount = 0;
+    private Integer usedConnectionCount = 0;
+    private Long transactionCount = 0L;
+    private Integer activeThreadCount = 0;
+    private Integer runningBuildCount = 0;
+    private Integer buildQueueLength = 0;
+    private List<CounterRequest> sqlDetails = new ArrayList<>();
 
-    private String sysCode;
+    private SQLInfo() {
+    }
 
-    private String sysName;
-
-    private String sysIPS;
-
-    private String dataBaseVersion;
-
-    private String dataSourceDetails;
-
-    private String updateDate;
-
-    private Integer active_connection_count;
-    private Integer used_connection_count;
-    private Long transaction_count;
-    private Integer active_thread_count;
-    private Integer running_build_count;
-    private Integer build_queue_length;
-
-    private List<CounterRequest> sqlDetails;
-
-    SQLInfo() {
-        this.dataBaseVersion = "";
-        this.dataSourceDetails = "";
-        this.active_connection_count = 0;
-        this.used_connection_count = 0;
-        this.transaction_count = (long) 0;
-        this.active_thread_count = 0;
-        this.running_build_count = 0;
-        this.build_queue_length = 0;
-        this.sqlDetails = new ArrayList<>();
+    public static SQLInfo instance() {
+        return INSTANCE;
     }
 
     /**
@@ -79,87 +62,87 @@ public enum SQLInfo {
     }
 
     /**
-     * @Return the Integer active_connection_count
+     * @Return the Integer activeConnectionCount
      */
     public Integer getActive_connection_count() {
-        return active_connection_count;
+        return activeConnectionCount;
     }
 
     /**
-     * @Param Integer active_connection_count to set
+     * @Param Integer activeConnectionCount to set
      */
-    public void setActive_connection_count(Integer active_connection_count) {
-        this.active_connection_count = active_connection_count;
+    public void setActiveConnectionCount(Integer activeConnectionCount) {
+        this.activeConnectionCount = activeConnectionCount;
     }
 
     /**
-     * @Return the Integer used_connection_count
+     * @Return the Integer usedConnectionCount
      */
     public Integer getUsed_connection_count() {
-        return used_connection_count;
+        return usedConnectionCount;
     }
 
     /**
-     * @Param Integer used_connection_count to set
+     * @Param Integer usedConnectionCount to set
      */
-    public void setUsed_connection_count(Integer used_connection_count) {
-        this.used_connection_count = used_connection_count;
+    public void setUsedConnectionCount(Integer usedConnectionCount) {
+        this.usedConnectionCount = usedConnectionCount;
     }
 
     /**
-     * @Return the Long transaction_count
+     * @Return the Long transactionCount
      */
     public Long getTransaction_count() {
-        return transaction_count;
+        return transactionCount;
     }
 
     /**
-     * @Param Long transaction_count to set
+     * @Param Long transactionCount to set
      */
-    public void setTransaction_count(Long transaction_count) {
-        this.transaction_count = transaction_count;
+    public void setTransactionCount(Long transactionCount) {
+        this.transactionCount = transactionCount;
     }
 
     /**
-     * @Return the Integer active_thread_count
+     * @Return the Integer activeThreadCount
      */
     public Integer getActive_thread_count() {
-        return active_thread_count;
+        return activeThreadCount;
     }
 
     /**
-     * @Param Integer active_thread_count to set
+     * @Param Integer activeThreadCount to set
      */
-    public void setActive_thread_count(Integer active_thread_count) {
-        this.active_thread_count = active_thread_count;
+    public void setActiveThreadCount(Integer activeThreadCount) {
+        this.activeThreadCount = activeThreadCount;
     }
 
     /**
-     * @Return the Integer running_build_count
+     * @Return the Integer runningBuildCount
      */
     public Integer getRunning_build_count() {
-        return running_build_count;
+        return runningBuildCount;
     }
 
     /**
-     * @Param Integer running_build_count to set
+     * @Param Integer runningBuildCount to set
      */
-    public void setRunning_build_count(Integer running_build_count) {
-        this.running_build_count = running_build_count;
+    public void setRunningBuildCount(Integer runningBuildCount) {
+        this.runningBuildCount = runningBuildCount;
     }
 
     /**
-     * @Return the Integer build_queue_length
+     * @Return the Integer buildQueueLength
      */
     public Integer getBuild_queue_length() {
-        return build_queue_length;
+        return buildQueueLength;
     }
 
     /**
-     * @Param Integer build_queue_length to set
+     * @Param Integer buildQueueLength to set
      */
-    public void setBuild_queue_length(Integer build_queue_length) {
-        this.build_queue_length = build_queue_length;
+    public void setBuildQueueLength(Integer buildQueueLength) {
+        this.buildQueueLength = buildQueueLength;
     }
 
     /**
@@ -176,71 +159,11 @@ public enum SQLInfo {
         this.sqlDetails = sqlDetails;
     }
 
-    /**
-     * @Return the String sysCode
-     */
-    public String getSysCode() {
-        return sysCode;
-    }
-
-    /**
-     * @Param String sysCode to set
-     */
-    public void setSysCode(String sysCode) {
-        this.sysCode = sysCode;
-    }
-
-    /**
-     * @Return the String sysName
-     */
-    public String getSysName() {
-        return sysName;
-    }
-
-    /**
-     * @Param String sysName to set
-     */
-    public void setSysName(String sysName) {
-        this.sysName = sysName;
-    }
-
-
-    /**
-     * @Return the String sysIPS
-     */
-    public String getSysIPS() {
-        return sysIPS;
-    }
-
-    /**
-     * @Param String sysIPS to set
-     */
-    public void setSysIPS(String sysIPS) {
-        this.sysIPS = sysIPS;
-    }
-
-    /**
-     * @Return the String updateDate
-     */
-    public String getUpdateDate() {
-        return updateDate;
-    }
-
-    /**
-     * @Param String updateDate to set
-     */
-    public void setUpdateDate(String updateDate) {
-        this.updateDate = updateDate;
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
         return "SQLInfo [sysCode=" + sysCode + ", sysName=" + sysName + ", sysIPS=" + sysIPS + ", dataBaseVersion=" + dataBaseVersion + ", dataSourceDetails=" + dataSourceDetails + ", updateDate="
-                + updateDate + ", active_connection_count=" + active_connection_count + ", used_connection_count=" + used_connection_count + ", transaction_count=" + transaction_count
-                + ", active_thread_count=" + active_thread_count + ", running_build_count=" + running_build_count + ", build_queue_length=" + build_queue_length + ", sqlDetails=" + sqlDetails + "]";
+                + updateDate + ", activeConnectionCount=" + activeConnectionCount + ", usedConnectionCount=" + usedConnectionCount + ", transactionCount=" + transactionCount
+                + ", activeThreadCount=" + activeThreadCount + ", runningBuildCount=" + runningBuildCount + ", buildQueueLength=" + buildQueueLength + ", sqlDetails=" + sqlDetails + "]";
     }
 
 

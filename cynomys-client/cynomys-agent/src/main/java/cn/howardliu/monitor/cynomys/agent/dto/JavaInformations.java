@@ -72,7 +72,7 @@ public class JavaInformations implements Serializable {
     private static final long serialVersionUID = 3281861236369720876L;
     private static final boolean SYSTEM_CPU_LOAD_ENABLED = "1.7".compareTo(SystemUtils.JAVA_VERSION) < 0;
 
-    private static JavaInformations JAVA_INFO = null;
+    private static JavaInformations javaInfo = null;
 
     private static boolean localWebXmlExists = true;
     private static boolean localPomXmlExists = true;
@@ -135,11 +135,11 @@ public class JavaInformations implements Serializable {
     }
 
     public static JavaInformations instance(boolean includeDetails) {
-        if (JAVA_INFO != null) {
-            return JAVA_INFO;
+        if (javaInfo != null) {
+            return javaInfo;
         } else {
-            JAVA_INFO = new JavaInformations(includeDetails);
-            return JAVA_INFO;
+            javaInfo = new JavaInformations(includeDetails);
+            return javaInfo;
         }
     }
 
@@ -461,10 +461,10 @@ public class JavaInformations implements Serializable {
     }
 
     /**
-     * @return the JavaInformations JAVA_INFO
+     * @return the JavaInformations javaInfo
      */
     public static JavaInformations getJavaInfo() {
-        return JAVA_INFO;
+        return javaInfo;
     }
 
     /**
@@ -956,24 +956,10 @@ public class JavaInformations implements Serializable {
     }
 
     /**
-     * @return the String os
-     */
-    public String getOs() {
-        return OS;
-    }
-
-    /**
      * @return the long totalCompliationTime
      */
     public long getTotalCompliationTime() {
         return totalCompliationTime;
-    }
-
-    /**
-     * @return the String pid
-     */
-    public String getPid() {
-        return pid;
     }
 
     /**

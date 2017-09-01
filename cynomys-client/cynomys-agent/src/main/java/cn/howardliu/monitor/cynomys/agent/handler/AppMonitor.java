@@ -226,18 +226,18 @@ public class AppMonitor {
         try {
             JdbcWrapper jw = JdbcWrapper.SINGLETON;
             if (jw != null) {
-                SQLInfo sqlInfo = SQLInfo.INSTANCE;
+                SQLInfo sqlInfo = SQLInfo.instance();
                 sqlInfo.setSysCode(SYS_CODE);
                 sqlInfo.setSysName(SYS_NAME);
                 sqlInfo.setSysIPS(StringUtils.join(getAddress(new OsInfo(), this.port), "<br>"));
                 sqlInfo.setDataBaseVersion(javaInfor.getDataBaseVersion());
                 sqlInfo.setDataSourceDetails(javaInfor.getDataSourceDetails());
-                sqlInfo.setActive_connection_count(JdbcWrapper.getActiveConnectionCount());
-                sqlInfo.setActive_thread_count(JdbcWrapper.getActiveThreadCount());
-                sqlInfo.setBuild_queue_length(JdbcWrapper.getBuildQueueLength());
-                sqlInfo.setRunning_build_count(JdbcWrapper.getRunningBuildCount());
-                sqlInfo.setTransaction_count(JdbcWrapper.getTransactionCount());
-                sqlInfo.setUsed_connection_count(JdbcWrapper.getUsedConnectionCount());
+                sqlInfo.setActiveConnectionCount(JdbcWrapper.getActiveConnectionCount());
+                sqlInfo.setActiveThreadCount(JdbcWrapper.getActiveThreadCount());
+                sqlInfo.setBuildQueueLength(JdbcWrapper.getBuildQueueLength());
+                sqlInfo.setRunningBuildCount(JdbcWrapper.getRunningBuildCount());
+                sqlInfo.setTransactionCount(JdbcWrapper.getTransactionCount());
+                sqlInfo.setUsedConnectionCount(JdbcWrapper.getUsedConnectionCount());
                 sqlInfo.setUpdateDate(new SimpleDateFormat(TIME_FMT_PATTERN).format(new Date()));
 
                 List<CounterRequest> sqlDetails = jw.getSqlCounter().getRequests();
@@ -255,7 +255,7 @@ public class AppMonitor {
         try {
             RequestWrapper rw = RequestWrapper.SINGLETON;
             if (rw != null) {
-                RequestInfo reqInfo = RequestInfo.INSTANCE;
+                RequestInfo reqInfo = RequestInfo.instance();
                 reqInfo.setSysCode(SYS_CODE);
                 reqInfo.setSysName(SYS_NAME);
 

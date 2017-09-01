@@ -154,8 +154,6 @@ public class PayloadNameRequestWrapper extends HttpServletRequestWrapper {
     private static String parseGwtRpcMethodName(InputStream stream, String charEncoding) {
         //commented out code uses GWT-user library for a more 'proper' approach.
         //GWT-user library approach is more future-proof, but requires more dependency management.
-        //				RPCRequest decodeRequest = RPC.decodeRequest(readLine);
-        //				gwtmethodname = decodeRequest.getMethod().getName();
 
         try {
             final Scanner scanner;

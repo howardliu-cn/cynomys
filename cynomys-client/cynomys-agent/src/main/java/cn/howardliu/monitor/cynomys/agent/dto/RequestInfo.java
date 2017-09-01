@@ -6,10 +6,7 @@
  */
 package cn.howardliu.monitor.cynomys.agent.dto;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -17,85 +14,16 @@ import java.util.List;
  * @Author Jack
  * @Create In 2016年7月27日
  */
-public enum RequestInfo {
-    INSTANCE;
+public class RequestInfo extends BaseInfo {
+    private static final RequestInfo INSTANCE = new RequestInfo();
+    private List<CounterRequest> requestDetails = new ArrayList<>();
+    private List<CounterRequest> errorDetails = new ArrayList<>();
 
-    private String sysCode;
-
-    private String sysName;
-
-    private String sysIPS;
-
-    private String updateDate;
-
-    private List<CounterRequest> requestDetails;
-
-    private List<CounterRequest> errorDetails;
-
-    RequestInfo() {
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        this.sysCode = "";
-        this.sysName = "";
-        this.sysIPS = "";
-        this.updateDate = df.format(new Date());
-        this.requestDetails = new ArrayList<>();
-        this.errorDetails = new ArrayList<>();
+    private RequestInfo() {
     }
 
-    /**
-     * @Return the String sysCode
-     */
-    public String getSysCode() {
-        return sysCode;
-    }
-
-    /**
-     * @Param String sysCode to set
-     */
-    public void setSysCode(String sysCode) {
-        this.sysCode = sysCode;
-    }
-
-    /**
-     * @Return the String sysName
-     */
-    public String getSysName() {
-        return sysName;
-    }
-
-    /**
-     * @Param String sysName to set
-     */
-    public void setSysName(String sysName) {
-        this.sysName = sysName;
-    }
-
-    /**
-     * @Return the String sysIPS
-     */
-    public String getSysIPS() {
-        return sysIPS;
-    }
-
-    /**
-     * @Param String sysIPS to set
-     */
-    public void setSysIPS(String sysIPS) {
-        this.sysIPS = sysIPS;
-    }
-
-    /**
-     * @Return the String updateDate
-     */
-    public String getUpdateDate() {
-        return updateDate;
-    }
-
-    /**
-     * @Param String updateDate to set
-     */
-    public void setUpdateDate(String updateDate) {
-        this.updateDate = updateDate;
+    public static RequestInfo instance() {
+        return INSTANCE;
     }
 
     /**

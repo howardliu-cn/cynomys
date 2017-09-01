@@ -53,10 +53,8 @@ public class DruidDataSourceHandler extends DataSourceHandler {
             );
 
         } catch (NotFoundException e) {
-            e.printStackTrace();
             logger.info("not found init method in " + ctClass.getName());
         } catch (Exception e) {
-            e.printStackTrace();
             logger.warn("SKIPPED init() in " + ctClass.getName() + ", the reason is " + e.getMessage());
         }
     }

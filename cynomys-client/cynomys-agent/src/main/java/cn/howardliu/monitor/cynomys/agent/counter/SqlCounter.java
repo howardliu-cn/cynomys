@@ -8,7 +8,7 @@ package cn.howardliu.monitor.cynomys.agent.counter;
  * @since 0.0.1
  */
 public class SqlCounter extends Counter {
-    protected static final String counterName = "sql";
+    protected String counterName = "sql";
 
     protected SqlCounter(String name) {
         super(name);

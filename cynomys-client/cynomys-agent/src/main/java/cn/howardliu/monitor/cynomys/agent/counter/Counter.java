@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Counter {
     private static final Map<String, Counter> COUNTER_COLLECTOR = new ConcurrentHashMap<>();
 
-    protected static final String counterName = "default";
+    protected String counterName = "default";
     protected final String id = UUID.randomUUID().toString();
     protected final String name;
     protected volatile long hits = 0L;
