@@ -38,7 +38,7 @@ public abstract class ServiceThread implements Runnable {
         synchronized (this) {
             if (!this.hasNotified) {
                 this.hasNotified = true;
-                this.notify();
+                this.notifyAll();
             }
         }
 
@@ -54,6 +54,7 @@ public abstract class ServiceThread implements Runnable {
                     + this.getJointime());
         } catch (InterruptedException e) {
             logger.error("{} interrupted", getServiceName(), e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -71,7 +72,7 @@ public abstract class ServiceThread implements Runnable {
         synchronized (this) {
             if (!this.hasNotified) {
                 this.hasNotified = true;
-                this.notify();
+                this.notifyAll();
             }
         }
 
@@ -89,7 +90,7 @@ public abstract class ServiceThread implements Runnable {
         synchronized (this) {
             if (!this.hasNotified) {
                 this.hasNotified = true;
-                this.notify();
+                this.notifyAll();
             }
         }
     }
@@ -106,6 +107,7 @@ public abstract class ServiceThread implements Runnable {
                 this.wait(interval);
             } catch (InterruptedException e) {
                 logger.error("wait for running be interrupted", e);
+                Thread.currentThread().interrupt();
             } finally {
                 this.hasNotified = false;
                 this.onWaitEnd();

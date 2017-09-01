@@ -84,6 +84,7 @@ public class MonitorChecker implements Health, Closeable {
             this.cynomysClient.connect();
         } catch (InterruptedException e) {
             logger.error("got an exception when connecting to Cynomys Server", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -289,6 +290,7 @@ public class MonitorChecker implements Health, Closeable {
             this.cynomysClient.connect();
         } catch (InterruptedException e) {
             logger.error("cynomys client reconnect exception", e);
+            Thread.currentThread().interrupt();
         }
     }
 

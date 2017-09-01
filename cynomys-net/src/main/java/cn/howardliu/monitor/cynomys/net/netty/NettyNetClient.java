@@ -447,6 +447,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                                     getAndCreateChannel(address);
                                 } catch (InterruptedException e) {
                                     logger.error("got an exception when create channel use {}", address, e);
+                                    throw new RuntimeException("get/create channel is interrupted!", e);
                                 }
                             },
                             this.nettyClientConfig.getRelinkDelayMillis(),
@@ -511,6 +512,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             }
         } catch (InterruptedException e) {
             logger.error("closeChannel exception", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -553,6 +555,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             }
         } catch (InterruptedException e) {
             logger.error("closeChannel exception", e);
+            Thread.currentThread().interrupt();
         }
     }
 

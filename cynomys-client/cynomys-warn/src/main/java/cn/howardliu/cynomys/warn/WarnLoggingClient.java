@@ -52,6 +52,7 @@ public enum WarnLoggingClient implements Closeable {
                 }
             } catch (InterruptedException e) {
                 logger.error("LaunchLatch was interrupted!", e);
+                Thread.currentThread().interrupt();
             }
         }
         this.cynomysClient = CynomysClientManager.INSTANCE
@@ -66,6 +67,7 @@ public enum WarnLoggingClient implements Closeable {
                 this.cynomysClient.connect();
             } catch (InterruptedException e) {
                 logger.error("got an exception when connecting to Cynomys Server", e);
+                Thread.currentThread().interrupt();
             }
         }
         this.cleanerExecutor.start();
@@ -154,6 +156,7 @@ public enum WarnLoggingClient implements Closeable {
                     logger.error("list exception log exception", e);
                 } catch (InterruptedException e) {
                     logger.error("ExceptionLogCleanerExecutor is interrupted!", e);
+                    Thread.currentThread().interrupt();
                 }
             }
         }
