@@ -149,7 +149,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                     logger.error("scanResponseTable exception", e);
                 }
             }
-        }, 1000 * 3, 1000);
+        }, 3L * 1000, 1000);
 
         if (this.channelEventListener != null) {
             this.nettyEventExecutor.start();
@@ -182,8 +182,8 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                             @Override
                             public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
                                     throws Exception {
+                                super.exceptionCaught(ctx, cause);
                                 closeChannel(ctx.channel());
-                                cause.printStackTrace();
                             }
                         })
                 ;
@@ -247,16 +247,6 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                 logger.error("Netty-Client shutdown exception, ", e);
             }
         }
-    }
-
-    @Override
-    public boolean isStopped() {
-        return this.stop;
-    }
-
-    @Override
-    public boolean isStarted() {
-        return this.start;
     }
 
     @Override
@@ -361,11 +351,11 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                 }
 
                 if (addresses != null && !addresses.isEmpty()) {
-                    String _address = addresses.get(this.choosenFeed.getAndIncrement() % addresses.size());
-                    this.addressChoosen.set(_address);
-                    Channel _channel = this.createChannel(_address);
-                    if (_channel != null) {
-                        return _channel;
+                    String theAddress = addresses.get(this.choosenFeed.getAndIncrement() % addresses.size());
+                    this.addressChoosen.set(theAddress);
+                    Channel theChannel = this.createChannel(theAddress);
+                    if (theChannel != null) {
+                        return theChannel;
                     }
                 }
             } catch (Exception e) {
@@ -455,7 +445,8 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                                 try {
                                     relinkCount.incrementAndGet();
                                     getAndCreateChannel(address);
-                                } catch (InterruptedException ignored) {
+                                } catch (InterruptedException e) {
+                                    logger.error("got an exception when create channel use {}", address, e);
                                 }
                             },
                             this.nettyClientConfig.getRelinkDelayMillis(),

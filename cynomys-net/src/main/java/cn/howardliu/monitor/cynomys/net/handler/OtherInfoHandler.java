@@ -66,11 +66,20 @@ public class OtherInfoHandler extends SimpleChannelInboundHandler<Message> {
             if (logger.isDebugEnabled()) {
                 logger.debug("receive requestInfo response: {}", msg);
             }
+        } else {
+            if (logger.isDebugEnabled()) {
+                logger.debug("receive unknown type message: {}", msg);
+            }
         }
         if (ctx == null) {
             throw new IllegalArgumentException(
                     "the ChannelHandlerContext which this Handler belongs to cannot be null!");
         }
         ctx.fireChannelRead(msg);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        logger.error("got an exception", cause);
     }
 }

@@ -6,9 +6,11 @@ import cn.howardliu.monitor.cynomys.common.ServiceThread;
 import cn.howardliu.monitor.cynomys.net.ChannelEventListener;
 import cn.howardliu.monitor.cynomys.net.InvokeCallBack;
 import cn.howardliu.monitor.cynomys.net.NetHelper;
+import cn.howardliu.monitor.cynomys.net.NetService;
 import cn.howardliu.monitor.cynomys.net.exception.NetSendRequestException;
 import cn.howardliu.monitor.cynomys.net.exception.NetTimeoutException;
 import cn.howardliu.monitor.cynomys.net.exception.NetTooMuchRequestException;
+import cn.howardliu.monitor.cynomys.net.exception.ResponseNullException;
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
 import cn.howardliu.monitor.cynomys.net.struct.MessageType;
@@ -28,7 +30,7 @@ import java.util.concurrent.*;
  * @version 0.0.1
  * @since 0.0.1
  */
-public abstract class NettyNetAbstract {
+public abstract class NettyNetAbstract implements NetService {
     private static final Logger logger = LoggerFactory.getLogger(NettyNetAbstract.class);
     protected final Semaphore semaphoreAsync;
     protected final NettyEventExecutor nettyEventExecutor = new NettyEventExecutor();
@@ -45,6 +47,16 @@ public abstract class NettyNetAbstract {
     }
 
     public abstract ChannelEventListener getChannelEventListener();
+
+    @Override
+    public boolean isStopped() {
+        return this.stop;
+    }
+
+    @Override
+    public boolean isStarted() {
+        return this.start;
+    }
 
     public Message invokeSync(final Channel channel, final Message request, final long timeoutMillis)
             throws InterruptedException, NetTimeoutException, NetSendRequestException {
@@ -165,7 +177,7 @@ public abstract class NettyNetAbstract {
                     if (processor.waitResponse()) {
                         final Message response = processor.processRequest(ctx, request);
                         if (response == null) {
-                            throw new RuntimeException("request process exception");
+                            throw new ResponseNullException("request process exception");
                         }
                         response.getHeader().setOpaque(opaque);
                         response.getHeader().setType(MessageType.RESPONSE.value());
@@ -279,11 +291,11 @@ public abstract class NettyNetAbstract {
     }
 
     class NettyEventExecutor extends ServiceThread {
-        private final LinkedBlockingQueue<NettyEvent> eventQueue = new LinkedBlockingQueue<NettyEvent>();
-        private final int maxSize = 1024;
+        private final LinkedBlockingQueue<NettyEvent> eventQueue = new LinkedBlockingQueue<>();
+        private static final int MAX_SIZE = 1024;
 
         public void putNettyEvent(final NettyEvent event) {
-            if (this.eventQueue.size() <= maxSize) {
+            if (this.eventQueue.size() <= MAX_SIZE) {
                 this.eventQueue.add(event);
             } else {
                 logger.warn("event queue size[{}] enough, so drop this event {}",

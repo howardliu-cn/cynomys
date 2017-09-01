@@ -92,6 +92,8 @@ public abstract class HeartbeatHandler extends SimpleChannelInboundHandler<Messa
                 case ALL_IDLE:
                     handleAllIdle(ctx);
                     break;
+                default:
+                    logger.debug("default action with state: ", e.state());
             }
         }
     }
@@ -99,12 +101,7 @@ public abstract class HeartbeatHandler extends SimpleChannelInboundHandler<Messa
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);
-        cause.printStackTrace();
-    }
-
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
+        logger.error("got an exception", cause);
     }
 
     protected void handleReaderIdle(ChannelHandlerContext ctx) {

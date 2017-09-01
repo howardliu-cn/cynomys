@@ -142,7 +142,7 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
                     logger.error("scanResponseTable exception", e);
                 }
             }
-        }, 1000 * 3, 1000);
+        }, 3L * 1000, 1000);
     }
 
     protected ChannelHandler getChannelHandler() {
@@ -157,13 +157,7 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
                         .addLast(new NettyConnectManageHandler())
                         .addLast(additionalChannelHandler())
                         .addLast(additionalChannelHandler2())
-                        .addLast(new OtherInfoHandler() {
-                            @Override
-                            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-                                    throws Exception {
-                                cause.printStackTrace();
-                            }
-                        });
+                        .addLast(new OtherInfoHandler());
             }
         };
     }
@@ -194,9 +188,7 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
         this.stop = true;
 
         try {
-            if (this.timer != null) {
-                this.timer.cancel();
-            }
+            this.timer.cancel();
 
             this.eventLoopGroupBoss.shutdownGracefully();
             this.eventLoopGroupSelector.shutdownGracefully();
@@ -219,16 +211,6 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
     }
 
     @Override
-    public boolean isStopped() {
-        return this.stop;
-    }
-
-    @Override
-    public boolean isStarted() {
-        return this.start;
-    }
-
-    @Override
     public ChannelEventListener getChannelEventListener() {
         return this.channelEventListener;
     }
@@ -246,11 +228,11 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
     @Override
     public void registProcessor(byte requestCode, NettyRequestProcessor processor,
             ExecutorService executor) {
-        ExecutorService _executor = executor;
+        ExecutorService theExecutor = executor;
         if (executor == null) {
-            _executor = this.publicExecutor;
+            theExecutor = this.publicExecutor;
         }
-        this.processorTable.put(requestCode, new Pair<>(processor, _executor));
+        this.processorTable.put(requestCode, new Pair<>(processor, theExecutor));
     }
 
     @Override

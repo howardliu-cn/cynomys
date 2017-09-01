@@ -3,6 +3,8 @@ package cn.howardliu.monitor.cynomys.net.netty;
 import cn.howardliu.monitor.cynomys.common.SemaphoreReleaseOnlyOnce;
 import cn.howardliu.monitor.cynomys.net.InvokeCallBack;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +18,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since 0.0.1
  */
 public class ResponseFuture {
+    private static final Logger logger = LoggerFactory.getLogger(ResponseFuture.class);
+
     private final int opaque;
     private final long timeoutMillis;
     private final InvokeCallBack invokeCallBack;
@@ -60,7 +64,11 @@ public class ResponseFuture {
     }
 
     public void waitResponse(final long timeoutMillis) throws InterruptedException {
-        this.countDownLatch.await(timeoutMillis, TimeUnit.MILLISECONDS);
+        if (!this.countDownLatch.await(timeoutMillis, TimeUnit.MILLISECONDS)) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("timeout({}ms) when waiting for response", timeoutMillis);
+            }
+        }
     }
 
     public void putResponse(final Message message) {
