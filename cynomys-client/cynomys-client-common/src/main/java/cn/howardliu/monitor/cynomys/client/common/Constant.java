@@ -18,8 +18,6 @@ public final class Constant {
     public static final String SYSTEM_SETTING_INCLUDE_PACKAGE = "system.setting.include.package";
     public static final String SYSTEM_SETTING_EXCLUDE_CLASS_LOADER = "system.setting.exclude.ClassLoader";
 
-    public static volatile boolean started = false;
-
     private Constant() {
     }
 }

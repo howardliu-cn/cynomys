@@ -7,8 +7,6 @@ import cn.howardliu.monitor.cynomys.common.LaunchLatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static cn.howardliu.monitor.cynomys.client.common.Constant.started;
-
 /**
  * <br>created at 17-4-12
  *
@@ -18,6 +16,7 @@ import static cn.howardliu.monitor.cynomys.client.common.Constant.started;
  */
 public final class MonitorStarter {
     private static final Logger logger = LoggerFactory.getLogger(MonitorStarter.class);
+    private static volatile boolean started = false;
 
     private MonitorStarter() {
     }
@@ -36,6 +35,7 @@ public final class MonitorStarter {
                         }
                     } catch (InterruptedException e) {
                         logger.error("LaunchLatch was interrupted!", e);
+                        Thread.currentThread().interrupt();
                     }
                     new MonitorChecker().startHealth("Active");
                 }
