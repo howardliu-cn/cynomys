@@ -1,12 +1,12 @@
 package cn.howardliu.monitor.cynomys.agent.transform.aspect;
 
 import cn.howardliu.monitor.cynomys.agent.common.SqlHolder;
-import cn.howardliu.monitor.cynomys.agent.dto.ConnectionInformations;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
 
 import java.sql.Connection;
 
-import static cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper.*;
+import static cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper.TRANSACTION_COUNT;
+import static cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper.USED_CONNECTION_COUNT;
 
 /**
  * <br>created at 17-4-14
@@ -21,21 +21,10 @@ public final class ConnectionAspect {
     }
 
     public static void constructorEnd(Connection connection) {
-        assert connection != null;
-        synchronized (USED_CONNECTION_INFORMATIONS) {
-            int uniqueIdOfConnection = System.identityHashCode(connection);
-            if (USED_CONNECTION_INFORMATIONS.containsKey(uniqueIdOfConnection)) {
-                return;
-            }
-
-            if (SINGLETON.isConnectionInformationsEnabled()
-                    && USED_CONNECTION_INFORMATIONS.size() < MAX_USED_CONNECTION_INFORMATIONS) {
-                USED_CONNECTION_INFORMATIONS.put(uniqueIdOfConnection, new ConnectionInformations());
-            }
+        if (JdbcWrapper.SINGLETON.addConnectionInformation(connection)) {
+            USED_CONNECTION_COUNT.incrementAndGet();
+            TRANSACTION_COUNT.incrementAndGet();
         }
-
-        USED_CONNECTION_COUNT.incrementAndGet();
-        TRANSACTION_COUNT.incrementAndGet();
     }
 
     public static void catchStatementAndSql(String sql, Object stmt) {

@@ -27,6 +27,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,8 +52,8 @@ public final class JdbcWrapper {
     public static final AtomicInteger ACTIVE_THREAD_COUNT = new AtomicInteger();
     public static final AtomicInteger RUNNING_BUILD_COUNT = new AtomicInteger();
     public static final AtomicInteger BUILD_QUEUE_LENGTH = new AtomicInteger();
-    public static final Map<Integer, ConnectionInformations> USED_CONNECTION_INFORMATIONS = new ConcurrentHashMap<>();
     public static final int MAX_USED_CONNECTION_INFORMATIONS = 65535;
+    private static final Map<Integer, ConnectionInformations> USED_CONNECTION_INFORMATIONS = new ConcurrentHashMap<>();
 
     private final Counter sqlCounter;
     private boolean connectionInformationsEnabled;
@@ -113,6 +114,21 @@ public final class JdbcWrapper {
     private static boolean isProxyAlready(Object object) {
         return Proxy.isProxyClass(object.getClass())
                 && Proxy.getInvocationHandler(object).getClass().isAssignableFrom(DelegatingInvocationHandler.class);
+    }
+
+    public boolean addConnectionInformation(Connection connection) {
+        synchronized (USED_CONNECTION_INFORMATIONS) {
+            int uniqueIdOfConnection = System.identityHashCode(connection);
+            if (USED_CONNECTION_INFORMATIONS.containsKey(uniqueIdOfConnection)) {
+                return false;
+            }
+
+            if (SINGLETON.isConnectionInformationsEnabled()
+                    && USED_CONNECTION_INFORMATIONS.size() < MAX_USED_CONNECTION_INFORMATIONS) {
+                USED_CONNECTION_INFORMATIONS.put(uniqueIdOfConnection, new ConnectionInformations());
+            }
+        }
+        return true;
     }
 
     public Counter getSqlCounter() {
