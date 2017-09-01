@@ -68,7 +68,6 @@ public class StatementHandler extends SqlHandler {
                 );
             }
         } catch (Exception e) {
-            e.printStackTrace();
             logger.warn("SKIPPED " + methodName + " in " + ctClassName + ", the reason is " + e.getMessage());
         }
     }

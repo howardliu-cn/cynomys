@@ -16,7 +16,10 @@ import static cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper.*;
  * @since 0.0.1
  */
 @SuppressWarnings("unused")
-public class ConnectionAspect {
+public final class ConnectionAspect {
+    private ConnectionAspect() {
+    }
+
     public static void constructorEnd(Connection connection) {
         assert connection != null;
         synchronized (USED_CONNECTION_INFORMATIONS) {

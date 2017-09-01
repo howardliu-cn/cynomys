@@ -49,7 +49,6 @@ public class PreparedStatementHandler extends SqlHandler {
                 );
             }
         } catch (Exception e) {
-            e.printStackTrace();
             logger.warn("SKIPPED " + methodName + " in " + ctClass.getName() + ", the reason is " + e.getMessage());
         }
     }
@@ -62,7 +61,6 @@ public class PreparedStatementHandler extends SqlHandler {
                         "cn.howardliu.monitor.cynomys.agent.transform.aspect.PreparedStatementAspect.close($0);");
             }
         } catch (Exception e) {
-            e.printStackTrace();
             logger.warn("SKIPPED close() in " + ctClass.getName() + ", the reason is " + e.getMessage());
         }
     }

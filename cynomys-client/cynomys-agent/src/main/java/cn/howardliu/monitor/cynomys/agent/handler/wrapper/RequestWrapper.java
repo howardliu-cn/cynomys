@@ -149,7 +149,7 @@ public class RequestWrapper {
                 wrappedRequest = payloadNameRequestWrapper;
             }
         } catch (IOException e) {
-            log.error("Inbound Request Wrapper Error: " + e.getMessage());
+            log.error("Inbound Request Wrapper Error", e);
         }
 
         return wrappedRequest;

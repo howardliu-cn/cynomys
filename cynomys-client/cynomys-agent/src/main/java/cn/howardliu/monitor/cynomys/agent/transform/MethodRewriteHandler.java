@@ -4,6 +4,8 @@ import cn.howardliu.monitor.cynomys.agent.transform.handler.HttpServletHandler;
 import cn.howardliu.monitor.cynomys.agent.transform.handler.SqlHandler;
 import javassist.CtClass;
 import javassist.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <br>created at 17-4-11
@@ -13,6 +15,7 @@ import javassist.NotFoundException;
  * @since 0.0.1
  */
 public class MethodRewriteHandler {
+    private static final Logger logger = LoggerFactory.getLogger(MethodRewriteHandler.class);
     private static final MethodRewriteHandler _HANDLER = new MethodRewriteHandler();
     private static volatile boolean isInit = false;
     protected MethodRewriteHandler handler = null;
@@ -71,7 +74,8 @@ public class MethodRewriteHandler {
             return !(superclass == null || "java.lang.Object".equals(superclass.getName()))
                     &&
                     isImpl(superclass, interfaceName);
-        } catch (NotFoundException ignored) {
+        } catch (NotFoundException e) {
+            logger.error("not found super class", e);
         }
         return false;
     }
@@ -92,11 +96,11 @@ public class MethodRewriteHandler {
     }
 
     public MethodRewriteHandler addLast(MethodRewriteHandler handler) {
-        MethodRewriteHandler _handler = this.getHandler();
+        MethodRewriteHandler theHandler = this.getHandler();
         MethodRewriteHandler tail = this;
-        while (_handler != null) {
-            tail = _handler;
-            _handler = _handler.getHandler();
+        while (theHandler != null) {
+            tail = theHandler;
+            theHandler = theHandler.getHandler();
         }
         tail.setHandler(handler);
         return handler;

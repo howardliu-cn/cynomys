@@ -60,8 +60,8 @@ public final class JdbcWrapperHelper {
     }
 
     public static void rebindDataSource(ServletContext servletContext, String jndiName, DataSource dataSource,
-            DataSource dataSourceProxy) throws
-            Throwable {
+            DataSource dataSourceProxy)
+            throws ClassNotFoundException, NamingException, IllegalAccessException, NoSuchFieldException {
         final Object lock = changeContextWritable(servletContext, null);
         final InitialContext initialContext = new InitialContext();
         initialContext.rebind(jndiName, dataSourceProxy);
@@ -70,7 +70,8 @@ public final class JdbcWrapperHelper {
         initialContext.close();
     }
 
-    public static void rebindInitialDataSources(ServletContext servletContext) throws Throwable {
+    public static void rebindInitialDataSources(ServletContext servletContext)
+            throws NamingException, IllegalAccessException, NoSuchFieldException, ClassNotFoundException {
         try {
             final InitialContext initialContext = new InitialContext();
             for (final Map.Entry<String, DataSource> entry : JNDI_DATASOURCES_BACKUP.entrySet()) {

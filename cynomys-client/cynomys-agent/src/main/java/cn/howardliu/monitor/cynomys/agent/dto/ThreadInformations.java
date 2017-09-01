@@ -94,7 +94,7 @@ public class ThreadInformations implements Serializable {
         if (stackTrace != null) {
             return Collections.unmodifiableList(stackTrace);
         }
-        return null;
+        return Collections.emptyList();
     }
 
     public String getExecutedMethod() {

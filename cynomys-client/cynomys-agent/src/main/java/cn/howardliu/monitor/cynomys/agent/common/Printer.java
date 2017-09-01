@@ -12,20 +12,23 @@ import java.util.Map;
  * @version 0.0.1
  * @since 0.0.1
  */
-public class Printer {
-    public static final Map<String, String> STATEMENT_HASHCODE_SQL_MAP = Collections
+public final class Printer {
+    private static final Map<String, String> STATEMENT_HASHCODE_SQL_MAP = Collections
             .synchronizedMap(new HashMap<String, String>());
 
+    private Printer() {
+    }
+
     public static String remove(int hashCode) {
-        return STATEMENT_HASHCODE_SQL_MAP.remove(hashCode + "");
+        return STATEMENT_HASHCODE_SQL_MAP.remove(Integer.toString(hashCode));
     }
 
     public static String add(int hashCode, String sql) {
-        return STATEMENT_HASHCODE_SQL_MAP.put(hashCode + "", sql);
+        return STATEMENT_HASHCODE_SQL_MAP.put(Integer.toString(hashCode), sql);
     }
 
     public static String get(int hashCode) {
-        return STATEMENT_HASHCODE_SQL_MAP.get(hashCode + "");
+        return STATEMENT_HASHCODE_SQL_MAP.get(Integer.toString(hashCode));
     }
 
     public static void printBeforeRequest(HttpServletRequest request) {

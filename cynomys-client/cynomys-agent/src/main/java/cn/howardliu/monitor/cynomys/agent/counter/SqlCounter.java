@@ -1,8 +1,5 @@
 package cn.howardliu.monitor.cynomys.agent.counter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * <br>created at 17-4-11
  *
@@ -11,8 +8,7 @@ import org.slf4j.LoggerFactory;
  * @since 0.0.1
  */
 public class SqlCounter extends Counter {
-    protected final String counterName = "sql";
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected static final String counterName = "sql";
 
     protected SqlCounter(String name) {
         super(name);

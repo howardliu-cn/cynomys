@@ -79,7 +79,7 @@ public class ServerInfo {
                 '}';
     }
 
-    public static enum ServerType {
+    public enum ServerType {
         UNKNOWN,
         LAN,
         WAN

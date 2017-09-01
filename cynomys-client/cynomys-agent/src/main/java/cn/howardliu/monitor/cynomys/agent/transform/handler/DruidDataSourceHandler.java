@@ -37,10 +37,8 @@ public class DruidDataSourceHandler extends DataSourceHandler {
                     "cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapperHelper.registerCommonDataSource($0.getClass().getName() + \"@\" + System.identityHashCode($0), $0);"
             );
         } catch (NotFoundException e) {
-            e.printStackTrace();
             logger.info("not found Constructor[" + desc + "] in " + ctClass.getName());
         } catch (Exception e) {
-            e.printStackTrace();
             logger.warn(
                     "SKIPPED Constructor[" + desc + "] in " + ctClass.getName() + ", the reason is " + e.getMessage());
         }

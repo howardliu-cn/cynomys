@@ -14,7 +14,8 @@ import java.util.List;
  * @Author Jack
  * @Create In 2016年3月29日
  */
-public class SQLInfo {
+public enum SQLInfo {
+    INSTANCE;
 
     private String sysCode;
 
@@ -37,9 +38,7 @@ public class SQLInfo {
 
     private List<CounterRequest> sqlDetails;
 
-    private static SQLInfo sqlInfo;
-
-    private SQLInfo() {
+    SQLInfo() {
         this.dataBaseVersion = "";
         this.dataSourceDetails = "";
         this.active_connection_count = 0;
@@ -49,22 +48,6 @@ public class SQLInfo {
         this.running_build_count = 0;
         this.build_queue_length = 0;
         this.sqlDetails = new ArrayList<>();
-    }
-
-    /**
-     * 获取有效实例
-     *
-     * @return SQLInfo
-     * @Methods Name instance
-     * @Create In 2016年4月5日 By Jack
-     */
-    public static SQLInfo instance() {
-        if (sqlInfo != null) {
-            return sqlInfo;
-        } else {
-            sqlInfo = new SQLInfo();
-            return sqlInfo;
-        }
     }
 
     /**
@@ -234,41 +217,6 @@ public class SQLInfo {
      */
     public void setSysIPS(String sysIPS) {
         this.sysIPS = sysIPS;
-    }
-
-    /**
-     * @Return the SQLInfo sqlInfo
-     */
-    public static SQLInfo getSqlInfo() {
-        return sqlInfo;
-    }
-
-    /**
-     * @Param SQLInfo sqlInfo to set
-     */
-    public static void setSqlInfo(SQLInfo sqlInfo) {
-        SQLInfo.sqlInfo = sqlInfo;
-    }
-
-
-    public SQLInfo(String sysCode, String sysName, String sysIPS, String dataBaseVersion, String dataSourceDetails,
-            String updateDate, Integer active_connection_count, Integer used_connection_count,
-            Long transaction_count, Integer active_thread_count, Integer running_build_count,
-            Integer build_queue_length, List<CounterRequest> sqlDetails) {
-        super();
-        this.sysCode = sysCode;
-        this.sysName = sysName;
-        this.sysIPS = sysIPS;
-        this.dataBaseVersion = dataBaseVersion;
-        this.dataSourceDetails = dataSourceDetails;
-        this.updateDate = updateDate;
-        this.active_connection_count = active_connection_count;
-        this.used_connection_count = used_connection_count;
-        this.transaction_count = transaction_count;
-        this.active_thread_count = active_thread_count;
-        this.running_build_count = running_build_count;
-        this.build_queue_length = build_queue_length;
-        this.sqlDetails = sqlDetails;
     }
 
     /**

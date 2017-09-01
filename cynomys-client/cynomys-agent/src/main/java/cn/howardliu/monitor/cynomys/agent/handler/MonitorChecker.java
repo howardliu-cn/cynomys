@@ -288,7 +288,8 @@ public class MonitorChecker implements Health, Closeable {
         shutdownHealth(status);
         try {
             this.cynomysClient.connect();
-        } catch (InterruptedException ignored) {
+        } catch (InterruptedException e) {
+            logger.error("cynomys client reconnect exception", e);
         }
     }
 

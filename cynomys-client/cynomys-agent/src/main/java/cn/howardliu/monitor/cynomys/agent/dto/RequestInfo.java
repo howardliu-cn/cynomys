@@ -17,7 +17,8 @@ import java.util.List;
  * @Author Jack
  * @Create In 2016年7月27日
  */
-public class RequestInfo {
+public enum RequestInfo {
+    INSTANCE;
 
     private String sysCode;
 
@@ -31,34 +32,14 @@ public class RequestInfo {
 
     private List<CounterRequest> errorDetails;
 
-    private static RequestInfo REQUEST_INFO;
-
-    private RequestInfo() {
-
+    RequestInfo() {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
         this.sysCode = "";
         this.sysName = "";
         this.sysIPS = "";
         this.updateDate = df.format(new Date());
         this.requestDetails = new ArrayList<>();
         this.errorDetails = new ArrayList<>();
-    }
-
-    /**
-     * 获取实例
-     *
-     * @return RequestInfo
-     * @Methods Name instance
-     * @Create In 2016年7月27日 By Jack
-     */
-    public static RequestInfo instance() {
-        if (REQUEST_INFO != null) {
-            return REQUEST_INFO;
-        } else {
-            REQUEST_INFO = new RequestInfo();
-            return REQUEST_INFO;
-        }
     }
 
     /**

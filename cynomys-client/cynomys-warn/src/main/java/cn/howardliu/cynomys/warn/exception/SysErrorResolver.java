@@ -43,9 +43,9 @@ public class SysErrorResolver {
 
     public SysErrorInfo errorOf(Throwable e) {
         SysErrorInfo error = null;
-        for (Class<? extends Throwable> throwableClass : sysErrorMap.keySet()) {
-            if (e.getClass().isAssignableFrom(throwableClass)) {
-                error = sysErrorMap.get(throwableClass);
+        for (Map.Entry<Class<? extends Throwable>, SysErrorInfo> entry : sysErrorMap.entrySet()) {
+            if (e.getClass().isAssignableFrom(entry.getKey())) {
+                error = entry.getValue();
                 break;
             }
         }

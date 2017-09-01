@@ -30,6 +30,8 @@ import java.net.URL;
  * @author Emeric Vernat
  */
 public final class Parameters {
+    public static final String DEFAULT_HOST_ADDRESS = "127.0.0.1";
+    public static final String DEFAULT_HOST_NAME = "localhost";
     private static boolean dnsLookupsDisabled;
 
     private Parameters() {
@@ -44,14 +46,14 @@ public final class Parameters {
 
     public static String getHostName() {
         if (dnsLookupsDisabled) {
-            return "localhost";
+            return DEFAULT_HOST_NAME;
         }
         return NetUtils.getLocalHostname();
     }
 
     public static String getHostAddress() {
         if (dnsLookupsDisabled) {
-            return "127.0.0.1";
+            return DEFAULT_HOST_ADDRESS;
         }
         return NetUtils.getLocalHostAddress();
     }
@@ -65,6 +67,7 @@ public final class Parameters {
     }
 
     public static boolean isCounterHidden(String counterName) {
+        // TODO check this attribute
         final String displayedCounters = null;
         //noinspection ConstantConditions
         if (displayedCounters == null) {

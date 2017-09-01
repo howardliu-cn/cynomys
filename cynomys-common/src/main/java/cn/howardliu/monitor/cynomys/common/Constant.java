@@ -31,6 +31,8 @@ public final class Constant {
     public static volatile boolean NO_FLAG = true;
     public static volatile int SERVER_PORT = 8080;
     public static ServletContext SERVLET_CONTEXT = null;
+    public static final String UNKNOWN_SERVER_NAME = "unknown";
+    public static final String UNKNOWN_SERVER_VERSION = "unknown";
 
     static {
         THIS_TAG = UUID.randomUUID().toString();

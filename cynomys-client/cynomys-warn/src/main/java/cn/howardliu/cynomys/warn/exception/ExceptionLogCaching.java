@@ -56,7 +56,7 @@ public enum ExceptionLogCaching implements WarnLogCaching<ExceptionLog> {
                 }
             });
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("get pooledConnection exception", e);
         }
     }
 

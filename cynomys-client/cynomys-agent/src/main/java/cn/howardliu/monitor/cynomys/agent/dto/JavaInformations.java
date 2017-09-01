@@ -59,7 +59,8 @@ import static org.apache.commons.lang3.SystemUtils.OS_VERSION;
  * @author Emeric Vernat
  */
 public class JavaInformations implements Serializable {
-    public static final String os = buildOS();
+    public static final double BENCHMARK_ZERO_VALUE = Math.pow(10, -6);
+    public static final String OS = buildOS();
     private static final Logger log = LoggerFactory.getLogger(JavaInformations.class);
     private static final double HIGH_USAGE_THRESHOLD_IN_PERCENTS = 95d;
     /**
@@ -71,7 +72,7 @@ public class JavaInformations implements Serializable {
     private static final long serialVersionUID = 3281861236369720876L;
     private static final boolean SYSTEM_CPU_LOAD_ENABLED = "1.7".compareTo(SystemUtils.JAVA_VERSION) < 0;
 
-    private static JavaInformations JavaInfo = null;
+    private static JavaInformations JAVA_INFO = null;
 
     private static boolean localWebXmlExists = true;
     private static boolean localPomXmlExists = true;
@@ -134,11 +135,11 @@ public class JavaInformations implements Serializable {
     }
 
     public static JavaInformations instance(boolean includeDetails) {
-        if (JavaInfo != null) {
-            return JavaInfo;
+        if (JAVA_INFO != null) {
+            return JAVA_INFO;
         } else {
-            JavaInfo = new JavaInformations(includeDetails);
-            return JavaInfo;
+            JAVA_INFO = new JavaInformations(includeDetails);
+            return JAVA_INFO;
         }
     }
 
@@ -174,6 +175,7 @@ public class JavaInformations implements Serializable {
      * @return 返回cpu使用率
      * @author GuoHuang
      */
+    @SuppressWarnings("unused")
     private static double getCpuRatioForWindows() {
         try {
             String procCmd = System
@@ -183,13 +185,13 @@ public class JavaInformations implements Serializable {
             double[] c0 = readCpu(Runtime.getRuntime().exec(procCmd));
             Thread.sleep(CPUTIME);
             double[] c1 = readCpu(Runtime.getRuntime().exec(procCmd));
-            if (c0 != null && c1 != null) {
+            if (c0 != null && c0.length > 0 && c1 != null && c1.length > 0) {
                 double idletime = c1[0] - c0[0];
                 double busytime = c1[1] - c0[1];
                 return PERCENT * (busytime) / (busytime + idletime);
             }
         } catch (Exception e) {
-            log.error("cannot load monitor info", e);
+            log.error("cannot load monitor info: cpu ratio in windows", e);
         }
         return 0;
     }
@@ -203,13 +205,13 @@ public class JavaInformations implements Serializable {
      */
     private static double[] readCpu(final Process proc) {
         double[] retn = new double[2];
-        try {
+        try (InputStream inputStream = proc.getInputStream()) {
             proc.getOutputStream().close();
-            InputStreamReader ir = new InputStreamReader(proc.getInputStream());
+            InputStreamReader ir = new InputStreamReader(inputStream);
             LineNumberReader input = new LineNumberReader(ir);
             String line = input.readLine();
             if (line == null || line.length() < FAULTLENGTH) {
-                return null;
+                return new double[0];
             }
             int capidx = line.indexOf("Caption");
             int cmdidx = line.indexOf("CommandLine");
@@ -253,15 +255,9 @@ public class JavaInformations implements Serializable {
             retn[1] = kneltime + usertime;
             return retn;
         } catch (Exception e) {
-            log.error("cannot load monitor info", e);
-        } finally {
-            try {
-                proc.getInputStream().close();
-            } catch (Exception e) {
-                log.error("cannot load monitor info", e);
-            }
+            log.error("cannot load monitor info: read cpu info", e);
         }
-        return null;
+        return new double[0];
     }
 
     private static List<ThreadInformations> buildThreadInformationsList() {
@@ -465,10 +461,10 @@ public class JavaInformations implements Serializable {
     }
 
     /**
-     * @return the JavaInformations JavaInfo
+     * @return the JavaInformations JAVA_INFO
      */
     public static JavaInformations getJavaInfo() {
-        return JavaInfo;
+        return JAVA_INFO;
     }
 
     /**
@@ -642,6 +638,7 @@ public class JavaInformations implements Serializable {
         return pomXmlExists;
     }
 
+    @SuppressWarnings("unused")
     private double getCpuRatioForWindowsByPID() {
         MBeanServerConnection mbsc = ManagementFactory.getPlatformMBeanServer();
         com.sun.management.OperatingSystemMXBean osm;
@@ -649,7 +646,7 @@ public class JavaInformations implements Serializable {
         try {
             osm = ManagementFactory.newPlatformMXBeanProxy(mbsc, ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME,
                     com.sun.management.OperatingSystemMXBean.class);
-            if (this.beforeCpuTime == 0) {
+            if (Math.abs(this.beforeCpuTime) < BENCHMARK_ZERO_VALUE) {
                 this.beforeCpuTime = osm.getProcessCpuTime();
                 this.beforeCpuUpTime = System.nanoTime();
             } else {
@@ -665,7 +662,7 @@ public class JavaInformations implements Serializable {
                 }
             }
         } catch (IOException e) {
-            log.error("cannot load monitor info", e);
+            log.error("cannot load monitor info: get cpu ratio in windows by PID", e);
         }
         return cpuUsage;
     }
@@ -752,7 +749,7 @@ public class JavaInformations implements Serializable {
     }
 
     public String getOS() {
-        return os;
+        return OS;
     }
 
     public int getAvailableProcessors() {
@@ -962,7 +959,7 @@ public class JavaInformations implements Serializable {
      * @return the String os
      */
     public String getOs() {
-        return os;
+        return OS;
     }
 
     /**

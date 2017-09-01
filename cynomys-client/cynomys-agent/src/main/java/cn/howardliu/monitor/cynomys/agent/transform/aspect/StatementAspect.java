@@ -13,9 +13,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author liuxh
  * @since 0.0.1
  */
-public class StatementAspect {
+public final class StatementAspect {
     private static final Logger logger = LoggerFactory.getLogger(StatementAspect.class);
     private static final Map<Long, StatementExecuteWrapper> RUNNER_MAP = new ConcurrentHashMap<>();
+
+    private StatementAspect() {
+    }
 
     public static void begin(long tid, String sql) {
         if (RUNNER_MAP.containsKey(tid)) {

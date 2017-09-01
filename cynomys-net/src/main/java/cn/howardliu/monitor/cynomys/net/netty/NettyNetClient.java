@@ -228,7 +228,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             }
             this.channelTables.clear();
 
-            if (this.nettyEventExecutor != null) {
+            if (this.nettyEventExecutor != null && !this.nettyEventExecutor.isStopped()) {
                 this.nettyEventExecutor.shutdown();
             }
 

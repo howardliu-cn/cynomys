@@ -86,7 +86,6 @@ public class HttpServletHandler extends MethodRewriteHandler {
         } catch (NotFoundException e) {
             logger.info("not found " + methodName + " method in " + ctClass.getName());
         } catch (Exception e) {
-            e.printStackTrace();
             logger.warn("SKIPPED " + methodName + " in " + ctClass.getName() + ", the reason is " + e.getMessage());
         }
     }

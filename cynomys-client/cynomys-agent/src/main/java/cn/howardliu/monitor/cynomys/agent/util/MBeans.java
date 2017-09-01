@@ -116,7 +116,6 @@ public final class MBeans {
                 } catch (final InstanceNotFoundException e1) {
                     getPlatformMBeanServer().createMBean("bea.jrockit.management.JRockitConsole",
                             null);
-//					LOG.debug("JRockit MBeans initialized");
                 }
             } catch (final JMException e) {
                 throw new IllegalStateException(e);

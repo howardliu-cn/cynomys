@@ -83,7 +83,7 @@ public class SystemInfo {
 
     private List<JvmStats.MemoryPool> memPoolInfos;
 
-    private List<GarbageCollector> GCInfos;
+    private List<GarbageCollector> gCInfos;
 
     /**
      * @Return the double systemCpuRatio
@@ -520,17 +520,17 @@ public class SystemInfo {
     }
 
     /**
-     * @Return the List<GCInfo> GCInfos
+     * @Return the List<GCInfo> gCInfos
      */
     public List<GarbageCollector> getGCInfos() {
-        return GCInfos;
+        return gCInfos;
     }
 
     /**
      * @Param List<GCInfo> gCInfos to set
      */
     public void setGCInfos(List<GarbageCollector> gCInfos) {
-        GCInfos = gCInfos;
+        this.gCInfos = gCInfos;
     }
 
     /**

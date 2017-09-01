@@ -51,7 +51,6 @@ public enum WarnLoggingClient implements Closeable {
             try {
                 LaunchLatch.CLIENT_INIT.waitForMillis(120_000 + 2_000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
                 logger.error("LaunchLatch was interrupted!", e);
             }
         }
@@ -133,7 +132,7 @@ public enum WarnLoggingClient implements Closeable {
         if (this.cynomysClient != null) {
             this.cynomysClient.shutdown();
         }
-        if (this.cleanerExecutor != null) {
+        if (this.cleanerExecutor != null && !this.cleanerExecutor.isStopped()) {
             this.cleanerExecutor.shutdown();
         }
     }

@@ -13,7 +13,7 @@ import static cn.howardliu.monitor.cynomys.client.common.Constant.*;
  * @author liuxh
  * @since 0.0.1
  */
-public class ApmFilter {
+public final class ApmFilter {
     private static Set<String> excludePackage = new HashSet<>();
     private static Set<String> includePackage = new HashSet<>();
     private static Set<String> excludeClassLoader = new HashSet<>();
@@ -43,6 +43,9 @@ public class ApmFilter {
                 addExcludeClassLoader(p.trim());
             }
         }
+    }
+
+    private ApmFilter() {
     }
 
     public static void addExcludePackage(String p) {
@@ -77,9 +80,9 @@ public class ApmFilter {
         if (className == null || className.isEmpty()) {
             return true;
         }
-        String _className = className.replaceAll("\\.", "/");
+        String theClassName = className.replaceAll("\\.", "/");
         for (String exclude : excludePackage) {
-            if (_className.startsWith(exclude)) {
+            if (theClassName.startsWith(exclude)) {
                 return true;
             }
         }
@@ -90,9 +93,9 @@ public class ApmFilter {
         if (className == null || className.isEmpty()) {
             return true;
         }
-        String _className = className.replaceAll("\\.", "/");
+        String theClassName = className.replaceAll("\\.", "/");
         for (String exclude : includePackage) {
-            if (_className.startsWith(exclude)) {
+            if (theClassName.startsWith(exclude)) {
                 return true;
             }
         }

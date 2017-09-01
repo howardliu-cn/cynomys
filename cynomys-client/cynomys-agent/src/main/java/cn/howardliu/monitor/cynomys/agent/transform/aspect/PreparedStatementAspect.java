@@ -16,9 +16,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 0.0.1
  * @since 0.0.1
  */
-public class PreparedStatementAspect {
+public final class PreparedStatementAspect {
     private static final Logger logger = LoggerFactory.getLogger(PreparedStatementAspect.class);
     private static final Map<Long, ExecuteRunnerWrapper> RUNNER_MAP = new ConcurrentHashMap<>();
+
+    private PreparedStatementAspect() {
+    }
 
     public static void begin(long tid, PreparedStatement stmt) {
         assert stmt != null;

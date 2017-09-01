@@ -16,8 +16,11 @@ import static cn.howardliu.monitor.cynomys.client.common.Constant.started;
  * @version 0.0.1
  * @since 0.0.1
  */
-public class MonitorStarter {
+public final class MonitorStarter {
     private static final Logger logger = LoggerFactory.getLogger(MonitorStarter.class);
+
+    private MonitorStarter() {
+    }
 
     public static synchronized void run() {
         if (!started) {
@@ -30,7 +33,6 @@ public class MonitorStarter {
                     try {
                         LaunchLatch.STARTED.waitForMillis(120_000);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
                         logger.error("LaunchLatch was interrupted!", e);
                     }
                     new MonitorChecker().startHealth("Active");

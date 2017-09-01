@@ -22,9 +22,12 @@ import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
  * @version 0.0.1
  * @since 0.0.1
  */
-public class RequestAspect {
+public final class RequestAspect {
     private static final Logger logger = LoggerFactory.getLogger(RequestAspect.class);
     private static final Map<Long, RequestDataWrapper> REQUEST_COUNTER_MAP = new ConcurrentHashMap<>();
+
+    private RequestAspect() {
+    }
 
     public static void begin(long tid, HttpServletRequest request, HttpServletResponse response) {
         assert request != null;

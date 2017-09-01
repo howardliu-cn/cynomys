@@ -23,7 +23,6 @@ import cn.howardliu.monitor.cynomys.agent.dto.Counter;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -112,8 +111,8 @@ public final class JdbcWrapper {
     }
 
     private static boolean isProxyAlready(Object object) {
-        return Proxy.isProxyClass(object.getClass()) && Proxy.getInvocationHandler(object).getClass().getName()
-                .equals(DelegatingInvocationHandler.class.getName());
+        return Proxy.isProxyClass(object.getClass())
+                && Proxy.getInvocationHandler(object).getClass().isAssignableFrom(DelegatingInvocationHandler.class);
     }
 
     public Counter getSqlCounter() {
@@ -132,8 +131,7 @@ public final class JdbcWrapper {
                         dataSource);
     }
 
-    private static class DelegatingInvocationHandler implements InvocationHandler, Serializable {
-        private static final long serialVersionUID = 7515240588169084785L;
+    private static class DelegatingInvocationHandler implements InvocationHandler {
         private final InvocationHandler delegate;
 
         DelegatingInvocationHandler(InvocationHandler delegate) {

@@ -22,12 +22,12 @@ import static org.apache.commons.lang3.SystemUtils.USER_HOME;
  */
 public final class SystemPropertyConfig {
     private static final Logger logger = LoggerFactory.getLogger(SystemPropertyConfig.class);
-    private static PropertyAdapter _config = new PropertyAdapter();
+    private static PropertyAdapter thisConfig = new PropertyAdapter();
 
-    private static String DEFAULT_MONITOR_PROPERTIES_FILE = "/conf/default-cynomys-monitor.properties";
-    private static String SYS_CUSTOM_MONITOR_PROPERTIES_FILE = USER_HOME + "/.cynomys/cynomys-monitor.properties";
-    private static String CURRENT_MONITOR_PROPERTIES_FILE = "cynomys-monitor.properties";
-    private static String ATTRIBUTE_MONITOR_PROPERTIES_FILE = System.getProperty("cynomys-monitor.properties");
+    private static final String DEFAULT_MONITOR_PROPERTIES_FILE = "/conf/default-cynomys-monitor.properties";
+    private static final String SYS_CUSTOM_MONITOR_PROPERTIES_FILE = USER_HOME + "/.cynomys/cynomys-monitor.properties";
+    private static final String CURRENT_MONITOR_PROPERTIES_FILE = "cynomys-monitor.properties";
+    private static final String ATTRIBUTE_MONITOR_PROPERTIES_FILE = System.getProperty("cynomys-monitor.properties");
 
     private SystemPropertyConfig() {
     }
@@ -43,14 +43,14 @@ public final class SystemPropertyConfig {
     // 4. the config file is jvm parameter: -Dcynomys-monitor.properties=/path/to/xxx.properties
     // 5. the config properties load System.getProperties()
     public static void init(String agentArgs) {
-        _config.add(DEFAULT_MONITOR_PROPERTIES_FILE);
+        thisConfig.add(DEFAULT_MONITOR_PROPERTIES_FILE);
 
-        boolean extract1 = _config.addFile(SYS_CUSTOM_MONITOR_PROPERTIES_FILE);
-        boolean extract2 = _config.addFile(CURRENT_MONITOR_PROPERTIES_FILE);
-        boolean extract4 = _config.addFile(agentArgs);
-        boolean extract3 = _config.addFile(ATTRIBUTE_MONITOR_PROPERTIES_FILE);
+        boolean extract1 = thisConfig.addFile(SYS_CUSTOM_MONITOR_PROPERTIES_FILE);
+        boolean extract2 = thisConfig.addFile(CURRENT_MONITOR_PROPERTIES_FILE);
+        boolean extract4 = thisConfig.addFile(agentArgs);
+        boolean extract3 = thisConfig.addFile(ATTRIBUTE_MONITOR_PROPERTIES_FILE);
 
-        _config.addAll(System.getProperties());
+        thisConfig.addAll(System.getProperties());
 
         loadConfig();
 
@@ -79,7 +79,7 @@ public final class SystemPropertyConfig {
     }
 
     public static String getContextProperty(String name) {
-        return _config.getContextProperty(name);
+        return thisConfig.getContextProperty(name);
     }
 
     private static Boolean getBoolean(String name, Boolean defaultValue) {
@@ -88,10 +88,10 @@ public final class SystemPropertyConfig {
     }
 
     private static String getContextProperty(String name, String defaultValue) {
-        return _config.getContextProperty(name, defaultValue);
+        return thisConfig.getContextProperty(name, defaultValue);
     }
 
     public static void setContextProperty(String name, String value) {
-        _config.setContextProperty(name, value);
+        thisConfig.setContextProperty(name, value);
     }
 }
