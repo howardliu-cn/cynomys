@@ -43,8 +43,8 @@ public class MonitorChecker implements Health, Closeable {
     private AppMonitor appMonitor;
 
     public MonitorChecker() {
-        this.appName = SYS_NAME;
-        appMonitor = AppMonitor.instance(SERVER_PORT);
+        this.appName = sysName;
+        appMonitor = AppMonitor.instance(serverPort);
         cynomysClient = CynomysClientManager.INSTANCE
                 .getAndCreateCynomysClient(
                         new ClientConfig(),
@@ -79,7 +79,7 @@ public class MonitorChecker implements Health, Closeable {
                         }
                 );
         LaunchLatch.CLIENT_INIT.start();
-        cynomysClient.updateAddressList(SERVER_LIST);
+        cynomysClient.updateAddressList(serverList);
         cynomysClient.start();
         try {
             this.cynomysClient.connect();
@@ -200,8 +200,8 @@ public class MonitorChecker implements Health, Closeable {
                                     new Message()
                                             .setHeader(
                                                     new Header()
-                                                            .setSysName(SYS_NAME)
-                                                            .setSysCode(SYS_CODE)
+                                                            .setSysName(sysName)
+                                                            .setSysCode(sysCode)
                                                             .setLength(appInfo.length())
                                                             .setType(MessageType.REQUEST.value())
                                                             .setCode(MessageCode.APP_INFO_REQ.value())
@@ -217,8 +217,8 @@ public class MonitorChecker implements Health, Closeable {
                                     new Message()
                                             .setHeader(
                                                     new Header()
-                                                            .setSysName(SYS_NAME)
-                                                            .setSysCode(SYS_CODE)
+                                                            .setSysName(sysName)
+                                                            .setSysCode(sysCode)
                                                             .setLength(sqlInfo.length())
                                                             .setType(MessageType.REQUEST.value())
                                                             .setCode(MessageCode.SQL_INFO_REQ.value())
@@ -234,8 +234,8 @@ public class MonitorChecker implements Health, Closeable {
                                     new Message()
                                             .setHeader(
                                                     new Header()
-                                                            .setSysName(SYS_NAME)
-                                                            .setSysCode(SYS_CODE)
+                                                            .setSysName(sysName)
+                                                            .setSysCode(sysCode)
                                                             .setLength(requestInfo.length())
                                                             .setType(MessageType.REQUEST.value())
                                                             .setCode(MessageCode.REQUEST_INFO_REQ.value())
@@ -266,8 +266,8 @@ public class MonitorChecker implements Health, Closeable {
     public void updateHealth(String status) {
         try {
             // 更新自身节点状态
-            Object[] tagArgs = {SYS_NAME, SYS_CODE, status};
-            String rootDesc = SYS_DESC;
+            Object[] tagArgs = {sysName, sysCode, status};
+            String rootDesc = sysDesc;
             rootDesc = MessageFormat.format(rootDesc, tagArgs);
             System.err.println(rootDesc);
             // TODO check this function

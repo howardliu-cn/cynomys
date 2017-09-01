@@ -1,5 +1,8 @@
 package cn.howardliu.monitor.cynomys.common;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * <br>created at 17-8-11
  *
@@ -11,11 +14,14 @@ public class CynomysVersion {
     public static final int CURRENT_VERSION = Version.V0_0_1_SNAPSHOT.ordinal();
     public static final int CURRENT_VERSION_CODE = Version.V0_0_1_SNAPSHOT.code;
 
+    private static final Logger logger = LoggerFactory.getLogger(CynomysVersion.class);
+
     public static String getVersionDesc(int value) {
         try {
             Version v = Version.values()[value];
             return v.name();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            logger.error("get Cynomys Version exception", e);
         }
         return "HigherVersion";
     }

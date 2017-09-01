@@ -84,8 +84,8 @@ public class NettyNetClientTest {
                                         @Override
                                         protected Header customHeader() {
                                             return super.customHeader()
-                                                    .setSysName(Constant.SYS_NAME)
-                                                    .setSysCode(Constant.SYS_CODE);
+                                                    .setSysName(Constant.sysName)
+                                                    .setSysCode(Constant.sysCode);
                                         }
                                     })
                                     .addLast(new OtherInfoHandler() {

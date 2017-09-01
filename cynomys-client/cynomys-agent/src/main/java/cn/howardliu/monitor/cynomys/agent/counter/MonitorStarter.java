@@ -31,7 +31,9 @@ public final class MonitorStarter {
                     Parameters.initialize();
                     SLACounter.init();
                     try {
-                        LaunchLatch.STARTED.waitForMillis(120_000);
+                        if (!LaunchLatch.STARTED.waitForMillis(120_000)) {
+                            logger.warn("Timeout(120000ms) when waiting for server started!");
+                        }
                     } catch (InterruptedException e) {
                         logger.error("LaunchLatch was interrupted!", e);
                     }

@@ -12,7 +12,7 @@ import org.springframework.web.context.ServletContextAware;
 
 import javax.servlet.ServletContext;
 
-import static cn.howardliu.monitor.cynomys.common.Constant.SERVER_PORT;
+import static cn.howardliu.monitor.cynomys.common.Constant.serverPort;
 
 /**
  * <br>created at 17-8-17
@@ -26,23 +26,23 @@ public class StatedListener implements ServletContextAware, ApplicationListener<
 
     @Override
     public void setServletContext(ServletContext servletContext) {
-        Constant.SERVLET_CONTEXT = servletContext;
+        Constant.servletContext = servletContext;
         try {
             if (TomcatInfoUtils.SERVER_IS_TOMCAT) {
-                Constant.SERVER_PORT = TomcatInfoUtils.getPort();
+                Constant.serverPort = TomcatInfoUtils.getPort();
             } else {
-                Constant.SERVER_PORT = Integer.valueOf(System.getProperty("server.port", SERVER_PORT + ""));
+                Constant.serverPort = Integer.valueOf(System.getProperty("server.port", serverPort + ""));
             }
         } catch (Exception e) {
             logger.error("got server port exception", e);
         }
         if (logger.isInfoEnabled()) {
             logger.info("the server info: "
-                    + "\n\t listen port = " + Constant.SERVER_PORT
-                    + "\n\t servlet info = " + Constant.SERVLET_CONTEXT.getServerInfo()
-                    + "\n\t server major version = " + Constant.SERVLET_CONTEXT.getMajorVersion()
-                    + "\n\t server minor version = " + Constant.SERVLET_CONTEXT.getMinorVersion()
-                    + "\n\t server context name = " + Constant.SERVLET_CONTEXT.getServletContextName()
+                    + "\n\t listen port = " + Constant.serverPort
+                    + "\n\t servlet info = " + Constant.servletContext.getServerInfo()
+                    + "\n\t server major version = " + Constant.servletContext.getMajorVersion()
+                    + "\n\t server minor version = " + Constant.servletContext.getMinorVersion()
+                    + "\n\t server context name = " + Constant.servletContext.getServletContextName()
             );
         }
     }

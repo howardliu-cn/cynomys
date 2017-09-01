@@ -43,7 +43,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static cn.howardliu.gear.monitor.core.Constants.*;
-import static cn.howardliu.monitor.cynomys.common.Constant.SERVLET_CONTEXT;
+import static cn.howardliu.monitor.cynomys.common.Constant.servletContext;
 import static org.apache.commons.lang3.SystemUtils.*;
 import static org.apache.commons.lang3.SystemUtils.OS_ARCH;
 import static org.apache.commons.lang3.SystemUtils.OS_NAME;
@@ -592,16 +592,16 @@ public class JavaInformations implements Serializable {
         compliationName = jvmStats.getCompilationInfo().getName();
         totalCompliationTime = jvmStats.getCompilationInfo().getCompilationTime();
 
-        if (SERVLET_CONTEXT == null) {
+        if (servletContext == null) {
             serverInfo = null;
             contextPath = null;
             contextDisplayName = null;
             dependenciesList = null;
         } else {
-            serverInfo = SERVLET_CONTEXT.getServerInfo();
-            contextPath = Parameters.getContextPath(SERVLET_CONTEXT);
-            contextDisplayName = SERVLET_CONTEXT.getServletContextName();
-            dependenciesList = buildDependenciesList(SERVLET_CONTEXT);
+            serverInfo = servletContext.getServerInfo();
+            contextPath = Parameters.getContextPath(servletContext);
+            contextDisplayName = servletContext.getServletContextName();
+            dependenciesList = buildDependenciesList(servletContext);
         }
 
         startDate = START_TIME;

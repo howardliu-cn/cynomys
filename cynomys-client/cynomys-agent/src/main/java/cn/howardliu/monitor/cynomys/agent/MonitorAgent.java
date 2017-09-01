@@ -17,11 +17,11 @@ import java.lang.instrument.Instrumentation;
 public class MonitorAgent {
     public static void premain(String args, Instrumentation inst) {
         SystemPropertyConfig.init(args);
-        if (Constant.IS_DEBUG) {
+        if (Constant.isDebug) {
             return;
         }
         inst.addTransformer(new MonitoringTransformer());
-        Constant.NO_FLAG = false;
+        Constant.noFlag = false;
         MonitorStarter.run();
     }
 }

@@ -23,15 +23,15 @@ public class CynomysContainerAutoConfigurer implements ApplicationListener<Embed
 
     @Override
     public void onApplicationEvent(EmbeddedServletContainerInitializedEvent event) {
-        Constant.SERVER_PORT = event.getEmbeddedServletContainer().getPort();
-        Constant.SERVLET_CONTEXT = event.getApplicationContext().getServletContext();
+        Constant.serverPort = event.getEmbeddedServletContainer().getPort();
+        Constant.servletContext = event.getApplicationContext().getServletContext();
         if (logger.isInfoEnabled()) {
             logger.info("the server info: "
-                    + "\n\t listen port = " + Constant.SERVER_PORT
-                    + "\n\t servlet info = " + Constant.SERVLET_CONTEXT.getServerInfo()
-                    + "\n\t server major version = " + Constant.SERVLET_CONTEXT.getMajorVersion()
-                    + "\n\t server minor version = " + Constant.SERVLET_CONTEXT.getMinorVersion()
-                    + "\n\t server context name = " + Constant.SERVLET_CONTEXT.getServletContextName()
+                    + "\n\t listen port = " + Constant.serverPort
+                    + "\n\t servlet info = " + Constant.servletContext.getServerInfo()
+                    + "\n\t server major version = " + Constant.servletContext.getMajorVersion()
+                    + "\n\t server minor version = " + Constant.servletContext.getMinorVersion()
+                    + "\n\t server context name = " + Constant.servletContext.getServletContextName()
             );
         }
     }

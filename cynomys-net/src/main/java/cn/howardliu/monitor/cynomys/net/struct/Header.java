@@ -25,7 +25,7 @@ public class Header {
     private int length;
     private byte type;
     private byte code;
-    private byte flagPath = (byte) (Constant.NO_FLAG ? 0 : 1);
+    private byte flagPath = (byte) (Constant.noFlag ? 0 : 1);
 
     public int getOpaque() {
         return opaque;

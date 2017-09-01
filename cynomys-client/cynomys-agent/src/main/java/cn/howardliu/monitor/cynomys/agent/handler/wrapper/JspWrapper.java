@@ -30,7 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
-import static cn.howardliu.monitor.cynomys.common.Constant.SERVLET_CONTEXT;
+import static cn.howardliu.monitor.cynomys.common.Constant.servletContext;
 
 /**
  * Wrapping de l'interface javax.servlet.RequestDispatcher pour avoir les temps moyens de rendu
@@ -68,7 +68,7 @@ final class JspWrapper implements InvocationHandler {
         if (DISABLED || COUNTER_HIDDEN) {
             return request;
         }
-        if (SERVLET_CONTEXT == null || SERVLET_CONTEXT.getMajorVersion() >= 3) {
+        if (servletContext == null || servletContext.getMajorVersion() >= 3) {
             return new HttpRequestWrapper3(request, response);
         }
         return new HttpRequestWrapper(request);

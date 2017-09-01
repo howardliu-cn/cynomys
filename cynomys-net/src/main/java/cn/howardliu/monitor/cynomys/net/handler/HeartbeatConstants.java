@@ -12,4 +12,7 @@ public final class HeartbeatConstants {
     public static final AtomicLong HEARTBEAT_COUNTER = new AtomicLong(0);
 
     public static final int HEADER_LENGTH = 4;
+
+    private HeartbeatConstants() {
+    }
 }

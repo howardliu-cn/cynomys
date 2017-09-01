@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public abstract class ServiceThread implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(ServiceThread.class);
 
-    private static final long JOIN_TIME = 90 * 1000;
+    private static final long JOIN_TIME = 90L * 1000;
     protected final Thread thread;
     protected volatile boolean hasNotified = false;
     protected volatile boolean stopped = false;
@@ -53,7 +53,7 @@ public abstract class ServiceThread implements Runnable {
             logger.info("join thread " + this.getServiceName() + " eclipse time(ms) " + eclipseTime + " "
                     + this.getJointime());
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("{} interrupted", getServiceName(), e);
         }
     }
 
@@ -105,7 +105,7 @@ public abstract class ServiceThread implements Runnable {
             try {
                 this.wait(interval);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error("wait for running be interrupted", e);
             } finally {
                 this.hasNotified = false;
                 this.onWaitEnd();

@@ -23,7 +23,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static cn.howardliu.monitor.cynomys.common.Constant.SERVER_LIST;
+import static cn.howardliu.monitor.cynomys.common.Constant.serverList;
 
 /**
  * <br>created at 17-8-25
@@ -40,16 +40,18 @@ public enum WarnLoggingClient implements Closeable {
     private final ExceptionLogCleanerExecutor cleanerExecutor = new ExceptionLogCleanerExecutor();
 
     WarnLoggingClient() {
-        if (Constant.IS_DEBUG) {
+        if (Constant.isDebug) {
             this.cynomysClient = null;
             return;
         }
         // FIXME not gracefully, must refactor
-        if (Constant.NO_FLAG) {
+        if (Constant.noFlag) {
             SystemPropertyConfig.init();
         } else {
             try {
-                LaunchLatch.CLIENT_INIT.waitForMillis(120_000 + 2_000);
+                if(!LaunchLatch.CLIENT_INIT.waitForMillis(120_000 + 2_000)){
+                    logger.warn("Timeout(140000ms) when waiting for server started!");
+                }
             } catch (InterruptedException e) {
                 logger.error("LaunchLatch was interrupted!", e);
             }
@@ -59,8 +61,8 @@ public enum WarnLoggingClient implements Closeable {
                         new ClientConfig(),
                         new SimpleChannelEventListener()
                 );
-        if (Constant.NO_FLAG) {
-            cynomysClient.updateAddressList(SERVER_LIST);
+        if (Constant.noFlag) {
+            cynomysClient.updateAddressList(serverList);
             this.cynomysClient.start();
             try {
                 this.cynomysClient.connect();
@@ -76,7 +78,7 @@ public enum WarnLoggingClient implements Closeable {
         if (!sysError.getCode().matches("^\\d{3}$")) {
             throw new IllegalArgumentException("SysErrCode必须是3位数字");
         }
-        this.log(Constant.SYS_CODE, bizCode, bizDesc, errCode, errDesc, sysError.getCode(), sysError.getDesc(),
+        this.log(Constant.sysCode, bizCode, bizDesc, errCode, errDesc, sysError.getCode(), sysError.getDesc(),
                 level, infoWithStackTrace(e));
     }
 
@@ -93,7 +95,7 @@ public enum WarnLoggingClient implements Closeable {
     }
 
     public void log(ExceptionLog log) {
-        if (Constant.IS_DEBUG) {
+        if (Constant.isDebug) {
             return;
         }
         String logMsg = JSON.toJSONString(log);
@@ -101,8 +103,8 @@ public enum WarnLoggingClient implements Closeable {
             Message request = new Message()
                     .setHeader(
                             new Header()
-                                    .setSysCode(Constant.SYS_CODE)
-                                    .setSysName(Constant.SYS_NAME)
+                                    .setSysCode(Constant.sysCode)
+                                    .setSysName(Constant.sysName)
                                     .setType(MessageType.REQUEST.value())
                                     .setCode(MessageCode.EXCEPTION_INFO_REQ.value())
                     )

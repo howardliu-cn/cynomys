@@ -60,11 +60,11 @@ public final class SystemPropertyConfig {
     }
 
     private static void loadConfig() {
-        Constant.IS_DEBUG = getBoolean(SYSTEM_SETTING_MONITOR_IS_DEBUG, Constant.IS_DEBUG);
-        Constant.SYS_NAME = getContextProperty(SYSTEM_SETTING_CONTEXT_NAME, Constant.SYS_NAME);
-        Constant.SYS_CODE = getContextProperty(SYSTEM_SETTING_CONTEXT_CODE, Constant.SYS_CODE);
-        Constant.SYS_DESC = getContextProperty(SYSTEM_SETTING_CONTEXT_DESC, Constant.SYS_DESC);
-        Constant.SERVER_LIST = getContextProperty(SYSTEM_SETTING_MONITOR_SERVERS, Constant.SERVER_LIST);
+        Constant.isDebug = getBoolean(SYSTEM_SETTING_MONITOR_IS_DEBUG, Constant.isDebug);
+        Constant.sysName = getContextProperty(SYSTEM_SETTING_CONTEXT_NAME, Constant.sysName);
+        Constant.sysCode = getContextProperty(SYSTEM_SETTING_CONTEXT_CODE, Constant.sysCode);
+        Constant.sysDesc = getContextProperty(SYSTEM_SETTING_CONTEXT_DESC, Constant.sysDesc);
+        Constant.serverList = getContextProperty(SYSTEM_SETTING_MONITOR_SERVERS, Constant.serverList);
     }
 
     private static void extractDefaultProperties() {

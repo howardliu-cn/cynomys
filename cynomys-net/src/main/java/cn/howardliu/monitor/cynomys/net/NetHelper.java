@@ -33,6 +33,9 @@ public final class NetHelper {
         }
     }
 
+    private NetHelper() {
+    }
+
     public static boolean isWindowsPlatform() {
         return isWindowsPlatform;
     }
@@ -63,7 +66,7 @@ public final class NetHelper {
         try {
             return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            logger.error("unknown host exception", e);
         }
         return "DEFAULT_SERVER";
     }
@@ -103,7 +106,7 @@ public final class NetHelper {
 
             return normalizeHostAddress(InetAddress.getLocalHost());
         } catch (SocketException | UnknownHostException e) {
-            e.printStackTrace();
+            logger.error("get local address exception", e);
         }
         return null;
     }
@@ -135,7 +138,7 @@ public final class NetHelper {
         if (address.isEmpty()) {
             return "";
         } else if (address.contains("/")) {
-            return address.substring(address.lastIndexOf("/") + 1);
+            return address.substring(address.lastIndexOf('/') + 1);
         } else {
             return address;
         }

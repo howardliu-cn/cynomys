@@ -22,7 +22,7 @@ public enum LaunchLatch {
         this.latch.countDown();
     }
 
-    public void waitForMillis(long millis) throws InterruptedException {
-        this.latch.await(millis, TimeUnit.MILLISECONDS);
+    public boolean waitForMillis(long millis) throws InterruptedException {
+        return this.latch.await(millis, TimeUnit.MILLISECONDS);
     }
 }
