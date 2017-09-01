@@ -1,5 +1,6 @@
 package cn.howardliu.monitor.cynomys.spring.boot.autoconfigure;
 
+import cn.howardliu.monitor.cynomys.common.CommonParameters;
 import cn.howardliu.monitor.cynomys.common.Constant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,15 +24,15 @@ public class CynomysContainerAutoConfigurer implements ApplicationListener<Embed
 
     @Override
     public void onApplicationEvent(EmbeddedServletContainerInitializedEvent event) {
-        Constant.serverPort = event.getEmbeddedServletContainer().getPort();
-        Constant.servletContext = event.getApplicationContext().getServletContext();
+        CommonParameters.setServerPort(event.getEmbeddedServletContainer().getPort());
+        CommonParameters.setServletContext(event.getApplicationContext().getServletContext());
         if (logger.isInfoEnabled()) {
             logger.info("the server info: "
-                    + "\n\t listen port = " + Constant.serverPort
-                    + "\n\t servlet info = " + Constant.servletContext.getServerInfo()
-                    + "\n\t server major version = " + Constant.servletContext.getMajorVersion()
-                    + "\n\t server minor version = " + Constant.servletContext.getMinorVersion()
-                    + "\n\t server context name = " + Constant.servletContext.getServletContextName()
+                    + "\n\t listen port = " + CommonParameters.getServerPort()
+                    + "\n\t servlet info = " + CommonParameters.getServletContext().getServerInfo()
+                    + "\n\t server major version = " + CommonParameters.getServletContext().getMajorVersion()
+                    + "\n\t server minor version = " + CommonParameters.getServletContext().getMinorVersion()
+                    + "\n\t server context name = " + CommonParameters.getServletContext().getServletContextName()
             );
         }
     }

@@ -19,6 +19,7 @@ package cn.howardliu.monitor.cynomys.agent.handler.wrapper;
 
 import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
 import cn.howardliu.monitor.cynomys.agent.dto.Counter;
+import cn.howardliu.monitor.cynomys.common.CommonParameters;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.RequestDispatcher;
@@ -29,8 +30,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
-
-import static cn.howardliu.monitor.cynomys.common.Constant.servletContext;
 
 /**
  * Wrapping de l'interface javax.servlet.RequestDispatcher pour avoir les temps moyens de rendu
@@ -68,7 +67,8 @@ final class JspWrapper implements InvocationHandler {
         if (DISABLED || COUNTER_HIDDEN) {
             return request;
         }
-        if (servletContext == null || servletContext.getMajorVersion() >= 3) {
+        if (CommonParameters.getServletContext() == null || CommonParameters.getServletContext()
+                .getMajorVersion() >= 3) {
             return new HttpRequestWrapper3(request, response);
         }
         return new HttpRequestWrapper(request);

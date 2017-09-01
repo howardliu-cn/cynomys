@@ -1,6 +1,5 @@
 package cn.howardliu.monitor.cynomys.common;
 
-import javax.servlet.ServletContext;
 import java.util.UUID;
 
 /**
@@ -24,16 +23,6 @@ public final class Constant {
 
     public static final String UNKNOWN_SERVER_NAME = "unknown";
     public static final String UNKNOWN_SERVER_VERSION = "unknown";
-
-    public static volatile boolean isDebug = Boolean.TRUE;
-    public static String sysName = "cynomys-monitor-project-default-name";
-    public static String sysCode = "000";
-    public static String sysDesc = "'{'\"name\":\"{0}\",\"code\":\"{1}\",\"version\":\"1.0\",\"desc\":\"https://github.com/howardliu-cn/cynomys\",\"status\":\"{2}\"'}'";
-
-    public static volatile String serverList = "127.0.0.1:7911";
-    public static volatile boolean noFlag = true;
-    public static volatile int serverPort = 8080;
-    public static ServletContext servletContext = null;
 
     static {
         THIS_TAG = UUID.randomUUID().toString();

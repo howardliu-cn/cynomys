@@ -1,6 +1,6 @@
 package cn.howardliu.monitor.cynomys.net.netty;
 
-import cn.howardliu.monitor.cynomys.common.Constant;
+import cn.howardliu.monitor.cynomys.common.CommonParameters;
 import cn.howardliu.monitor.cynomys.net.ChannelEventListener;
 import cn.howardliu.monitor.cynomys.net.InvokeCallBack;
 import cn.howardliu.monitor.cynomys.net.NetClient;
@@ -173,8 +173,8 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                             @Override
                             protected Header customHeader() {
                                 return super.customHeader()
-                                        .setSysName(Constant.sysName)
-                                        .setSysCode(Constant.sysCode);
+                                        .setSysName(CommonParameters.getSysName())
+                                        .setSysCode(CommonParameters.getSysCode());
                             }
                         })
                         .addLast(additionalChannelHandler2())

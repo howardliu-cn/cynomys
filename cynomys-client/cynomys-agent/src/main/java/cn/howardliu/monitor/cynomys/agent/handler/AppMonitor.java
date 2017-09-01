@@ -6,6 +6,7 @@ import cn.howardliu.monitor.cynomys.agent.counter.SLACounter;
 import cn.howardliu.monitor.cynomys.agent.dto.*;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.RequestWrapper;
+import cn.howardliu.monitor.cynomys.common.CommonParameters;
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -17,7 +18,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static cn.howardliu.monitor.cynomys.common.Constant.*;
+import static cn.howardliu.monitor.cynomys.common.Constant.UNKNOWN_SERVER_NAME;
+import static cn.howardliu.monitor.cynomys.common.Constant.UNKNOWN_SERVER_VERSION;
 
 /**
  * @author Jack
@@ -75,22 +77,22 @@ public class AppMonitor {
         // TODO 确认ProxyServer是否连通
         boolean isMonitorRootExist = false;
         if (!isMonitorRootExist) {
-            Object[] tagArgs = {sysName, sysCode, "Active"};
-            String rootDesc = sysDesc;
+            Object[] tagArgs = {CommonParameters.getSysName(), CommonParameters.getSysCode(), "Active"};
+            String rootDesc = CommonParameters.getSysDesc();
             rootDesc = MessageFormat.format(rootDesc, tagArgs);
             // TODO 发送初始化状态
             System.out.println(rootDesc);
         }
 
         // 2. 判断用于监控的系统本身的父节点是否存在，如不存在则建立，建立过程每个此系统的实例争抢创建，利用Zookeeper的原生节点创建锁完成
-        String systemDesc = sysName + "-" + sysCode;
+        String systemDesc = CommonParameters.getSysName() + "-" + CommonParameters.getSysCode();
 
         // TODO check this function
         System.out.println(systemDesc);
 
         // 3. 创建本次实例的临时节点，利用临时节点特性，完成系统监控
-        Object[] tagArgs = {sysName, sysCode, status};
-        String rootDesc = sysDesc;
+        Object[] tagArgs = {CommonParameters.getSysName(), CommonParameters.getSysCode(), status};
+        String rootDesc = CommonParameters.getSysDesc();
         rootDesc = MessageFormat.format(rootDesc, tagArgs);
         // TODO write data
         System.out.println(rootDesc);
@@ -111,12 +113,12 @@ public class AppMonitor {
             javaInfor.rebuildJavaInfo(true);
 
             // 1. 获取目前节点基础信息
-            Object[] tagArgs = {sysName, sysCode, "Active"};
-            rootDesc = sysDesc;
+            Object[] tagArgs = {CommonParameters.getSysName(), CommonParameters.getSysCode(), "Active"};
+            rootDesc = CommonParameters.getSysDesc();
             rootDesc = MessageFormat.format(rootDesc, tagArgs);
             appInfo = JSON.parseObject(rootDesc, ApplicationInfo.class);
             if (appInfo.getDesc() == null) {
-                appInfo.setDesc(sysName);
+                appInfo.setDesc(CommonParameters.getSysName());
             }
 
             // 2.开始获取实例基本信息及机器基本信息
@@ -189,11 +191,11 @@ public class AppMonitor {
             appInfo.setSumErrDealReqTime(SLACounter.instance().getSumErrDealRequestTime());
 
             // 4.更新服务器名称及版本
-            if (servletContext == null) {
+            if (CommonParameters.getServletContext() == null) {
                 appInfo.setServerName(UNKNOWN_SERVER_NAME);
                 appInfo.setServerVersion(UNKNOWN_SERVER_VERSION);
             } else {
-                String[] svrInfo = servletContext.getServerInfo().split("/");
+                String[] svrInfo = CommonParameters.getServletContext().getServerInfo().split("/");
                 appInfo.setServerName(svrInfo[0]);
                 appInfo.setServerVersion(svrInfo.length > 1 ? svrInfo[1] : UNKNOWN_SERVER_VERSION);
             }
@@ -227,8 +229,8 @@ public class AppMonitor {
             JdbcWrapper jw = JdbcWrapper.SINGLETON;
             if (jw != null) {
                 SQLInfo sqlInfo = SQLInfo.instance();
-                sqlInfo.setSysCode(sysCode);
-                sqlInfo.setSysName(sysName);
+                sqlInfo.setSysCode(CommonParameters.getSysCode());
+                sqlInfo.setSysName(CommonParameters.getSysName());
                 sqlInfo.setSysIPS(StringUtils.join(getAddress(new OsInfo(), this.port), "<br>"));
                 sqlInfo.setDataBaseVersion(javaInfor.getDataBaseVersion());
                 sqlInfo.setDataSourceDetails(javaInfor.getDataSourceDetails());
@@ -256,8 +258,8 @@ public class AppMonitor {
             RequestWrapper rw = RequestWrapper.SINGLETON;
             if (rw != null) {
                 RequestInfo reqInfo = RequestInfo.instance();
-                reqInfo.setSysCode(sysCode);
-                reqInfo.setSysName(sysName);
+                reqInfo.setSysCode(CommonParameters.getSysCode());
+                reqInfo.setSysName(CommonParameters.getSysName());
 
                 reqInfo.setSysIPS(StringUtils.join(getAddress(new OsInfo(), this.port), "<br>"));
                 reqInfo.setUpdateDate(new SimpleDateFormat(TIME_FMT_PATTERN).format(new Date()));

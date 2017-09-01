@@ -3,6 +3,7 @@ package cn.howardliu.monitor.cynomys.agent.handler;
 import cn.howardliu.monitor.cynomys.client.common.ClientConfig;
 import cn.howardliu.monitor.cynomys.client.common.CynomysClient;
 import cn.howardliu.monitor.cynomys.client.common.CynomysClientManager;
+import cn.howardliu.monitor.cynomys.common.CommonParameters;
 import cn.howardliu.monitor.cynomys.common.LaunchLatch;
 import cn.howardliu.monitor.cynomys.net.SimpleChannelEventListener;
 import cn.howardliu.monitor.cynomys.net.exception.NetConnectException;
@@ -21,8 +22,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
-
-import static cn.howardliu.monitor.cynomys.common.Constant.*;
 
 /**
  * 服务器心跳组件
@@ -43,8 +42,8 @@ public class MonitorChecker implements Health, Closeable {
     private AppMonitor appMonitor;
 
     public MonitorChecker() {
-        this.appName = sysName;
-        appMonitor = AppMonitor.instance(serverPort);
+        this.appName = CommonParameters.getSysName();
+        appMonitor = AppMonitor.instance(CommonParameters.getServerPort());
         cynomysClient = CynomysClientManager.INSTANCE
                 .getAndCreateCynomysClient(
                         new ClientConfig(),
@@ -79,7 +78,7 @@ public class MonitorChecker implements Health, Closeable {
                         }
                 );
         LaunchLatch.CLIENT_INIT.start();
-        cynomysClient.updateAddressList(serverList);
+        cynomysClient.updateAddressList(CommonParameters.getServerList());
         cynomysClient.start();
         try {
             this.cynomysClient.connect();
@@ -200,8 +199,8 @@ public class MonitorChecker implements Health, Closeable {
                                     new Message()
                                             .setHeader(
                                                     new Header()
-                                                            .setSysName(sysName)
-                                                            .setSysCode(sysCode)
+                                                            .setSysName(CommonParameters.getSysName())
+                                                            .setSysCode(CommonParameters.getSysCode())
                                                             .setLength(appInfo.length())
                                                             .setType(MessageType.REQUEST.value())
                                                             .setCode(MessageCode.APP_INFO_REQ.value())
@@ -217,8 +216,8 @@ public class MonitorChecker implements Health, Closeable {
                                     new Message()
                                             .setHeader(
                                                     new Header()
-                                                            .setSysName(sysName)
-                                                            .setSysCode(sysCode)
+                                                            .setSysName(CommonParameters.getSysName())
+                                                            .setSysCode(CommonParameters.getSysCode())
                                                             .setLength(sqlInfo.length())
                                                             .setType(MessageType.REQUEST.value())
                                                             .setCode(MessageCode.SQL_INFO_REQ.value())
@@ -234,8 +233,8 @@ public class MonitorChecker implements Health, Closeable {
                                     new Message()
                                             .setHeader(
                                                     new Header()
-                                                            .setSysName(sysName)
-                                                            .setSysCode(sysCode)
+                                                            .setSysName(CommonParameters.getSysName())
+                                                            .setSysCode(CommonParameters.getSysCode())
                                                             .setLength(requestInfo.length())
                                                             .setType(MessageType.REQUEST.value())
                                                             .setCode(MessageCode.REQUEST_INFO_REQ.value())
@@ -266,8 +265,8 @@ public class MonitorChecker implements Health, Closeable {
     public void updateHealth(String status) {
         try {
             // 更新自身节点状态
-            Object[] tagArgs = {sysName, sysCode, status};
-            String rootDesc = sysDesc;
+            Object[] tagArgs = {CommonParameters.getSysName(), CommonParameters.getSysCode(), status};
+            String rootDesc = CommonParameters.getSysDesc();
             rootDesc = MessageFormat.format(rootDesc, tagArgs);
             System.err.println(rootDesc);
             // TODO check this function

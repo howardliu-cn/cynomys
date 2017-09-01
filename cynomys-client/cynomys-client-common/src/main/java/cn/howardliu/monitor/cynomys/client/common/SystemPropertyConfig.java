@@ -1,6 +1,6 @@
 package cn.howardliu.monitor.cynomys.client.common;
 
-import cn.howardliu.monitor.cynomys.common.Constant;
+import cn.howardliu.monitor.cynomys.common.CommonParameters;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -22,12 +22,11 @@ import static org.apache.commons.lang3.SystemUtils.USER_HOME;
  */
 public final class SystemPropertyConfig {
     private static final Logger logger = LoggerFactory.getLogger(SystemPropertyConfig.class);
-    private static PropertyAdapter thisConfig = new PropertyAdapter();
-
     private static final String DEFAULT_MONITOR_PROPERTIES_FILE = "/conf/default-cynomys-monitor.properties";
     private static final String SYS_CUSTOM_MONITOR_PROPERTIES_FILE = USER_HOME + "/.cynomys/cynomys-monitor.properties";
     private static final String CURRENT_MONITOR_PROPERTIES_FILE = "cynomys-monitor.properties";
     private static final String ATTRIBUTE_MONITOR_PROPERTIES_FILE = System.getProperty("cynomys-monitor.properties");
+    private static PropertyAdapter thisConfig = new PropertyAdapter();
 
     private SystemPropertyConfig() {
     }
@@ -60,11 +59,12 @@ public final class SystemPropertyConfig {
     }
 
     private static void loadConfig() {
-        Constant.isDebug = getBoolean(SYSTEM_SETTING_MONITOR_IS_DEBUG, Constant.isDebug);
-        Constant.sysName = getContextProperty(SYSTEM_SETTING_CONTEXT_NAME, Constant.sysName);
-        Constant.sysCode = getContextProperty(SYSTEM_SETTING_CONTEXT_CODE, Constant.sysCode);
-        Constant.sysDesc = getContextProperty(SYSTEM_SETTING_CONTEXT_DESC, Constant.sysDesc);
-        Constant.serverList = getContextProperty(SYSTEM_SETTING_MONITOR_SERVERS, Constant.serverList);
+        CommonParameters.setDebugMode(getBoolean(SYSTEM_SETTING_MONITOR_IS_DEBUG, CommonParameters.isDebugMode()));
+        CommonParameters.setSysName(getContextProperty(SYSTEM_SETTING_CONTEXT_NAME, CommonParameters.getSysName()));
+        CommonParameters.setSysCode(getContextProperty(SYSTEM_SETTING_CONTEXT_CODE, CommonParameters.getSysCode()));
+        CommonParameters.setSysDesc(getContextProperty(SYSTEM_SETTING_CONTEXT_DESC, CommonParameters.getSysDesc()));
+        CommonParameters
+                .setServerList(getContextProperty(SYSTEM_SETTING_MONITOR_SERVERS, CommonParameters.getServerList()));
     }
 
     private static void extractDefaultProperties() {

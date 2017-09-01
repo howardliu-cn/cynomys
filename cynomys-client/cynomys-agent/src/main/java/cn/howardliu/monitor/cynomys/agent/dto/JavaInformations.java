@@ -25,6 +25,7 @@ import cn.howardliu.gear.monitor.core.os.OsStats;
 import cn.howardliu.gear.monitor.core.process.ProcessStats;
 import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
+import cn.howardliu.monitor.cynomys.common.CommonParameters;
 import cn.howardliu.monitor.cynomys.common.ThreadMXBeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -43,7 +44,6 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static cn.howardliu.gear.monitor.core.Constants.*;
-import static cn.howardliu.monitor.cynomys.common.Constant.servletContext;
 import static org.apache.commons.lang3.SystemUtils.*;
 import static org.apache.commons.lang3.SystemUtils.OS_ARCH;
 import static org.apache.commons.lang3.SystemUtils.OS_NAME;
@@ -592,16 +592,16 @@ public class JavaInformations implements Serializable {
         compliationName = jvmStats.getCompilationInfo().getName();
         totalCompliationTime = jvmStats.getCompilationInfo().getCompilationTime();
 
-        if (servletContext == null) {
+        if (CommonParameters.getServletContext() == null) {
             serverInfo = null;
             contextPath = null;
             contextDisplayName = null;
             dependenciesList = null;
         } else {
-            serverInfo = servletContext.getServerInfo();
-            contextPath = Parameters.getContextPath(servletContext);
-            contextDisplayName = servletContext.getServletContextName();
-            dependenciesList = buildDependenciesList(servletContext);
+            serverInfo = CommonParameters.getServletContext().getServerInfo();
+            contextPath = Parameters.getContextPath(CommonParameters.getServletContext());
+            contextDisplayName = CommonParameters.getServletContext().getServletContextName();
+            dependenciesList = buildDependenciesList(CommonParameters.getServletContext());
         }
 
         startDate = START_TIME;

@@ -3,7 +3,7 @@ package cn.howardliu.monitor.cynomys.agent;
 import cn.howardliu.monitor.cynomys.agent.counter.MonitorStarter;
 import cn.howardliu.monitor.cynomys.agent.transform.MonitoringTransformer;
 import cn.howardliu.monitor.cynomys.client.common.SystemPropertyConfig;
-import cn.howardliu.monitor.cynomys.common.Constant;
+import cn.howardliu.monitor.cynomys.common.CommonParameters;
 
 import java.lang.instrument.Instrumentation;
 
@@ -17,11 +17,11 @@ import java.lang.instrument.Instrumentation;
 public class MonitorAgent {
     public static void premain(String args, Instrumentation inst) {
         SystemPropertyConfig.init(args);
-        if (Constant.isDebug) {
+        if (CommonParameters.isDebugMode()) {
             return;
         }
         inst.addTransformer(new MonitoringTransformer());
-        Constant.noFlag = false;
+        CommonParameters.setNoFlag(false);
         MonitorStarter.run();
     }
 }

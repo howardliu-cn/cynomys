@@ -1,6 +1,6 @@
 package cn.howardliu.monitor.cynomys.agent.counter;
 
-import cn.howardliu.monitor.cynomys.common.Constant;
+import cn.howardliu.monitor.cynomys.common.CommonParameters;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -37,7 +37,7 @@ public class SLACounter {
     private AtomicLong sumErrDealRequestTime = new AtomicLong();
     private AtomicLong sumDealRequestTime = new AtomicLong();
     private AtomicLong peerDealRequestTime = new AtomicLong();
-    private AtomicBoolean isDebug = new AtomicBoolean(Constant.isDebug);
+    private AtomicBoolean isDebug = new AtomicBoolean(CommonParameters.isDebugMode());
     private Date peerDate;
 
     private SLACounter() {

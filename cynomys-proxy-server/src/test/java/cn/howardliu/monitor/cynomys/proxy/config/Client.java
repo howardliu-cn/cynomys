@@ -1,6 +1,6 @@
 package cn.howardliu.monitor.cynomys.proxy.config;
 
-import cn.howardliu.monitor.cynomys.common.Constant;
+import cn.howardliu.monitor.cynomys.common.CommonParameters;
 import cn.howardliu.monitor.cynomys.net.NetHelper;
 import cn.howardliu.monitor.cynomys.net.codec.MessageDecoder;
 import cn.howardliu.monitor.cynomys.net.codec.MessageEncoder;
@@ -120,8 +120,8 @@ public class Client {
                                     @Override
                                     protected Header customHeader() {
                                         return super.customHeader()
-                                                .setSysName(Constant.sysName)
-                                                .setSysCode(Constant.sysCode);
+                                                .setSysName(CommonParameters.getSysName())
+                                                .setSysCode(CommonParameters.getSysCode());
                                     }
                                 })
                                 .addLast(new NettyConnectManageHandler())

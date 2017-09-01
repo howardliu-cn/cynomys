@@ -5,7 +5,7 @@ import cn.howardliu.monitor.cynomys.client.common.ClientConfig;
 import cn.howardliu.monitor.cynomys.client.common.CynomysClient;
 import cn.howardliu.monitor.cynomys.client.common.CynomysClientManager;
 import cn.howardliu.monitor.cynomys.client.common.SystemPropertyConfig;
-import cn.howardliu.monitor.cynomys.common.Constant;
+import cn.howardliu.monitor.cynomys.common.CommonParameters;
 import cn.howardliu.monitor.cynomys.common.LaunchLatch;
 import cn.howardliu.monitor.cynomys.common.ServiceThread;
 import cn.howardliu.monitor.cynomys.net.SimpleChannelEventListener;
@@ -23,8 +23,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static cn.howardliu.monitor.cynomys.common.Constant.serverList;
-
 /**
  * <br>created at 17-8-25
  *
@@ -40,16 +38,16 @@ public enum WarnLoggingClient implements Closeable {
     private final ExceptionLogCleanerExecutor cleanerExecutor = new ExceptionLogCleanerExecutor();
 
     WarnLoggingClient() {
-        if (Constant.isDebug) {
+        if (CommonParameters.isDebugMode()) {
             this.cynomysClient = null;
             return;
         }
         // FIXME not gracefully, must refactor
-        if (Constant.noFlag) {
+        if (CommonParameters.isNoFlag()) {
             SystemPropertyConfig.init();
         } else {
             try {
-                if(!LaunchLatch.CLIENT_INIT.waitForMillis(120_000 + 2_000)){
+                if (!LaunchLatch.CLIENT_INIT.waitForMillis(120_000 + 2_000)) {
                     logger.warn("Timeout(140000ms) when waiting for server started!");
                 }
             } catch (InterruptedException e) {
@@ -61,8 +59,8 @@ public enum WarnLoggingClient implements Closeable {
                         new ClientConfig(),
                         new SimpleChannelEventListener()
                 );
-        if (Constant.noFlag) {
-            cynomysClient.updateAddressList(serverList);
+        if (CommonParameters.isNoFlag()) {
+            cynomysClient.updateAddressList(CommonParameters.getServerList());
             this.cynomysClient.start();
             try {
                 this.cynomysClient.connect();
@@ -78,8 +76,8 @@ public enum WarnLoggingClient implements Closeable {
         if (!sysError.getCode().matches("^\\d{3}$")) {
             throw new IllegalArgumentException("SysErrCode必须是3位数字");
         }
-        this.log(Constant.sysCode, bizCode, bizDesc, errCode, errDesc, sysError.getCode(), sysError.getDesc(),
-                level, infoWithStackTrace(e));
+        this.log(CommonParameters.getSysCode(), bizCode, bizDesc, errCode, errDesc, sysError.getCode(),
+                sysError.getDesc(), level, infoWithStackTrace(e));
     }
 
     public void log(String sysCode,
@@ -95,7 +93,7 @@ public enum WarnLoggingClient implements Closeable {
     }
 
     public void log(ExceptionLog log) {
-        if (Constant.isDebug) {
+        if (CommonParameters.isDebugMode()) {
             return;
         }
         String logMsg = JSON.toJSONString(log);
@@ -103,8 +101,8 @@ public enum WarnLoggingClient implements Closeable {
             Message request = new Message()
                     .setHeader(
                             new Header()
-                                    .setSysCode(Constant.sysCode)
-                                    .setSysName(Constant.sysName)
+                                    .setSysCode(CommonParameters.getSysCode())
+                                    .setSysName(CommonParameters.getSysName())
                                     .setType(MessageType.REQUEST.value())
                                     .setCode(MessageCode.EXCEPTION_INFO_REQ.value())
                     )
