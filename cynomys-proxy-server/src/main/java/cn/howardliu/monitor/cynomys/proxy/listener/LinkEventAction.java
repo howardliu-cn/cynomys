@@ -20,18 +20,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 0.0.1
  */
 public enum LinkEventAction {
-    ACTION(null);
+    ACTION;
 
     private static final Logger logger = LoggerFactory.getLogger(LinkEventAction.class);
     private static final Map<Channel, Header> ctxSets = new ConcurrentHashMap<>();
-    private CuratorFramework zkClient;
+    private static CuratorFramework zkClient;
 
-    LinkEventAction(CuratorFramework zkClient) {
-        this.zkClient = zkClient;
+    LinkEventAction() {
     }
 
     public void setZkClient(CuratorFramework zkClient) {
-        this.zkClient = zkClient;
+        LinkEventAction.zkClient = zkClient;
     }
 
     public void link(Channel channel, Header header) {
@@ -87,7 +86,8 @@ public enum LinkEventAction {
                                         .toString().getBytes(CharEncoding.UTF_8)
                         );
             }
-        } catch (UnsupportedEncodingException ignored) {
+        } catch (UnsupportedEncodingException e) {
+            logger.error("if you got this exception, please check your JDK version as soon as possible", e);
         } catch (Exception e) {
             logger.error("got and exception when creating path \"{}-{}-{}\" in zookeeper",
                     header.getSysName(), header.getSysCode(), header.getTag(), e);
@@ -104,7 +104,8 @@ public enum LinkEventAction {
             if (stat != null) {
                 zkClient.delete().deletingChildrenIfNeeded().forPath(path);
             }
-        } catch (UnsupportedEncodingException ignored) {
+        } catch (UnsupportedEncodingException e) {
+            logger.error("if you got this exception, please check your JDK version as soon as possible", e);
         } catch (Exception e) {
             logger.error("got and exception when deleting path \"{}-{}-{}\" in zookeeper",
                     header.getSysName(), header.getSysCode(), header.getTag(), e);

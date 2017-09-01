@@ -29,41 +29,42 @@ public enum ProxyConfig {
     private final int timeoutSeconds;
 
     ProxyConfig() {
-        int _port = 7911;
-        int _cport = 52700;
-        int _maxFrameLength = 1024 * 1024 * 100;
-        int _timeoutSeconds = 50;
+        int thePort = 7911;
+        int theCport = 52700;
+        int theMaxFrameLength = 1024 * 1024 * 100;
+        int theTimeoutSeconds = 50;
         try (InputStream inputStream = FileUtils
                 .openInputStream(new File(CYNOMYS_HOME + "/conf/cynomys-config.properties"))) {
             Properties properties = new Properties();
             properties.load(inputStream);
 
-            _port = readFromConfigAndProperty(properties, KEY_CYNOMYS_PROXY_SERVER_PORT, _port);
-            _cport = readFromConfigAndProperty(properties, KEY_CYNOMYS_PROXY_SERVER_CTRL_PORT, _cport);
-            _maxFrameLength = readFromConfigAndProperty(properties, KEY_CYNOMYS_PROXY_SERVER_MAX_FRAME_LENGTH,
-                    _maxFrameLength);
-            _timeoutSeconds = readFromConfigAndProperty(properties, KEY_CYNOMYS_PROXY_SERVER_TIMEOUT_SECONDS,
-                    _timeoutSeconds);
+            thePort = readFromConfigAndProperty(properties, KEY_CYNOMYS_PROXY_SERVER_PORT, thePort);
+            theCport = readFromConfigAndProperty(properties, KEY_CYNOMYS_PROXY_SERVER_CTRL_PORT, theCport);
+            theMaxFrameLength = readFromConfigAndProperty(properties, KEY_CYNOMYS_PROXY_SERVER_MAX_FRAME_LENGTH,
+                    theMaxFrameLength);
+            theTimeoutSeconds = readFromConfigAndProperty(properties, KEY_CYNOMYS_PROXY_SERVER_TIMEOUT_SECONDS,
+                    theTimeoutSeconds);
         } catch (IOException e) {
             logger.error("Cannot load config properties in classpath", e);
             System.exit(1);
         }
-        port = _port;
-        cport = _cport;
-        maxFrameLength = _maxFrameLength;
-        timeoutSeconds = _timeoutSeconds;
+        port = thePort;
+        cport = theCport;
+        maxFrameLength = theMaxFrameLength;
+        timeoutSeconds = theTimeoutSeconds;
     }
 
     private int readFromConfigAndProperty(Properties properties, String key, int defaultValue) {
+        int theDefaultValue = defaultValue;
         if (properties.containsKey(key)) {
-            defaultValue = Integer.valueOf(properties.getProperty(key));
+            theDefaultValue = Integer.valueOf(properties.getProperty(key));
         }
         String param = System.getProperty(key);
         // TODO check the String value is digital
         if (param != null) {
-            defaultValue = Integer.valueOf(param);
+            theDefaultValue = Integer.valueOf(param);
         }
-        return defaultValue;
+        return theDefaultValue;
     }
 
     public int getPort() {

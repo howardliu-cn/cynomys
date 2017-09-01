@@ -42,14 +42,10 @@ public abstract class AbstractServer {
                     Socket s = ss.accept();
                     Scanner sc = new Scanner(s.getInputStream());
                     String command = sc.nextLine();
-                    switch (command) {
-                        case COMMAND_SERVER_CTRL_STOP: {
-                            shutdownGracefully();
-                            break;
-                        }
-                        default: {
-                            logger.warn("command \"{}\" not recognized", command);
-                        }
+                    if (COMMAND_SERVER_CTRL_STOP.equals(command)) {
+                        shutdownGracefully();
+                    } else {
+                        logger.warn("command \"{}\" not recognized", command);
                     }
                 }
                 logger.info("server listen to control port {} STOPPED!", cport);

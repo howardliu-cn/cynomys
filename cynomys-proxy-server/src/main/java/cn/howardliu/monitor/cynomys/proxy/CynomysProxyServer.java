@@ -31,37 +31,33 @@ public enum CynomysProxyServer {
             if (args.length > 0) {
                 command = args[0];
             }
-            switch (command) {
-                case "start": {
-                    DAEMON.start();
-                    break;
-                }
-                case "stop": {
-                    DAEMON.stop();
-                    break;
-                }
+            if ("start".equals(command)) {
+                DAEMON.start();
+            } else if ("stop".equals(command)) {
+                DAEMON.stop();
             }
         } catch (Throwable t) {
-            t.printStackTrace();
+            logger.error("got an exception when run input command", t);
             System.exit(1);
         }
 
     }
 
-    public void start() throws Exception {
+    public void start() {
         ProxyServer proxyServer = new ProxyServer(new ServerConfig());
         proxyServer.initialize();
         proxyServer.registProcessor();
         proxyServer.startup();
     }
 
-    public void stop() throws Exception {
+    public void stop() {
         try (Socket socket = new Socket("localhost", PROXY_CONFIG.getCport());
                 PrintWriter w = new PrintWriter(socket.getOutputStream())) {
             w.println(COMMAND_SERVER_CTRL_STOP);
             w.flush();
         } catch (ConnectException ce) {
-            logger.error("CynomysProxyServer.stopServer.connectException: address=localhost, port={}", PROXY_CONFIG.getCport());
+            logger.error("CynomysProxyServer.stopServer.connectException: address=localhost, port={}",
+                    PROXY_CONFIG.getCport());
             logger.error("CynomysProxyServer.stop: ", ce);
             System.exit(1);
         } catch (IOException e) {

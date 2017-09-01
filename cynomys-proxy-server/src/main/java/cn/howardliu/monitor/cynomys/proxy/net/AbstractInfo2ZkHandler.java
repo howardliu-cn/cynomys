@@ -29,7 +29,7 @@ public abstract class AbstractInfo2ZkHandler extends SimpleChannelInboundHandler
 
     protected void send(ChannelHandlerContext ctx, Message message, String prePath, MessageCode resp) {
         Header header = message.getHeader();
-        String path = prePath + "/" + header.getSysName() + "-" + header.getSysCode() + "-" + header.getTag();
+        String path = prePath + '/' + header.getSysName() + '-' + header.getSysCode() + '-' + header.getTag();
         boolean success = true;
         String errMsg = null;
         try {

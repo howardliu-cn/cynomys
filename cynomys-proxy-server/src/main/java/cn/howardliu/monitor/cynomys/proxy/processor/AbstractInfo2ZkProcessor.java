@@ -33,7 +33,7 @@ public abstract class AbstractInfo2ZkProcessor implements NettyRequestProcessor 
     protected Message send(ChannelHandlerContext ctx, Message message, String prePath) {
         Header header = message.getHeader();
         int opaque = header.getOpaque();
-        String path = prePath + "/" + header.getSysName() + "-" + header.getSysCode() + "-" + header.getTag();
+        String path = prePath + '/' + header.getSysName() + '-' + header.getSysCode() + '-' + header.getTag();
         boolean success = true;
         String errMsg = null;
         try {

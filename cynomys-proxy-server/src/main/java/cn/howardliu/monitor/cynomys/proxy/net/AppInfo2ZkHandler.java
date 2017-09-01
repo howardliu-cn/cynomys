@@ -35,7 +35,7 @@ public class AppInfo2ZkHandler extends AbstractInfo2ZkHandler {
                 logger.debug("{}-{}-{} send application info",
                         header.getSysCode(), header.getSysName(), header.getTag());
             }
-            String prePath = "/" + header.getSysName() + "-" + header.getSysCode();
+            String prePath = '/' + header.getSysName() + '-' + header.getSysCode();
             send(ctx, message, prePath, MessageCode.APP_INFO_RESP);
         } else {
             ctx.fireChannelRead(message);
