@@ -13,6 +13,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -25,6 +26,7 @@ import java.util.concurrent.TimeUnit;
  * @version 0.0.1
  * @since 0.0.1
  */
+@Ignore
 public class NettyNetClientTest {
     private static NetClient netClient;
     private static NetServer netServer;

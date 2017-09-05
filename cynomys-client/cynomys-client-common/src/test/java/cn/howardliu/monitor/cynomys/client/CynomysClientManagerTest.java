@@ -6,6 +6,7 @@ import cn.howardliu.monitor.cynomys.client.common.CynomysClientManager;
 import cn.howardliu.monitor.cynomys.net.SimpleChannelEventListener;
 import io.netty.channel.Channel;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -16,6 +17,7 @@ import java.util.concurrent.TimeUnit;
  * @author liuxh
  * @since 0.0.1
  */
+@Ignore
 public class CynomysClientManagerTest {
     private CynomysClient cynomysClient;
 

@@ -15,6 +15,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author liuxh
  * @since 0.0.1
  */
+@Ignore
 public class NettyNetClientTest {
     private static final Logger logger = LoggerFactory.getLogger(NettyNetClient.class);
 

@@ -2,6 +2,7 @@ package cn.howardliu.cynomys.warn;
 
 import cn.howardliu.cynomys.warn.exception.ErrorLevel;
 import cn.howardliu.monitor.cynomys.client.common.SystemPropertyConfig;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -10,6 +11,7 @@ import org.junit.Test;
  * @author liuxh
  * @since 0.0.1
  */
+@Ignore
 public class WarnLoggingClientTest {
     @Test
     public void log() throws Exception {
