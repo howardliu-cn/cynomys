@@ -30,19 +30,22 @@
                 <include>README.md</include>
             </includes>
         </fileSet>
-
         <fileSet>
             <includes>
                 <include>conf/**</include>
-                <include>logs/**</include>
             </includes>
         </fileSet>
-
         <fileSet>
             <includes>
                 <include>bin/*</include>
             </includes>
             <fileMode>0755</fileMode>
+        </fileSet>
+        <fileSet>
+            <outputDirectory>logs</outputDirectory>
+            <excludes>
+                <exclude>**/*</exclude>
+            </excludes>
         </fileSet>
     </fileSets>
 
