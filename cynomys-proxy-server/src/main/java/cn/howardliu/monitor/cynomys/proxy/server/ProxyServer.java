@@ -12,6 +12,7 @@ import cn.howardliu.monitor.cynomys.proxy.listener.LinkEventListener;
 import cn.howardliu.monitor.cynomys.proxy.processor.*;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.utils.CloseableUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,6 +127,23 @@ public class ProxyServer extends AbstractServer {
     @Override
     public void shutdown() {
         this.netServer.shutdown();
+        if (heartbeatExecutor != null) {
+            heartbeatExecutor.shutdown();
+        }
+        if (appInfoActionExecutor != null) {
+            appInfoActionExecutor.shutdown();
+        }
+        if (requestInfoActionExecutor != null) {
+            requestInfoActionExecutor.shutdown();
+        }
+        if (sqlInfoActionExecutor != null) {
+            sqlInfoActionExecutor.shutdown();
+        }
+        if (exceptionInfoActionExecutor != null) {
+            exceptionInfoActionExecutor.shutdown();
+        }
+        CloseableUtils.closeQuietly(this.zkClient);
+        CloseableUtils.closeQuietly(this.kafkaProducerWrapper);
     }
 
     public ServerContext getContext() {
