@@ -48,8 +48,8 @@ public class SimpleChannelEventListener implements ChannelEventListener {
 
     @Override
     public void onChannelRead(String address, Channel channel, Header header) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("got READ event, the remote address is {}, the local address is {}, the header is {}-{}-{}",
+        if (logger.isTraceEnabled()) {
+            logger.trace("got READ event, the remote address is {}, the local address is {}, the header is {}-{}-{}",
                     address, NetHelper.localAddress(channel),
                     header.getSysName(), header.getSysCode(), header.getTag());
         }

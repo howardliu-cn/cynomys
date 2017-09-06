@@ -71,8 +71,8 @@ public class LinkEventListener extends SimpleChannelEventListener {
         }
 
         public void link(Channel channel, Header header) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("link event from client, channel={}", channel.toString());
+            if (logger.isTraceEnabled()) {
+                logger.trace("link event from client, channel={}", channel.toString());
             }
             if (header == null) {
                 return;

@@ -244,7 +244,9 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             final String remoteAddress = NetHelper.remoteAddress(ctx.channel());
-            logger.info("NETTY SERVER PIPELINE: channelRead {}", remoteAddress);
+            if (logger.isTraceEnabled()) {
+                logger.trace("NETTY SERVER PIPELINE: channelRead {}", remoteAddress);
+            }
             if (channelEventListener != null && msg instanceof Message) {
                 Message m = (Message) msg;
                 putNettyEvent(new NettyEvent(NettyEventType.READ, remoteAddress, ctx.channel(), m.getHeader()));
@@ -255,7 +257,9 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
             final String remoteAddress = NetHelper.remoteAddress(ctx.channel());
-            logger.info("NETTY SERVER PIPELINE: channelActive {}", remoteAddress);
+            if (logger.isDebugEnabled()) {
+                logger.debug("NETTY SERVER PIPELINE: channelActive {}", remoteAddress);
+            }
             super.channelActive(ctx);
 
             if (channelEventListener != null) {
@@ -266,7 +270,9 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             final String remoteAddress = NetHelper.remoteAddress(ctx.channel());
-            logger.info("NETTY SERVER PIPELINE: channelInactive {}", remoteAddress);
+            if (logger.isDebugEnabled()) {
+                logger.debug("NETTY SERVER PIPELINE: channelInactive {}", remoteAddress);
+            }
             super.channelInactive(ctx);
 
             if (channelEventListener != null) {
@@ -277,7 +283,9 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             final String remoteAddress = NetHelper.remoteAddress(ctx.channel());
-            logger.info("NETTY SERVER PIPELINE: exceptionCaught {}", remoteAddress);
+            if (logger.isDebugEnabled()) {
+                logger.debug("NETTY SERVER PIPELINE: exceptionCaught {}", remoteAddress);
+            }
             super.exceptionCaught(ctx, cause);
 
             if (channelEventListener != null) {
