@@ -12,14 +12,22 @@ import java.util.concurrent.TimeUnit;
 public enum LaunchLatch {
     STARTED, CLIENT_INIT;
 
+    private static volatile boolean started = false;
     private final CountDownLatch latch;
 
     LaunchLatch() {
         this.latch = new CountDownLatch(1);
     }
 
-    public void start() {
-        this.latch.countDown();
+    public synchronized void start() {
+        if (!isStarted()) {
+            this.latch.countDown();
+            started = true;
+        }
+    }
+
+    public boolean isStarted() {
+        return started;
     }
 
     public boolean waitForMillis(long millis) throws InterruptedException {
