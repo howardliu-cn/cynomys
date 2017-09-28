@@ -29,7 +29,6 @@
         <dependency>
             <groupId>cn.howardliu.monitor</groupId>
             <artifactId>cynomys-common</artifactId>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

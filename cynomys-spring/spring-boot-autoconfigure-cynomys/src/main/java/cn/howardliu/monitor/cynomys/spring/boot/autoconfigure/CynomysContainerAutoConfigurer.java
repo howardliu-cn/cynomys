@@ -1,7 +1,6 @@
 package cn.howardliu.monitor.cynomys.spring.boot.autoconfigure;
 
 import cn.howardliu.monitor.cynomys.common.CommonParameters;
-import cn.howardliu.monitor.cynomys.common.Constant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -18,7 +17,7 @@ import javax.servlet.ServletContext;
  * @since 0.0.1
  */
 @Configuration
-@ConditionalOnClass({Constant.class, ServletContext.class})
+@ConditionalOnClass({CommonParameters.class, ServletContext.class})
 public class CynomysContainerAutoConfigurer implements ApplicationListener<EmbeddedServletContainerInitializedEvent> {
     private static final Logger logger = LoggerFactory.getLogger(CynomysContainerAutoConfigurer.class);
 
