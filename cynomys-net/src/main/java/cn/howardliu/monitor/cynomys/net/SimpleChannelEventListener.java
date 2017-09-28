@@ -33,7 +33,7 @@ public class SimpleChannelEventListener implements ChannelEventListener {
     @Override
     public void onChannelException(String address, Channel channel, Throwable cause) {
         if (logger.isDebugEnabled()) {
-            logger.debug("got EXCEPTION event, the remote address is {}, the local address is {}, the cause is {}",
+            logger.debug("got EXCEPTION event, the remote address is {}, the local address is {}",
                     address, NetHelper.localAddress(channel), cause);
         }
     }
