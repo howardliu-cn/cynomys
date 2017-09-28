@@ -60,7 +60,7 @@ public class LinkEventListener extends SimpleChannelEventListener {
     enum LinkEventAction {
         ACTION;
 
-        private static final Map<Channel, Header> ctxSets = new ConcurrentHashMap<>();
+        private static final Map<String, Header> ctxSets = new ConcurrentHashMap<>();
         private static CuratorFramework zkClient;
 
         LinkEventAction() {
@@ -77,21 +77,23 @@ public class LinkEventListener extends SimpleChannelEventListener {
             if (header == null) {
                 return;
             }
-            if (ctxSets.get(channel) == null || !ctxSets.get(channel).equals(header)) {
-                ctxSets.put(channel, header);
+            String channelId = channel.id().asLongText();
+            if (ctxSets.get(channelId) == null || !ctxSets.get(channelId).equals(header)) {
+                ctxSets.put(channelId, header);
             }
             createLinkFlag(header);
         }
 
         public void unlink(Channel channel) {
+            String channelId = channel.id().asLongText();
             if (logger.isDebugEnabled()) {
-                Header header = ctxSets.get(channel);
+                Header header = ctxSets.get(channelId);
                 if (header != null) {
                     logger.debug("unlink event from client, remove monitor path, header={}, channel={}",
                             channel.toString(), header);
                 }
             }
-            removeLinkFlag(ctxSets.remove(channel));
+            removeLinkFlag(ctxSets.remove(channelId));
         }
 
         private void createLinkFlag(Header header) {
