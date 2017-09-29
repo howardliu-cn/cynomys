@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  * l'application. Elles correspondent soit aux statistiques courantes depuis une
  * date initiale, soit à une période donnée pour un jour, une semaine, un mois
  * ou une année.
- * <p/>
+ * <p>
  * Toutes les méthodes sur une instance de cette classe sont conçues pour être
  * thread-safe, c'est-à-dire qu'elles gère un état qui est non modifiable ou
  * alors synchronisé pour être accessible et modifiable depuis plusieurs
@@ -88,7 +88,7 @@ public class Counter implements Cloneable, Serializable { // NOPMD
      */
     public static final int MAX_ERRORS_COUNT = 100;
     /**
-     * Nombre max par défaut de requêtes conservées par counter, <br/>
+     * Nombre max par défaut de requêtes conservées par counter, <br>
      * mais peut être redéfini par exemple pour le counter des erreurs http ou
      * celui des logs.
      */
