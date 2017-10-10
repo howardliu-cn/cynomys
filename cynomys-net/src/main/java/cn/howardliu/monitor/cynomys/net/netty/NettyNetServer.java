@@ -48,7 +48,7 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
     private final ExecutorService publicExecutor;
     private final ChannelEventListener channelEventListener;
 
-    private final Timer timer = new Timer("", true);
+    private final Timer timer = new Timer("scan-response-table-timer", true);
 
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
     private int port = 0;
