@@ -82,7 +82,7 @@ fi
 LOGGING_CONFIG=${LOGGING_CONFIG}
 if [ -z "${LOGGING_CONFIG}" ];then
   if [ -r "${CYNOMYS_BASE}/conf/logback.xml" ];then
-    LOGGING_CONFIG="-Dlogback.configurationFile=${CYNOMYS_BASE}/conf/logback.xml"
+    LOGGING_CONFIG="-Dlogging.config=${CYNOMYS_BASE}/conf/logback.xml"
   fi
 fi
 
