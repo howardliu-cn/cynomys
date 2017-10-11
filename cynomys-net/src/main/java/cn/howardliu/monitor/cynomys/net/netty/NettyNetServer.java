@@ -7,6 +7,7 @@ import cn.howardliu.monitor.cynomys.net.NetServer;
 import cn.howardliu.monitor.cynomys.net.codec.MessageDecoder;
 import cn.howardliu.monitor.cynomys.net.codec.MessageEncoder;
 import cn.howardliu.monitor.cynomys.net.handler.OtherInfoHandler;
+import cn.howardliu.monitor.cynomys.net.stats.PooledAllocatorStats;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -49,6 +50,8 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
     private final ChannelEventListener channelEventListener;
 
     private final Timer timer = new Timer("scan-response-table-timer", true);
+    // FIXME: use JMX not timer print
+    private final Timer pooledAllocatorStatsTimer = new Timer("pooled-allocator-stats-timer", true);
 
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
     private int port = 0;
@@ -143,6 +146,13 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
                 }
             }
         }, 3L * 1000, 1000);
+
+        this.pooledAllocatorStatsTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                PooledAllocatorStats.print();
+            }
+        }, 3L * 1000, 1000 * 60);
     }
 
     protected ChannelHandler getChannelHandler() {
@@ -191,6 +201,7 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
 
         try {
             this.timer.cancel();
+            this.pooledAllocatorStatsTimer.cancel();
 
             this.eventLoopGroupBoss.shutdownGracefully();
             this.eventLoopGroupSelector.shutdownGracefully();
