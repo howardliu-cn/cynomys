@@ -25,6 +25,12 @@
         <appender-ref ref="filelog"/>
     </logger>
 
+    <logger name="io.netty" additivity="false">
+        <level value="DEBUG"/>
+        <appender-ref ref="stdout"/>
+        <appender-ref ref="filelog"/>
+    </logger>
+
     <root level="INFO">
         <appender-ref ref="stdout"/>
     </root>

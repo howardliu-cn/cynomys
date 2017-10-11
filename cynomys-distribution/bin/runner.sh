@@ -1,16 +1,5 @@
 #!/bin/sh
 
-JAVA_OPTS=${JAVA_OPTS}
-if [ ! -z "${JAVA_OPTS}" ]; then
-    echo "Using JAVA_OPTS: ${JAVA_OPTS}"
-fi
-
-JAVA_HOME=${JAVA_HOME}
-if [ -z "${JAVA_HOME}" ]; then
-    echo "JAVA_HOME not exists"
-    exit 1
-fi
-
 # resolve links - $0 may be a softlink
 PRG="$0"
 while [ -h "$PRG" ]; do
@@ -82,7 +71,7 @@ fi
 LOGGING_CONFIG=${LOGGING_CONFIG}
 if [ -z "${LOGGING_CONFIG}" ];then
   if [ -r "${CYNOMYS_BASE}/conf/logback.xml" ];then
-    LOGGING_CONFIG="-Dlogging.config=${CYNOMYS_BASE}/conf/logback.xml"
+    LOGGING_CONFIG="-Dlogback.configurationFile=${CYNOMYS_BASE}/conf/logback.xml"
   fi
 fi
 
@@ -114,13 +103,16 @@ fi
 
 # Execute The Requested Command
 #only output this if we have a TTY
-if [ $have_tty -eq 1 ]; then
+if [ ${have_tty} -eq 1 ]; then
   echo "Using CYNOMYS_BASE:   $CYNOMYS_BASE"
   echo "Using CYNOMYS_HOME:   $CYNOMYS_HOME"
   echo "Using CYNOMYS_TIMDIR: $CYNOMYS_TIMDIR"
-  echo "Using JAVA_HOME:       $JAVA_HOME"
-  echo "Using JRE_HOME:        $JRE_HOME"
-  echo "Using CLASSPATH:       $CLASSPATH"
+  echo "Using JAVA_HOME:      $JAVA_HOME"
+  echo "Using JRE_HOME:       $JRE_HOME"
+  echo "Using CLASSPATH:      $CLASSPATH"
+  if [ ! -z "$JAVA_OPTS" ]; then
+    echo "Using JAVA_OPTS:      \"${JAVA_OPTS}\""
+  fi
   if [ ! -z "$CYNOMYS_PID" ]; then
     echo "Using CYNOMYS_PID:    $CYNOMYS_PID"
   fi
