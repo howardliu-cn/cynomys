@@ -6,6 +6,7 @@ import io.netty.channel.Channel;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,6 +128,8 @@ public class LinkEventListener extends SimpleChannelEventListener {
                 }
             } catch (UnsupportedEncodingException e) {
                 logger.error("if you got this exception, please check your JDK version as soon as possible", e);
+            } catch (KeeperException.NodeExistsException e) {
+                logger.debug(e.getMessage());
             } catch (Exception e) {
                 logger.error("got and exception when creating path \"{}-{}-{}\" in zookeeper",
                         header.getSysName(), header.getSysCode(), header.getTag(), e);
