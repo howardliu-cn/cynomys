@@ -43,9 +43,12 @@ public class NettyNetClientTest {
                 return new ChannelHandler[]{
                         new SimpleChannelInboundHandler<Message>() {
                             @Override
-                            protected void channelRead0(ChannelHandlerContext channelHandlerContext, Message message)
+                            protected void channelRead0(ChannelHandlerContext channelHandlerContext, Message msg)
                                     throws Exception {
-                                System.out.println(message.getBody());
+                                if (msg == null) {
+                                    return;
+                                }
+                                System.out.println(msg.getBody());
                             }
                         }
                 };

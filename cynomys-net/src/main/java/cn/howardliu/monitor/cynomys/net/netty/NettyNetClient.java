@@ -200,6 +200,9 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                 new SimpleChannelInboundHandler<Message>() {
                     @Override
                     protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
+                        if (msg == null) {
+                            return;
+                        }
                         byte rpcType = msg.getHeader().getType();
                         if (rpcType == MessageType.RESPONSE.value()) {
                             processResponse(ctx, msg);

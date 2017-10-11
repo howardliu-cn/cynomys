@@ -171,11 +171,13 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
                 new SimpleChannelInboundHandler<Message>() {
                     @Override
                     protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
-                        byte rpcType = msg.getHeader().getType();
-                        if (rpcType == REQUEST.value()) {
-                            processRequest(ctx, msg);
-                        } else {
-                            ctx.fireChannelRead(msg);
+                        if (msg != null) {
+                            byte rpcType = msg.getHeader().getType();
+                            if (rpcType == REQUEST.value()) {
+                                processRequest(ctx, msg);
+                            } else {
+                                ctx.fireChannelRead(msg);
+                            }
                         }
                     }
                 }
@@ -243,6 +245,9 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
     class NettyConnectManageHandler extends ChannelDuplexHandler {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+            if (msg == null) {
+                return;
+            }
             final String remoteAddress = NetHelper.remoteAddress(ctx.channel());
             if (logger.isTraceEnabled()) {
                 logger.trace("NETTY SERVER PIPELINE: channelRead {}", remoteAddress);

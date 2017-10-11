@@ -75,7 +75,6 @@ public class OtherInfoHandler extends SimpleChannelInboundHandler<Message> {
             throw new IllegalArgumentException(
                     "the ChannelHandlerContext which this Handler belongs to cannot be null!");
         }
-        ctx.fireChannelRead(msg);
     }
 
     @Override
