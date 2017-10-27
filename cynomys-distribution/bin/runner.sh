@@ -168,7 +168,7 @@ if [ "$1" = "start" ]; then
     -Dcynomys.home="\"${CYNOMYS_HOME}\"" \
     -Djava.io.tmpdir="\"${CYNOMYS_TIMDIR}\"" \
     cn.howardliu.monitor.cynomys.proxy.CynomysProxyServer "$@" start \
-    >> "${CYNOMYS_OUT}" 2>&1 &
+    >> "${CYNOMYS_OUT}" 2>&1 "&"
 
   if [ ! -z "${CYNOMYS_PID}" ];then
     echo $! > "${CYNOMYS_PID}"
