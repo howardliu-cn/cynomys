@@ -152,7 +152,7 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
             public void run() {
                 PooledAllocatorStats.print();
             }
-        }, 3L * 1000, 1000 * 60);
+        }, 3L * 1000, 60L * 1000);
     }
 
     protected ChannelHandler getChannelHandler() {
