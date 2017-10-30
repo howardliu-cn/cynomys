@@ -17,8 +17,11 @@ public final class Constant {
     public static final String THIS_TAG;
     public static final String HEADER_SERVER_TAG = "Server-Tag";
 
-    public static final String LOCAL_IP_ADDRESS = "127.0.0.1";
-    public static final String LOCAL_HOST_NAME = "localhost";
+    private static final String LOCAL_IP_ADDRESS_PROPERTY = "local.ip.address";
+    public static final String LOCAL_IP_ADDRESS = System.getProperty(LOCAL_IP_ADDRESS_PROPERTY, "127.0.0.1");
+
+    private static final String LOCAL_HOST_NAME_PROPERTY = "local.host.name";
+    public static final String LOCAL_HOST_NAME = System.getProperty("local.host.name", "localhost");
 
     public static final String UNKNOWN_SERVER_NAME = "unknown";
     public static final String UNKNOWN_SERVER_VERSION = "unknown";
