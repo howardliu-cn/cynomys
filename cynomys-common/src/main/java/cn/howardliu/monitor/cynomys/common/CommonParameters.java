@@ -2,6 +2,8 @@ package cn.howardliu.monitor.cynomys.common;
 
 import javax.servlet.ServletContext;
 
+import static cn.howardliu.monitor.cynomys.common.Constant.LOCAL_IP_ADDRESS;
+
 /**
  * <br>created at 17-9-1
  *
@@ -14,7 +16,7 @@ public final class CommonParameters {
     private static String sysCode = "000";
     private static String sysDesc = "'{'\"name\":\"{0}\",\"code\":\"{1}\",\"version\":\"1.0\",\"desc\":\"https://github.com/howardliu-cn/cynomys\",\"status\":\"{2}\"'}'";
 
-    private static volatile String serverList = "127.0.0.1:7911";
+    private static volatile String serverList = LOCAL_IP_ADDRESS + ":7911";
     private static volatile boolean noFlag = true;
     private static volatile int serverPort = 8080;
     private static ServletContext servletContext = null;
