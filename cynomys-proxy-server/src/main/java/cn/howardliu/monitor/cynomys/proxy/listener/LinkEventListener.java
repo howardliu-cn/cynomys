@@ -3,7 +3,6 @@ package cn.howardliu.monitor.cynomys.proxy.listener;
 import cn.howardliu.monitor.cynomys.net.SimpleChannelEventListener;
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import io.netty.channel.Channel;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -12,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -123,7 +123,7 @@ public class LinkEventListener extends SimpleChannelEventListener {
                                             .append("\",")
                                             .append("\"status\":\"connected\"")
                                             .append('}')
-                                            .toString().getBytes(CharEncoding.UTF_8)
+                                            .toString().getBytes(StandardCharsets.UTF_8)
                             );
                 }
             } catch (UnsupportedEncodingException e) {
