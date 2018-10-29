@@ -2,7 +2,7 @@ Cynomys is sentinel in Prairies of North America. And I hope Cynomys to be a sen
 
 [![Build Status](https://www.travis-ci.org/howardliu-cn/cynomys.svg?branch=master)](https://www.travis-ci.org/howardliu-cn/cynomys)
 [![Apache License 2.0](https://img.shields.io/badge/license-Apache%20License%202.0-green.svg)](http://www.apache.org/licenses/LICENSE-2.0)
-![0.0.1-SNAPSHOT](https://img.shields.io/badge/snapshot-0.0.1--SNAPSHOT-green.svg)
+![0.1.0-SNAPSHOT](https://img.shields.io/badge/snapshot-0.0.1--SNAPSHOT-green.svg)
 
 # 1. tools' version
 - jdk: 1.8

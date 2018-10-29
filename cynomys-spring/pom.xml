@@ -5,12 +5,12 @@
     <parent>
         <artifactId>cynomys</artifactId>
         <groupId>cn.howardliu.monitor</groupId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>cynomys-spring</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
     <modules>
         <module>spring-boot-starter-cynomys</module>
         <module>spring-boot-autoconfigure-cynomys</module>

@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cn.howardliu.monitor</groupId>
     <artifactId>cynomys</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
     <modules>
         <module>cynomys-common</module>
         <module>cynomys-net</module>
@@ -41,7 +41,7 @@
         <connection>scm:git:git://github.com/howardliu-cn/cynomys.git</connection>
         <developerConnection>scm:git:ssh://github.com:howardliu-cn/cynomys.git</developerConnection>
         <url>https://github.com/howardliu-cn/cynomys/tree/master</url>
-        <tag>v0.0.1</tag>
+        <tag>v0.1.0</tag>
     </scm>
 
     <properties>
