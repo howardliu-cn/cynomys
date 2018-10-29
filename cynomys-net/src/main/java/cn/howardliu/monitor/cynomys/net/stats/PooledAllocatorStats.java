@@ -152,6 +152,6 @@ public enum PooledAllocatorStats {
     }
 
     public static void print() {
-        logger.info("PooledAllocator Stats info: {}", JSON.toJSONString(INSTANCE.getMetrics()));
+        logger.debug("PooledAllocator Stats info: {}", JSON.toJSONString(INSTANCE.getMetrics()));
     }
 }
