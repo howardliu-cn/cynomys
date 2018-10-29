@@ -75,8 +75,8 @@ public enum WarnLoggingClient implements Closeable {
 
     public void log(String bizCode, String bizDesc, String errCode, String errDesc, ErrorLevel level, Throwable e) {
         SysErrorInfo sysError = resolver.errorOf(e);
-        if (!sysError.getCode().matches("^\\d{3}$")) {
-            throw new IllegalArgumentException("SysErrCode必须是3位数字");
+        if (!sysError.getCode().matches("^\\d{2,3}$")) {
+            throw new IllegalArgumentException("SysErrCode必须是2位或3位数字");
         }
         this.log(CommonParameters.getSysCode(), bizCode, bizDesc, errCode, errDesc, sysError.getCode(),
                 sysError.getDesc(), level, infoWithStackTrace(e));
