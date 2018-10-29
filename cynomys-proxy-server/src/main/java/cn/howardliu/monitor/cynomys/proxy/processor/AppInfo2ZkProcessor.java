@@ -22,7 +22,7 @@ public class AppInfo2ZkProcessor extends AbstractInfo2ZkProcessor {
     }
 
     @Override
-    public Message processRequest(ChannelHandlerContext ctx, Message request) throws Exception {
+    public Message processRequest(ChannelHandlerContext ctx, Message request) {
         Header header = request.getHeader();
         if (logger.isDebugEnabled()) {
             logger.debug("{}-{}-{} send application info",
