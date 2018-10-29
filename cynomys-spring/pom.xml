@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>cynomys</artifactId>
@@ -17,9 +17,9 @@
         <module>cynomys-spring-web-plugin</module>
     </modules>
     <properties>
-        <spring.version>4.3.4.RELEASE</spring.version>
+        <spring.version>5.0.8.RELEASE</spring.version>
         <servlet.version>3.0</servlet.version>
-        <spring-boot.version>1.4.2.RELEASE</spring-boot.version>
+        <spring-boot.version>2.0.4.RELEASE</spring-boot.version>
     </properties>
 
     <packaging>pom</packaging>
@@ -29,6 +29,12 @@
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-web</artifactId>
+                <version>${spring.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
                 <version>${spring.version}</version>
                 <scope>provided</scope>
             </dependency>

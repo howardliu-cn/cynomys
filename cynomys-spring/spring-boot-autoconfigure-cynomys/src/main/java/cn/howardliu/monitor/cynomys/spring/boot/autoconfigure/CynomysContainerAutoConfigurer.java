@@ -4,7 +4,7 @@ import cn.howardliu.monitor.cynomys.common.CommonParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerInitializedEvent;
+import org.springframework.boot.web.servlet.context.ServletWebServerInitializedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,12 +18,12 @@ import javax.servlet.ServletContext;
  */
 @Configuration
 @ConditionalOnClass({CommonParameters.class, ServletContext.class})
-public class CynomysContainerAutoConfigurer implements ApplicationListener<EmbeddedServletContainerInitializedEvent> {
+public class CynomysContainerAutoConfigurer implements ApplicationListener<ServletWebServerInitializedEvent> {
     private static final Logger logger = LoggerFactory.getLogger(CynomysContainerAutoConfigurer.class);
 
     @Override
-    public void onApplicationEvent(EmbeddedServletContainerInitializedEvent event) {
-        CommonParameters.setServerPort(event.getEmbeddedServletContainer().getPort());
+    public void onApplicationEvent(ServletWebServerInitializedEvent event) {
+        CommonParameters.setServerPort(event.getWebServer().getPort());
         CommonParameters.setServletContext(event.getApplicationContext().getServletContext());
         if (logger.isInfoEnabled()) {
             logger.info("the server info: "
