@@ -31,7 +31,6 @@
         <dependency>
             <groupId>cn.howardliu</groupId>
             <artifactId>gear-monitor-tomcat</artifactId>
-            <classifier>jdk7</classifier>
         </dependency>
     </dependencies>
 </project>
