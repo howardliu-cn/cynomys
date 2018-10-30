@@ -29,7 +29,7 @@ public class PropertyAdapter {
             pc.putAll(properties);
             return true;
         } catch (IOException e) {
-            logger.error("Customer Server Resource file did not find, please check again! Details: " + e.getMessage());
+            logger.error("Customer Server Resource file did not find, please check again! Details: {}", e.getMessage());
         }
         return false;
     }
@@ -48,7 +48,7 @@ public class PropertyAdapter {
             pc.putAll(properties);
             return true;
         } catch (Exception e) {
-            logger.debug("Load config file [{}] exception, please check again!", filePath, e);
+            logger.debug("Load config file [{}] exception: {}", filePath, e.getMessage());
         }
         return false;
     }
