@@ -21,15 +21,17 @@ public class PropertyAdapter {
     private static Logger logger = LoggerFactory.getLogger(PropertyAdapter.class);
     protected Properties pc = new Properties();
 
-    protected void add(String fileName) {
+    protected boolean add(String fileName) {
         try {
             Properties properties = new Properties();
             InputStream in = PropertyAdapter.class.getResourceAsStream(fileName);
             properties.load(in);
             pc.putAll(properties);
+            return true;
         } catch (IOException e) {
             logger.error("Customer Server Resource file did not find, please check again! Details: " + e.getMessage());
         }
+        return false;
     }
 
     protected boolean addFile(String filePath) {

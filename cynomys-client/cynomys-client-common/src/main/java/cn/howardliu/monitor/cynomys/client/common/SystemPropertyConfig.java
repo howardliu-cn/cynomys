@@ -24,6 +24,7 @@ public final class SystemPropertyConfig {
     private static final Logger logger = LoggerFactory.getLogger(SystemPropertyConfig.class);
     private static final String DEFAULT_MONITOR_PROPERTIES_FILE = "/conf/default-cynomys-monitor.properties";
     private static final String SYS_CUSTOM_MONITOR_PROPERTIES_FILE = USER_HOME + "/.cynomys/cynomys-monitor.properties";
+    private static final String CURRENT_MONITOR_PROPERTIES_FILE_IN_JAR = "/cynomys-monitor.properties";
     private static final String CURRENT_MONITOR_PROPERTIES_FILE = "cynomys-monitor.properties";
     private static final String ATTRIBUTE_MONITOR_PROPERTIES_FILE = System.getProperty("cynomys-monitor.properties");
     private static PropertyAdapter thisConfig = new PropertyAdapter();
@@ -37,23 +38,25 @@ public final class SystemPropertyConfig {
 
     // 1. the config file is in jar:/conf/default-cynomys-monitor.properties
     // 2. the config file is in ~/.cynomys/cynomys-monitor.properties
-    // 3. the config file is in current path: cynomys-monitor.properties
-    // 3. the config file is javaagent argument: -javaagent:xxx.jar=/path/to/xxx.properties
-    // 4. the config file is jvm parameter: -Dcynomys-monitor.properties=/path/to/xxx.properties
-    // 5. the config properties load System.getProperties()
+    // 3. the config file is in jar: /cynomys-monitor.properties
+    // 4. the config file is in current path: cynomys-monitor.properties
+    // 5. the config file is javaagent argument: -javaagent:xxx.jar=/path/to/xxx.properties
+    // 6. the config file is jvm parameter: -Dcynomys-monitor.properties=/path/to/xxx.properties
+    // 7. the config properties load System.getProperties()
     public static void init(String agentArgs) {
         thisConfig.add(DEFAULT_MONITOR_PROPERTIES_FILE);
 
         boolean extract1 = thisConfig.addFile(SYS_CUSTOM_MONITOR_PROPERTIES_FILE);
-        boolean extract2 = thisConfig.addFile(CURRENT_MONITOR_PROPERTIES_FILE);
+        boolean extract2 = thisConfig.add(CURRENT_MONITOR_PROPERTIES_FILE_IN_JAR);
+        boolean extract3 = thisConfig.addFile(CURRENT_MONITOR_PROPERTIES_FILE);
         boolean extract4 = thisConfig.addFile(agentArgs);
-        boolean extract3 = thisConfig.addFile(ATTRIBUTE_MONITOR_PROPERTIES_FILE);
+        boolean extract5 = thisConfig.addFile(ATTRIBUTE_MONITOR_PROPERTIES_FILE);
 
         thisConfig.addAll(System.getProperties());
 
         loadConfig();
 
-        if (!(extract1 || extract2 || extract3 || extract4)) {
+        if (!(extract1 || extract2 || extract3 || extract4 || extract5)) {
             extractDefaultProperties();
         }
     }
@@ -68,6 +71,7 @@ public final class SystemPropertyConfig {
     }
 
     private static void extractDefaultProperties() {
+        logger.info("extract default properties file in ${user.home}/.cynomys/cynomys-monitor.properties");
         InputStream in = SystemPropertyConfig.class.getResourceAsStream(DEFAULT_MONITOR_PROPERTIES_FILE);
         try {
             FileUtils.copyInputStreamToFile(in, new File(SYS_CUSTOM_MONITOR_PROPERTIES_FILE));
