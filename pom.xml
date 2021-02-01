@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns="http://maven.apache.org/POM/4.0.0" xmlns:Xlint="http://java.sun.com/xml/ns/javaee"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>cn.howardliu.monitor</groupId>
@@ -49,12 +49,12 @@
         <jdk.version>1.8</jdk.version>
         <slf4j.version>1.7.24</slf4j.version>
         <logback.version>1.2.3</logback.version>
-        <netty.version>4.1.27.Final</netty.version>
+        <netty.version>4.1.46.Final</netty.version>
         <javassist.version>3.24.0-GA</javassist.version>
         <my-gear.version>1.0.3-SNAPSHOT</my-gear.version>
         <okhttp.version>3.5.0</okhttp.version>
         <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
-        <fastjson.version>1.2.10</fastjson.version>
+        <fastjson.version>1.2.31</fastjson.version>
         <commons-lang3.version>3.7</commons-lang3.version>
         <commons-io.version>2.5</commons-io.version>
         <sqlite-jdbc.version>3.20.0</sqlite-jdbc.version>
@@ -69,7 +69,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -180,13 +180,18 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>3.7.0</version>
                 <configuration>
-                    <source>${jdk.version}</source>
-                    <target>${jdk.version}</target>
-                    <compilerVersion>${jdk.version}</compilerVersion>
-                    <showDeprecation>true</showDeprecation>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <testSource>1.8</testSource>
+                    <testTarget>1.8</testTarget>
+                    <encoding>UTF-8</encoding>
+                    <compilerArguments>
+                        <Xlint:unchecked />
+                    </compilerArguments>
                     <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>
             <plugin>
