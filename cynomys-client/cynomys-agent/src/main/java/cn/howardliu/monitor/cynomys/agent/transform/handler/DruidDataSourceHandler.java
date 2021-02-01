@@ -1,5 +1,6 @@
 package cn.howardliu.monitor.cynomys.agent.transform.handler;
 
+import cn.howardliu.monitor.cynomys.agent.transform.MethodRewriteHandler;
 import javassist.CtClass;
 import javassist.CtConstructor;
 import javassist.CtMethod;
@@ -22,6 +23,7 @@ public class DruidDataSourceHandler extends DataSourceHandler {
     public void doWeave(CtClass ctClass) {
         if (isDruidDataSource(ctClass)) {
             logger.info("begin to wrap DruidDataSource");
+            doWeaveConstructNoneParams(ctClass);
             doWeaveConstruct(ctClass);
             doWeaveInit(ctClass);
         } else if (this.getHandler() != null) {
@@ -29,18 +31,35 @@ public class DruidDataSourceHandler extends DataSourceHandler {
         }
     }
 
+    private void doWeaveConstructNoneParams(CtClass ctClass) {
+        doWeaveConstruct(ctClass, new CtClass[]{});
+    }
+
     private void doWeaveConstruct(CtClass ctClass) {
-        String desc = Descriptor.ofConstructor(new CtClass[]{CtClass.booleanType});
+        doWeaveConstruct(ctClass, new CtClass[]{CtClass.booleanType});
+    }
+
+    private void doWeaveConstruct(CtClass ctClass, CtClass[] ctClasses) {
+        String desc = null;
+        try {
+            desc = Descriptor.ofConstructor(ctClasses);
+        } catch (Throwable t) {
+            System.err.println("SKIPPED Constructor in " + ctClass.getName() + ", the reason is " + t.getMessage());
+            t.printStackTrace();
+        }
+        if (desc == null) {
+            return;
+        }
         try {
             CtConstructor constructor = ctClass.getConstructor(desc);
             constructor.insertAfter(
                     "cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapperHelper.registerCommonDataSource($0.getClass().getName() + \"@\" + System.identityHashCode($0), $0);"
             );
         } catch (NotFoundException e) {
-            logger.info("not found Constructor[" + desc + "] in " + ctClass.getName());
-        } catch (Exception e) {
-            logger.warn(
-                    "SKIPPED Constructor[" + desc + "] in " + ctClass.getName() + ", the reason is " + e.getMessage());
+            logger.trace("not found Constructor[" + desc + "] in " + ctClass.getName());
+        } catch (Throwable t) {
+            logger.error(
+                    "SKIPPED Constructor[" + desc + "] in " + ctClass.getName() + ", the reason is " + t.getMessage());
         }
     }
 
@@ -51,11 +70,10 @@ public class DruidDataSourceHandler extends DataSourceHandler {
                     "cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper.SINGLETON.fillDataSourceInfo($0);" +
                             "cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapperHelper.registerCommonDataSource($0.getClass().getName() + \"@\" + System.identityHashCode($0), $0);"
             );
-
         } catch (NotFoundException e) {
-            logger.info("not found init method in " + ctClass.getName());
-        } catch (Exception e) {
-            logger.warn("SKIPPED init() in " + ctClass.getName() + ", the reason is " + e.getMessage());
+            logger.trace("not found init method in " + ctClass.getName());
+        } catch (Throwable t) {
+            logger.error("SKIPPED init() in " + ctClass.getName() + ", the reason is " + t.getMessage());
         }
     }
 
@@ -65,7 +83,7 @@ public class DruidDataSourceHandler extends DataSourceHandler {
                 (
                         "com.alibaba.druid.pool.DruidDataSource".equals(ctClass.getName())
                                 ||
-                                isChild(ctClass, "com.alibaba.druid.pool.DruidDataSource")
+                                MethodRewriteHandler.isChild(ctClass, "com.alibaba.druid.pool.DruidDataSource")
                 );
     }
 }

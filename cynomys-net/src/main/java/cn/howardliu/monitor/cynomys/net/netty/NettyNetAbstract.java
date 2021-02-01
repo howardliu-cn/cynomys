@@ -34,7 +34,7 @@ public abstract class NettyNetAbstract implements NetService {
     private static final Logger logger = LoggerFactory.getLogger(NettyNetAbstract.class);
     protected final Semaphore semaphoreAsync;
     protected final NettyEventExecutor nettyEventExecutor = new NettyEventExecutor();
-    protected final ConcurrentMap<Integer, ResponseFuture> responseTable = new ConcurrentHashMap<>(256);
+    protected final ConcurrentMap<Integer, ResponseFuture> responseTable = new ConcurrentHashMap<>(64);
 
     protected final Map<Byte, Pair<NettyRequestProcessor, ExecutorService>> processorTable = new HashMap<>(64);
     protected Pair<NettyRequestProcessor, ExecutorService> defaultRequestProcessor;
@@ -119,8 +119,7 @@ public abstract class NettyNetAbstract implements NetService {
                                 responseFuture.release();
                             }
 
-                            logger.warn("send a request to channel <{}> failed!", NetHelper.remoteAddress(channel),
-                                    future.cause());
+                            logger.warn("send a request to channel <{}> failed! this channel status is {}", NetHelper.remoteAddress(channel), channel.isActive(), future.cause());
                         });
             } catch (Exception e) {
                 responseFuture.release();
@@ -152,7 +151,7 @@ public abstract class NettyNetAbstract implements NetService {
                 response.release();
                 it.remove();
                 rfList.add(response);
-                logger.warn("remove timeout request, " + response);
+                logger.info("remove timeout request, " + response);
             }
         }
 
@@ -254,8 +253,7 @@ public abstract class NettyNetAbstract implements NetService {
                 responseFuture.putResponse(response);
             }
         } else {
-            logger.warn("receive response, but not matched any request, remoteAddress: {}, response: {}",
-                    NetHelper.remoteAddress(ctx.channel()), response);
+            logger.debug("receive response, but not matched any request, remoteAddress: {}, response: {}", NetHelper.remoteAddress(ctx.channel()), response);
         }
     }
 
@@ -298,8 +296,7 @@ public abstract class NettyNetAbstract implements NetService {
             if (this.eventQueue.size() <= MAX_SIZE) {
                 this.eventQueue.add(event);
             } else {
-                logger.warn("event queue size[{}] enough, so drop this event {}",
-                        this.eventQueue.size(), event.toString());
+                logger.info("event queue size[{}] enough, so drop this event {}", this.eventQueue.size(), event.toString());
             }
         }
 

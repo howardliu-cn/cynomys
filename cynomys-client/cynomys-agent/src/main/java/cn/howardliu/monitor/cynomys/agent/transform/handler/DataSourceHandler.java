@@ -1,5 +1,6 @@
 package cn.howardliu.monitor.cynomys.agent.transform.handler;
 
+import cn.howardliu.monitor.cynomys.agent.transform.MethodRewriteHandler;
 import javassist.CtClass;
 
 import javax.sql.DataSource;
@@ -24,6 +25,6 @@ public class DataSourceHandler extends SqlHandler {
     }
 
     boolean isDataSource(CtClass ctClass) {
-        return isImpl(ctClass, DataSource.class);
+        return MethodRewriteHandler.isImpl(ctClass, DataSource.class);
     }
 }

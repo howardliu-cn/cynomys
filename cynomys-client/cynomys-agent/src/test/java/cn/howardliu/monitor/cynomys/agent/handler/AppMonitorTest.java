@@ -11,6 +11,6 @@ import org.junit.Test;
 public class AppMonitorTest {
     @Test
     public void buildAppInfo() throws Exception {
-        System.out.println(AppMonitor.instance(8080).buildAppInfo());
+        System.out.println(AppMonitor.instance().buildAppInfo());
     }
 }

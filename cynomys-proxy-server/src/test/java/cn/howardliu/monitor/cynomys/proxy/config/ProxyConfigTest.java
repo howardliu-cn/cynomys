@@ -3,8 +3,6 @@ package cn.howardliu.monitor.cynomys.proxy.config;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static cn.howardliu.monitor.cynomys.proxy.config.ProxyConfig.PROXY_CONFIG;
-
 /**
  * <br>created at 17-7-17
  *
@@ -15,12 +13,12 @@ import static cn.howardliu.monitor.cynomys.proxy.config.ProxyConfig.PROXY_CONFIG
 public class ProxyConfigTest {
     @Test
     public void getPort() throws Exception {
-        Assert.assertTrue(PROXY_CONFIG.getPort() > 0);
+        Assert.assertTrue(ProxyConfig.PROXY_CONFIG.getPort() > 0);
     }
 
     @Test
     public void getCport() throws Exception {
-        Assert.assertEquals(PROXY_CONFIG.getPort(), 52700);
+        Assert.assertEquals(ProxyConfig.PROXY_CONFIG.getPort(), 52700);
     }
 
 }

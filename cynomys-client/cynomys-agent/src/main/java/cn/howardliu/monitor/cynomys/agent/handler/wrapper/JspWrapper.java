@@ -38,12 +38,9 @@ import java.util.Objects;
  * @author Emeric Vernat
  */
 final class JspWrapper implements InvocationHandler {
-
-    private static final Counter JSP_COUNTER = new Counter(Counter.JSP_COUNTER_NAME, "jsp.png",
-            JdbcWrapper.SINGLETON.getSqlCounter());
+    private static final Counter JSP_COUNTER = new Counter(Counter.JSP_COUNTER_NAME, "jsp.png", JdbcWrapper.SINGLETON.getSqlCounter());
     private static final boolean COUNTER_HIDDEN = Parameters.isCounterHidden(JSP_COUNTER.getName());
     private static final boolean DISABLED = Boolean.FALSE;
-
     private final String path;
     private final RequestDispatcher requestDispatcher;
 
@@ -72,10 +69,6 @@ final class JspWrapper implements InvocationHandler {
             return new HttpRequestWrapper3(request, response);
         }
         return new HttpRequestWrapper(request);
-    }
-
-    static Counter getJspCounter() {
-        return JSP_COUNTER;
     }
 
     /**
@@ -138,8 +131,7 @@ final class JspWrapper implements InvocationHandler {
                 return null;
             }
             // il n'est pas dit que path soit non null
-            final InvocationHandler invocationHandler = new JspWrapper(String.valueOf(path),
-                    requestDispatcher);
+            final InvocationHandler invocationHandler = new JspWrapper(String.valueOf(path), requestDispatcher);
             return JdbcWrapper.createProxy(requestDispatcher, invocationHandler);
         }
     }

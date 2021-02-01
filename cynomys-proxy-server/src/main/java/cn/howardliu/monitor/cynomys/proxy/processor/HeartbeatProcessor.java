@@ -21,10 +21,9 @@ public class HeartbeatProcessor implements NettyRequestProcessor {
 
     @Override
     public Message processRequest(ChannelHandlerContext ctx, Message request) throws Exception {
-        if (logger.isDebugEnabled()) {
+        if (logger.isTraceEnabled()) {
             Header header = request.getHeader();
-            logger.debug("{}-{}-{} send PING signal",
-                    header.getSysName(), header.getSysCode(), header.getTag());
+            logger.trace("{}-{}-{} send PING signal", header.getSysName(), header.getSysCode(), header.getTag());
         }
         return new Message()
                 .setHeader(new Header()

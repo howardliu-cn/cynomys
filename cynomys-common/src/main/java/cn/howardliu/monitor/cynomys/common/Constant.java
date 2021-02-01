@@ -28,8 +28,7 @@ public final class Constant {
 
     private static final String CYNOMYS_HOME_ENV = "CYNOMYS_HOME";
     private static final String CYNOMYS_HOME_PROPERTY = "cynomys.home";
-    public static final String CYNOMYS_HOME = System
-            .getProperty(CYNOMYS_HOME_PROPERTY, System.getenv(CYNOMYS_HOME_ENV));
+    public static final String CYNOMYS_HOME = System.getProperty(CYNOMYS_HOME_PROPERTY, System.getenv(CYNOMYS_HOME_ENV));
 
     static {
         THIS_TAG = UUID.randomUUID().toString();

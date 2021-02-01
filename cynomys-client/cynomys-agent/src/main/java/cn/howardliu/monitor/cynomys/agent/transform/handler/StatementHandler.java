@@ -1,8 +1,11 @@
 package cn.howardliu.monitor.cynomys.agent.transform.handler;
 
+import cn.howardliu.monitor.cynomys.agent.transform.MethodRewriteHandler;
+import cn.howardliu.monitor.cynomys.agent.transform.MonitoringTransformer;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
+import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +18,7 @@ import org.slf4j.LoggerFactory;
  */
 public class StatementHandler extends SqlHandler {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private ClassPool classPool = ClassPool.getDefault();
+    private ClassPool classPool = MonitoringTransformer.getClassPool();
 
     @Override
     public void doWeave(CtClass ctClass) {
@@ -54,25 +57,20 @@ public class StatementHandler extends SqlHandler {
                     }
                     return;
                 }
-                ctMethod.insertBefore(
-                        "cn.howardliu.monitor.cynomys.agent.transform.aspect.StatementAspect.begin(Thread.currentThread().getId(), $1);"
-                );
-                ctMethod.addCatch(
-                        "cn.howardliu.monitor.cynomys.agent.transform.aspect.StatementAspect.catchBlock(Thread.currentThread().getId(), $e); throw $e;",
-                        classPool.get("java.lang.Throwable")
-                );
-                ctMethod.insertAfter(
-                        "cn.howardliu.monitor.cynomys.agent.transform.aspect.StatementAspect.end(Thread.currentThread().getId(), \"" + ctMethod
-                                .getLongName() + "\", $1);",
-                        true
-                );
+                ctMethod.insertBefore("cn.howardliu.monitor.cynomys.agent.transform.aspect.StatementAspect.begin(Thread.currentThread().getId(), $1);");
+                ctMethod.addCatch("cn.howardliu.monitor.cynomys.agent.transform.aspect.StatementAspect.catchBlock(Thread.currentThread().getId(), $e); throw $e;", classPool.get("java.lang.Throwable"));
+                ctMethod.insertAfter("cn.howardliu.monitor.cynomys.agent.transform.aspect.StatementAspect.end(Thread.currentThread().getId(), \"" + ctMethod.getLongName() + "\", $1);", true);
             }
-        } catch (Exception e) {
-            logger.warn("SKIPPED " + methodName + " in " + ctClassName + ", the reason is " + e.getMessage());
+        } catch (NotFoundException e) {
+            logger.trace("SKIPPED " + methodName + " in " + ctClassName + ", the reason is " + e.getMessage());
+        } catch (Throwable t) {
+            logger.warn("SKIPPED " + methodName + " in " + ctClassName + ", the reason is " + t.getMessage(), t);
         }
     }
 
     private boolean isStatement(CtClass ctClass) {
-        return isImpl(ctClass, "java.sql.Statement") || isChild(ctClass, "java.sql.Statement");
+        return MethodRewriteHandler.isImpl(ctClass, "java.sql.Statement")
+                ||
+                MethodRewriteHandler.isChild(ctClass, "java.sql.Statement");
     }
 }

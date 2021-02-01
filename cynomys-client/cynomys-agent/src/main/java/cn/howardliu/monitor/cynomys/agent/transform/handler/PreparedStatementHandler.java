@@ -1,5 +1,7 @@
 package cn.howardliu.monitor.cynomys.agent.transform.handler;
 
+import cn.howardliu.monitor.cynomys.agent.transform.MethodRewriteHandler;
+import cn.howardliu.monitor.cynomys.agent.transform.MonitoringTransformer;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -15,7 +17,7 @@ import org.slf4j.LoggerFactory;
  */
 public class PreparedStatementHandler extends SqlHandler {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private ClassPool classPool = ClassPool.getDefault();
+    private ClassPool classPool = MonitoringTransformer.getClassPool();
 
     @Override
     public void doWeave(CtClass ctClass) {
@@ -48,8 +50,8 @@ public class PreparedStatementHandler extends SqlHandler {
                         true
                 );
             }
-        } catch (Exception e) {
-            logger.warn("SKIPPED " + methodName + " in " + ctClass.getName() + ", the reason is " + e.getMessage());
+        } catch (Throwable t) {
+            logger.warn("SKIPPED " + methodName + " in " + ctClass.getName() + ", the reason is " + t.getMessage());
         }
     }
 
@@ -57,15 +59,14 @@ public class PreparedStatementHandler extends SqlHandler {
         try {
             CtMethod[] ctMethods = ctClass.getDeclaredMethods("close");
             for (CtMethod ctMethod : ctMethods) {
-                ctMethod.insertAfter(
-                        "cn.howardliu.monitor.cynomys.agent.transform.aspect.PreparedStatementAspect.close($0);");
+                ctMethod.insertAfter("cn.howardliu.monitor.cynomys.agent.transform.aspect.PreparedStatementAspect.close($0);");
             }
-        } catch (Exception e) {
-            logger.warn("SKIPPED close() in " + ctClass.getName() + ", the reason is " + e.getMessage());
+        } catch (Throwable t) {
+            logger.warn("SKIPPED close() in " + ctClass.getName() + ", the reason is " + t.getMessage());
         }
     }
 
     private boolean isPreparedStatement(CtClass ctClass) {
-        return isImpl(ctClass, "java.sql.PreparedStatement") || isChild(ctClass, "java.sql.PreparedStatement");
+        return MethodRewriteHandler.isImpl(ctClass, "java.sql.PreparedStatement") || MethodRewriteHandler.isChild(ctClass, "java.sql.PreparedStatement");
     }
 }

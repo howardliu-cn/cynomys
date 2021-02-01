@@ -2,12 +2,11 @@ package cn.howardliu.monitor.cynomys.net.handler;
 
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
+import cn.howardliu.monitor.cynomys.net.struct.MessageCode;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static cn.howardliu.monitor.cynomys.net.struct.MessageCode.*;
 
 /**
  * <br>created at 17-5-11
@@ -26,43 +25,43 @@ public class OtherInfoHandler extends SimpleChannelInboundHandler<Message> {
         }
         Header header = msg.getHeader();
         byte code = header.getCode();
-        if (code == CONFIG_REQ.value()) {
+        if (code == MessageCode.CONFIG_REQ.value()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("receive config request: {}", msg);
             }
-        } else if (code == CONFIG_RESP.value()) {
+        } else if (code == MessageCode.CONFIG_RESP.value()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("receive config response: {}", msg);
             }
-        } else if (code == HEARTBEAT_REQ.value()) {
+        } else if (code == MessageCode.HEARTBEAT_REQ.value()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("receive heartbeat request: {}", msg);
             }
-        } else if (code == HEARTBEAT_RESP.value()) {
+        } else if (code == MessageCode.HEARTBEAT_RESP.value()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("receive heartbeat response: {}", msg);
             }
-        } else if (code == APP_INFO_REQ.value()) {
+        } else if (code == MessageCode.APP_INFO_REQ.value()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("receive appInfo request: {}", msg);
             }
-        } else if (code == APP_INFO_RESP.value()) {
+        } else if (code == MessageCode.APP_INFO_RESP.value()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("receive appInfo response: {}", msg);
             }
-        } else if (code == SQL_INFO_REQ.value()) {
+        } else if (code == MessageCode.SQL_INFO_REQ.value()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("receive sqlInfo request: {}", msg);
             }
-        } else if (code == SQL_INFO_RESP.value()) {
+        } else if (code == MessageCode.SQL_INFO_RESP.value()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("receive sqlInfo response: {}", msg);
             }
-        } else if (code == REQUEST_INFO_REQ.value()) {
+        } else if (code == MessageCode.REQUEST_INFO_REQ.value()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("receive requestInfo request: {}", msg);
             }
-        } else if (code == REQUEST_INFO_RESP.value()) {
+        } else if (code == MessageCode.REQUEST_INFO_RESP.value()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("receive requestInfo response: {}", msg);
             }

@@ -1,5 +1,6 @@
 package cn.howardliu.monitor.cynomys.proxy;
 
+import cn.howardliu.monitor.cynomys.proxy.config.ProxyConfig;
 import cn.howardliu.monitor.cynomys.proxy.config.ServerConfig;
 import cn.howardliu.monitor.cynomys.proxy.server.ProxyServer;
 import org.slf4j.Logger;
@@ -11,7 +12,6 @@ import java.net.ConnectException;
 import java.net.Socket;
 
 import static cn.howardliu.monitor.cynomys.proxy.Constants.COMMAND_SERVER_CTRL_STOP;
-import static cn.howardliu.monitor.cynomys.proxy.config.ProxyConfig.PROXY_CONFIG;
 
 /**
  * <br>created at 17-7-17
@@ -51,13 +51,13 @@ public enum CynomysProxyServer {
     }
 
     public void stop() {
-        try (Socket socket = new Socket("localhost", PROXY_CONFIG.getCport());
+        try (Socket socket = new Socket("localhost", ProxyConfig.PROXY_CONFIG.getCport());
              PrintWriter w = new PrintWriter(socket.getOutputStream())) {
             w.println(COMMAND_SERVER_CTRL_STOP);
             w.flush();
         } catch (ConnectException ce) {
             logger.error("CynomysProxyServer.stopServer.connectException: address=localhost, port={}",
-                    PROXY_CONFIG.getCport());
+                    ProxyConfig.PROXY_CONFIG.getCport());
             logger.error("CynomysProxyServer.stop: ", ce);
             System.exit(1);
         } catch (IOException e) {

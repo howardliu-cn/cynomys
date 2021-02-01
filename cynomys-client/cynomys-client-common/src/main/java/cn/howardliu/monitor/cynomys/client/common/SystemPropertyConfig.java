@@ -9,8 +9,10 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-import static cn.howardliu.monitor.cynomys.client.common.Constant.*;
 import static org.apache.commons.lang3.SystemUtils.USER_HOME;
 
 /**
@@ -27,7 +29,12 @@ public final class SystemPropertyConfig {
     private static final String CURRENT_MONITOR_PROPERTIES_FILE_IN_JAR = "/cynomys-monitor.properties";
     private static final String CURRENT_MONITOR_PROPERTIES_FILE = "cynomys-monitor.properties";
     private static final String ATTRIBUTE_MONITOR_PROPERTIES_FILE = System.getProperty("cynomys-monitor.properties");
-    private static PropertyAdapter thisConfig = new PropertyAdapter();
+    private static final String SYSTEM_SETTING_BIZ = "system.setting.biz.";
+    private static final String SYSTEM_SETTING_ERR = "system.setting.err.";
+    private static PropertiesAdapter thisConfig = new PropertiesAdapter();
+
+    public static final Map<String, String> bizParams = Collections.synchronizedMap(new HashMap<>());
+    public static final Map<String, String> errParams = Collections.synchronizedMap(new HashMap<>());
 
     private SystemPropertyConfig() {
     }
@@ -53,21 +60,44 @@ public final class SystemPropertyConfig {
         boolean extract5 = thisConfig.addFile(ATTRIBUTE_MONITOR_PROPERTIES_FILE);
 
         thisConfig.addAll(System.getProperties());
+        System.out.println("cynomys-monitor config : " + thisConfig);
 
         loadConfig();
 
         if (!(extract1 || extract2 || extract3 || extract4 || extract5)) {
             extractDefaultProperties();
         }
+
+        loadExceptionDesc();
+    }
+
+    private static void loadExceptionDesc() {
+        for (String key : thisConfig.defaults.stringPropertyNames()) {
+            final String desc = thisConfig.defaults.getProperty(key);
+
+            if (key.startsWith(SYSTEM_SETTING_BIZ) && key.length() > SYSTEM_SETTING_BIZ.length()) {
+                final String bizCode = key.substring(SYSTEM_SETTING_BIZ.length());
+                if (bizCode.matches("\\d{3}")) {
+                    bizParams.put(bizCode, desc);
+                }
+            } else {
+                if (key.startsWith(SYSTEM_SETTING_ERR) && key.length() > SYSTEM_SETTING_ERR.length()) {
+                    final String errCode = key.substring(SYSTEM_SETTING_ERR.length());
+                    if (errCode.matches("\\d{3}")) {
+                        errParams.put(errCode, desc);
+                    }
+                }
+            }
+        }
     }
 
     private static void loadConfig() {
-        CommonParameters.setDebugMode(getBoolean(SYSTEM_SETTING_MONITOR_IS_DEBUG, CommonParameters.isDebugMode()));
-        CommonParameters.setSysName(getContextProperty(SYSTEM_SETTING_CONTEXT_NAME, CommonParameters.getSysName()));
-        CommonParameters.setSysCode(getContextProperty(SYSTEM_SETTING_CONTEXT_CODE, CommonParameters.getSysCode()));
-        CommonParameters.setSysDesc(getContextProperty(SYSTEM_SETTING_CONTEXT_DESC, CommonParameters.getSysDesc()));
-        CommonParameters
-                .setServerList(getContextProperty(SYSTEM_SETTING_MONITOR_SERVERS, CommonParameters.getServerList()));
+        CommonParameters.setDebugMode(getBoolean(Constant.SYSTEM_SETTING_MONITOR_IS_DEBUG, CommonParameters.isDebugMode()));
+        CommonParameters.setSysName(getContextProperty(Constant.SYSTEM_SETTING_CONTEXT_NAME, CommonParameters.getSysName()));
+        CommonParameters.setSysCode(getContextProperty(Constant.SYSTEM_SETTING_CONTEXT_CODE, CommonParameters.getSysCode()));
+        CommonParameters.setSysDesc(getContextProperty(Constant.SYSTEM_SETTING_CONTEXT_DESC, CommonParameters.getSysDesc()));
+        CommonParameters.setSysVersion(getContextProperty(Constant.SYSTEM_SETTING_CONTEXT_VERSION, CommonParameters.getSysVersion()));
+        CommonParameters.setServerList(getContextProperty(Constant.SYSTEM_SETTING_MONITOR_SERVERS, CommonParameters.getServerList()));
     }
 
     private static void extractDefaultProperties() {
@@ -83,7 +113,7 @@ public final class SystemPropertyConfig {
     }
 
     public static String getContextProperty(String name) {
-        return thisConfig.getContextProperty(name);
+        return thisConfig.getProperty(name);
     }
 
     private static Boolean getBoolean(String name, Boolean defaultValue) {
@@ -92,10 +122,10 @@ public final class SystemPropertyConfig {
     }
 
     private static String getContextProperty(String name, String defaultValue) {
-        return thisConfig.getContextProperty(name, defaultValue);
+        return thisConfig.getProperty(name, defaultValue);
     }
 
     public static void setContextProperty(String name, String value) {
-        thisConfig.setContextProperty(name, value);
+        thisConfig.setProperty(name, value);
     }
 }

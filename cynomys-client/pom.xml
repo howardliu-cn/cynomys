@@ -15,6 +15,7 @@
         <module>cynomys-client-common</module>
         <module>cynomys-warn</module>
         <module>cynomys-agent</module>
+        <module>cynomys-agent-mask</module>
     </modules>
 
     <packaging>pom</packaging>

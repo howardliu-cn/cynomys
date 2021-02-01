@@ -73,8 +73,7 @@ public class RequestWrapper {
      * @Methods Name doExecute
      * @Create In 2016年7月27日 By Jack
      */
-    public void doExecute(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
-                          long startCpuTime, long start) {
+    public void doExecute(HttpServletRequest httpRequest, HttpServletResponse httpResponse, long startCpuTime, long start) {
         final CounterServletResponseWrapper wrappedResponse = new CounterServletResponseWrapper(httpResponse);
         final HttpServletRequest wrappedRequest = createRequestWrapper(httpRequest, wrappedResponse);
 
@@ -90,20 +89,15 @@ public class RequestWrapper {
             httpCounter.bindContext(requestName, completeRequestName, httpRequest.getRemoteUser(), startCpuTime);
             httpRequest.setAttribute(CounterError.REQUEST_KEY, completeRequestName);
             CounterError.bindRequest(httpRequest);
-
             final long duration = Math.max(System.currentTimeMillis() - start, 0);
             final long cpuUsedMillis = (ThreadMXBeanUtils.getCurrentThreadCpuTime() - startCpuTime) / 1000000;
             final int responseSize = wrappedResponse.getDataLength();
-
-            if (wrappedResponse.getStatus() >= HttpServletResponse.SC_BAD_REQUEST
-                    && wrappedResponse.getStatus() != HttpServletResponse.SC_UNAUTHORIZED) {
+            if (wrappedResponse.getStatus() >= HttpServletResponse.SC_BAD_REQUEST && wrappedResponse.getStatus() != HttpServletResponse.SC_UNAUTHORIZED) {
                 // SC_UNAUTHORIZED (401) is not an error, it is the first
                 // handshake of a Basic (or Digest) Auth (issue 455)
                 systemError = true;
-                errorCounter.addRequestForSystemError("HTTP_ERROR_" + wrappedResponse.getStatus(),
-                        duration, cpuUsedMillis, null);
+                errorCounter.addRequestForSystemError("HTTP_ERROR_" + wrappedResponse.getStatus(), duration, cpuUsedMillis, null);
             }
-
             // 记录处理具体信息
             httpCounter.addRequest(requestName, duration, cpuUsedMillis, systemError, responseSize);
         } finally {
@@ -125,9 +119,7 @@ public class RequestWrapper {
         // 计算执行时间
         final long duration = Math.max(System.currentTimeMillis() - start, 0);
         final long cpuUsedMillis = (ThreadMXBeanUtils.getCurrentThreadCpuTime() - startCpuTime) / 1000000;
-
         errorCounter.addRequestForSystemError("HTTP_ERROR_" + code, duration, cpuUsedMillis, null);
-
     }
 
     /**
@@ -151,7 +143,6 @@ public class RequestWrapper {
         } catch (IOException e) {
             log.error("Inbound Request Wrapper Error", e);
         }
-
         return wrappedRequest;
     }
 

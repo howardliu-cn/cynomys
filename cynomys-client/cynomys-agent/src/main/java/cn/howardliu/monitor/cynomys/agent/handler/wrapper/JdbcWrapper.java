@@ -17,9 +17,10 @@
  */
 package cn.howardliu.monitor.cynomys.agent.handler.wrapper;
 
-import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
 import cn.howardliu.monitor.cynomys.agent.dto.ConnectionInformations;
 import cn.howardliu.monitor.cynomys.agent.dto.Counter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -41,10 +42,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Emeric Vernat
  */
 public final class JdbcWrapper {
+    private static final Logger logger = LoggerFactory.getLogger(JdbcWrapper.class);
     /**
      * JDBC包装的单一实例（在这里我们不知道的ServletContext*）。
      */
-    public static final JdbcWrapper SINGLETON = new JdbcWrapper(new Counter(Counter.SQL_COUNTER_NAME, "db.png"));
+    public static final JdbcWrapper SINGLETON = new JdbcWrapper();
 
     public static final AtomicInteger ACTIVE_CONNECTION_COUNT = new AtomicInteger();
     public static final AtomicInteger USED_CONNECTION_COUNT = new AtomicInteger();
@@ -58,9 +60,9 @@ public final class JdbcWrapper {
     private final Counter sqlCounter;
     private boolean connectionInformationsEnabled;
 
-    private JdbcWrapper(Counter sqlCounter) {
-        this.sqlCounter = sqlCounter;
-        connectionInformationsEnabled = Parameters.isSystemActionsEnabled() && !Parameters.isNoDatabase();
+    private JdbcWrapper() {
+        this.sqlCounter = new Counter(Counter.SQL_COUNTER_NAME, "db.png");
+        connectionInformationsEnabled = false;// 不统计Connection信息
     }
 
     public static int getUsedConnectionCount() {
@@ -122,9 +124,7 @@ public final class JdbcWrapper {
             if (USED_CONNECTION_INFORMATIONS.containsKey(uniqueIdOfConnection)) {
                 return false;
             }
-
-            if (SINGLETON.isConnectionInformationsEnabled()
-                    && USED_CONNECTION_INFORMATIONS.size() < MAX_USED_CONNECTION_INFORMATIONS) {
+            if (SINGLETON.isConnectionInformationsEnabled() && USED_CONNECTION_INFORMATIONS.size() < MAX_USED_CONNECTION_INFORMATIONS) {
                 USED_CONNECTION_INFORMATIONS.put(uniqueIdOfConnection, new ConnectionInformations());
             }
         }
@@ -139,12 +139,15 @@ public final class JdbcWrapper {
         return connectionInformationsEnabled;
     }
 
-    @SuppressWarnings("unused")
     public void fillDataSourceInfo(DataSource dataSource) {
         assert dataSource != null;
-        JdbcWrapperHelper
-                .pullDataSourceProperties(dataSource.getClass().getName() + "@" + System.identityHashCode(dataSource),
-                        dataSource);
+        try {
+            JdbcWrapperHelper
+                    .pullDataSourceProperties(dataSource.getClass().getName() + "@" + System.identityHashCode(dataSource),
+                            dataSource);
+        } catch (Throwable t) {
+            logger.error("获取数据源信息异常", t);
+        }
     }
 
     private static class DelegatingInvocationHandler implements InvocationHandler {

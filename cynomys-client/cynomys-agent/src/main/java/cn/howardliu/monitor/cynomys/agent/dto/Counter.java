@@ -102,21 +102,27 @@ public class Counter implements Cloneable, Serializable { // NOPMD
     private final boolean errorCounter;
     private final String storageName;
     private final String iconName;
-
     private final String childCounterName;
-    @SuppressWarnings("all")
-    private final ConcurrentMap<String, CounterRequest> requests = new ConcurrentHashMap<String, CounterRequest>();
-
-    @SuppressWarnings("all")
-    private final ConcurrentMap<Long, CounterRequestContext> rootCurrentContextsByThreadId = new ConcurrentHashMap<Long, CounterRequestContext>();
+    private final ConcurrentMap<String, CounterRequest> requests = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Long, CounterRequestContext> rootCurrentContextsByThreadId = new ConcurrentHashMap<>();
     private final LinkedList<CounterError> errors;
-
     private Date startDate = new Date();
     private int maxRequestsCount = MAX_REQUESTS_COUNT;
-    private long estimatedMemorySize;
 
     private final transient ThreadLocal<CounterRequestContext> contextThreadLocal;
     private transient Pattern requestTransformPattern;
+
+    private void closeCounterRequestContext(CounterRequestContext requestContext) {
+        if (requestContext != null) {
+            final List<CounterRequestContext> childContexts = requestContext.getChildContexts();
+            if (childContexts != null) {
+                for (final CounterRequestContext childContext : childContexts) {
+                    closeCounterRequestContext(childContext);
+                }
+            }
+            requestContext.close();
+        }
+    }
 
     /**
      * Comparateur pour ordonner les requêtes par sommes des durées.
@@ -129,13 +135,7 @@ public class Counter implements Cloneable, Serializable { // NOPMD
          */
         @Override
         public int compare(CounterRequest request1, CounterRequest request2) {
-            if (request1.getDurationsSum() > request2.getDurationsSum()) {
-                return 1;
-            } else if (request1.getDurationsSum() < request2.getDurationsSum()) {
-                return -1;
-            } else {
-                return 0;
-            }
+            return Long.compare(request1.getDurationsSum(), request2.getDurationsSum());
         }
     }
 
@@ -150,13 +150,7 @@ public class Counter implements Cloneable, Serializable { // NOPMD
          */
         @Override
         public int compare(CounterRequest request1, CounterRequest request2) {
-            if (request1.getHits() > request2.getHits()) {
-                return 1;
-            } else if (request1.getHits() < request2.getHits()) {
-                return -1;
-            } else {
-                return 0;
-            }
+            return Long.compare(request1.getHits(), request2.getHits());
         }
     }
 
@@ -171,12 +165,7 @@ public class Counter implements Cloneable, Serializable { // NOPMD
          */
         @Override
         public int compare(CounterError error1, CounterError error2) {
-            if (error1.getTime() < error2.getTime()) {
-                return -1;
-            } else if (error1.getTime() > error2.getTime()) {
-                return 1;
-            }
-            return 0;
+            return Long.compare(error1.getTime(), error2.getTime());
         }
     }
 
@@ -197,13 +186,7 @@ public class Counter implements Cloneable, Serializable { // NOPMD
          */
         @Override
         public int compare(CounterRequestContext context1, CounterRequestContext context2) {
-            if (context1.getDuration(timeOfSnapshot) > context2.getDuration(timeOfSnapshot)) {
-                return 1;
-            } else if (context1.getDuration(timeOfSnapshot) < context2.getDuration(timeOfSnapshot)) {
-                return -1;
-            } else {
-                return 0;
-            }
+            return Integer.compare(context1.getDuration(timeOfSnapshot), context2.getDuration(timeOfSnapshot));
         }
     }
 
@@ -215,20 +198,7 @@ public class Counter implements Cloneable, Serializable { // NOPMD
      */
     public Counter(String name, String iconName) {
         // ici, pas de compteur fils
-        this(name, name, iconName, null, new ThreadLocal<CounterRequestContext>());
-    }
-
-    /**
-     * Constructeur d'un compteur.
-     *
-     * @param name             Nom du compteur (par exemple: sql...)
-     * @param storageName      Nom unique du compteur pour le stockage (par exemple:
-     *                         sql_20080724)
-     * @param iconName         Icône du compteur (par exemple: db.png)
-     * @param childCounterName Nom du compteur fils (par exemple: sql)
-     */
-    public Counter(String name, String storageName, String iconName, String childCounterName) {
-        this(name, storageName, iconName, childCounterName, new ThreadLocal<CounterRequestContext>());
+        this(name, name, iconName, null, new ThreadLocal<>());
     }
 
     /**
@@ -242,15 +212,13 @@ public class Counter implements Cloneable, Serializable { // NOPMD
         this(name, name, iconName, childCounter.getName(), childCounter.contextThreadLocal);
     }
 
-    private Counter(String name, String storageName, String iconName, String childCounterName,
-                    ThreadLocal<CounterRequestContext> contextThreadLocal) {
+    private Counter(String name, String storageName, String iconName, String childCounterName, ThreadLocal<CounterRequestContext> contextThreadLocal) {
         super();
         assert name != null;
         assert storageName != null;
         this.name = name;
         this.storageName = storageName;
-        this.errorCounter = ERROR_COUNTER_NAME.equals(name) || LOG_COUNTER_NAME.equals(name) || JOB_COUNTER_NAME
-                .equals(name);
+        this.errorCounter = ERROR_COUNTER_NAME.equals(name) || LOG_COUNTER_NAME.equals(name) || JOB_COUNTER_NAME.equals(name);
         this.iconName = iconName;
         this.childCounterName = childCounterName;
         this.contextThreadLocal = contextThreadLocal;
@@ -421,23 +389,12 @@ public class Counter implements Cloneable, Serializable { // NOPMD
         this.maxRequestsCount = maxRequestsCount;
     }
 
-    /**
-     * Retourne l'estimation pessimiste de l'occupation mémoire de counter
-     * (c'est-à-dire la dernière taille sérialisée non compressée de ce counter)
-     *
-     * @return long
-     */
-    long getEstimatedMemorySize() {
-        return estimatedMemorySize;
-    }
-
     public void bindContextIncludingCpu(String requestName) {
         bindContext(requestName, requestName, null, ThreadMXBeanUtils.getCurrentThreadCpuTime());
     }
 
     public void bindContext(String requestName, String completeRequestName, String remoteUser, long startCpuTime) {
-        final CounterRequestContext context = new CounterRequestContext(this, contextThreadLocal.get(), requestName,
-                completeRequestName, remoteUser, startCpuTime);
+        final CounterRequestContext context = new CounterRequestContext(this, contextThreadLocal.get(), requestName, completeRequestName, remoteUser, startCpuTime);
         contextThreadLocal.set(context);
         if (context.getParentContext() == null) {
             rootCurrentContextsByThreadId.put(context.getThreadId(), context);
@@ -477,35 +434,22 @@ public class Counter implements Cloneable, Serializable { // NOPMD
         addRequest(requestName, duration, cpuTime, systemError, null, responseSize);
     }
 
-    private void addRequest(String requestName, long duration, long cpuTime, boolean systemError,
-                            String systemErrorStackTrace, int responseSize) {
+    private void addRequest(String requestName, long duration, long cpuTime, boolean systemError, String systemErrorStackTrace, int responseSize) {
         assert requestName != null;
         assert duration >= 0;
         assert cpuTime >= -1; // -1 pour requêtes sql
         assert responseSize >= -1; // -1 pour requêtes sql
-
         final String aggregateRequestName = getAggregateRequestName(requestName);
-
         final CounterRequestContext context = contextThreadLocal.get();
         final CounterRequest request = getCounterRequestInternal(aggregateRequestName);
-        synchronized (request) {
-            // on synchronise par l'objet request pour éviter de mélanger des
-            // ajouts de hits
-            // concurrents entre plusieurs threads pour le même type de requête.
-            // Rq : on pourrait remplacer ce bloc synchronized par un
-            // synchronized
-            // sur les méthodes addHit et addChildHits dans la classe
-            // CounterRequest.
-            request.addHit(duration, cpuTime, systemError, systemErrorStackTrace, responseSize);
-
-            if (context != null) {
-                // on ajoute dans la requête parente toutes les requêtes filles
-                // du contexte
-                if (context.getParentCounter() == this) {
-                    request.addChildHits(context);
-                }
-                request.addChildRequests(context.getChildRequestsExecutionsByRequestId());
+        request.addHit(duration, cpuTime, systemError, systemErrorStackTrace, responseSize);
+        if (context != null) {
+            // on ajoute dans la requête parente toutes les requêtes filles
+            // du contexte
+            if (context.getParentCounter() == this) {
+                request.addChildHits(context);
             }
+            request.addChildRequests(context.getChildRequestsExecutionsByRequestId());
         }
         // perf: on fait le reste hors du synchronized sur request
         if (context != null) {
@@ -518,8 +462,7 @@ public class Counter implements Cloneable, Serializable { // NOPMD
                     unbindContext();
                 } else {
                     // on ajoute une requête fille dans le contexte
-                    context.addChildRequest(this, aggregateRequestName, request.getId(), duration, systemError,
-                            responseSize);
+                    context.addChildRequest(this, aggregateRequestName, request.getId(), duration, systemError, responseSize);
                     // et reporte les requêtes filles dans le contexte parent et
                     // rebinde celui-ci
                     parentContext.closeChildContext();
@@ -528,8 +471,7 @@ public class Counter implements Cloneable, Serializable { // NOPMD
             } else {
                 // on ajoute une requête fille dans le contexte
                 // (à priori il s'agit d'une requête sql)
-                context.addChildRequest(this, aggregateRequestName, request.getId(), duration, systemError,
-                        responseSize);
+                context.addChildRequest(this, aggregateRequestName, request.getId(), duration, systemError, responseSize);
             }
         }
         if (systemErrorStackTrace != null) {
@@ -753,23 +695,19 @@ public class Counter implements Cloneable, Serializable { // NOPMD
      * @return CounterRequest
      */
     public CounterRequest getCounterRequestByName(String requestName) {
-        // l'instance de CounterRequest retournée est clonée
-        // (nécessaire pour protéger la synchronisation interne du counter),
-        // son état peut donc être lu sans synchronisation
-        // mais toute modification de cet état ne sera pas conservée
         final String aggregateRequestName = getAggregateRequestName(requestName);
         final CounterRequest request = getCounterRequestInternal(aggregateRequestName);
-        synchronized (request) {
-            return request.clone();
-        }
+        return request.clone();
     }
 
     private CounterRequest getCounterRequestInternal(String requestName) {
+//        System.out.println("\n\n\n");
+//        System.out.println("请求数：" + getRequestsCount());
+//        System.out.println("当前请求：" + requestName);
+//        System.out.println("\n\n\n");
         CounterRequest request = requests.get(requestName);
         if (request == null) {
             request = new CounterRequest(requestName, getName());
-            // putIfAbsent a l'avantage d'être garanti atomique, même si ce
-            // n'est pas indispensable
             final CounterRequest precedentRequest = requests.putIfAbsent(requestName, request);
             if (precedentRequest != null) {
                 request = precedentRequest;
@@ -793,21 +731,9 @@ public class Counter implements Cloneable, Serializable { // NOPMD
      * concurrents.
      */
     public List<CounterRequest> getRequests() {
-        // thread-safe :
-        // on crée une copie de la collection et on clone ici chaque
-        // CounterRequest de manière synchronisée
-        // de manière à ce que l'appelant n'ai pas à se préoccuper des
-        // synchronisations nécessaires
-        // Rq : l'Iterator sur ConcurrentHashMap.values() est garanti ne pas
-        // lancer ConcurrentModificationException
-        // même s'il y a des ajouts concurrents
         final List<CounterRequest> result = new ArrayList<>(requests.size());
         for (final CounterRequest request : requests.values()) {
-            // on synchronize sur request en cas d'ajout en parallèle d'un hit
-            // sur cette request
-            synchronized (request) {
-                result.add(request.clone());
-            }
+            result.add(request.clone());
         }
         return result;
     }
@@ -820,7 +746,7 @@ public class Counter implements Cloneable, Serializable { // NOPMD
     public List<CounterRequest> getOrderedRequests() {
         final List<CounterRequest> requestList = getRequests();
         if (requestList.size() > 1) {
-            Collections.sort(requestList, Collections.reverseOrder(new CounterRequestComparator()));
+            requestList.sort(Collections.reverseOrder(new CounterRequestComparator()));
         }
         return requestList;
     }
@@ -890,8 +816,13 @@ public class Counter implements Cloneable, Serializable { // NOPMD
      * et heure de début à l'heure courante.
      */
     public void clear() {
-        requests.clear();
+        for (final Long threadId : rootCurrentContextsByThreadId.keySet()) {
+            closeCounterRequestContext(rootCurrentContextsByThreadId.get(threadId));
+        }
+        closeCounterRequestContext(contextThreadLocal.get());
         rootCurrentContextsByThreadId.clear();
+        contextThreadLocal.remove();
+        requests.clear();
         if (errors != null) {
             synchronized (errors) {
                 errors.clear();
@@ -907,8 +838,7 @@ public class Counter implements Cloneable, Serializable { // NOPMD
     // CHECKSTYLE:OFF
     public Counter clone() { // NOPMD
         // CHECKSTYLE:ON
-        final Counter clone = new Counter(getName(), getStorageName(), getIconName(), getChildCounterName(),
-                new ThreadLocal<CounterRequestContext>());
+        final Counter clone = new Counter(getName(), getStorageName(), getIconName(), getChildCounterName(), new ThreadLocal<>());
         clone.application = getApplication();
         clone.startDate = getStartDate();
         clone.maxRequestsCount = getMaxRequestsCount();

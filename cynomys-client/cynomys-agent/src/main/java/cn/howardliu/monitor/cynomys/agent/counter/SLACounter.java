@@ -1,5 +1,7 @@
 package cn.howardliu.monitor.cynomys.agent.counter;
 
+import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
+import cn.howardliu.monitor.cynomys.agent.handler.wrapper.RequestWrapper;
 import cn.howardliu.monitor.cynomys.common.CommonParameters;
 
 import java.util.Date;
@@ -50,10 +52,12 @@ public class SLACounter {
         _COUNTER.setSumErrDealRequestCounts(0);
         _COUNTER.setSumErrDealRequestTime(0);
         _COUNTER.setSumDealRequestTime(0);
-        _COUNTER.setPeerDate(new Date());
         setPeerDealRequestTime(0);
-
         resetResponseMap();
+        JdbcWrapper.SINGLETON.getSqlCounter().clear();
+        RequestWrapper.SINGLETON.getHttpCounter().clear();
+        RequestWrapper.SINGLETON.getErrorCounter().clear();
+        _COUNTER.setPeerDate(new Date());
     }
 
     private static void resetResponseMap() {

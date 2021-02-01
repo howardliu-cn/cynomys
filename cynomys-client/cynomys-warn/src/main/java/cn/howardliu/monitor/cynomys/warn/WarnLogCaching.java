@@ -1,4 +1,4 @@
-package cn.howardliu.cynomys.warn;
+package cn.howardliu.monitor.cynomys.warn;
 
 import java.io.Closeable;
 import java.sql.SQLException;

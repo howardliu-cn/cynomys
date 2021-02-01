@@ -1,4 +1,4 @@
-package cn.howardliu.cynomys.warn.exception;
+package cn.howardliu.monitor.cynomys.warn.exception;
 
 /**
  * <br>created at 17-8-25

@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 
 /**
@@ -16,24 +15,28 @@ import java.security.ProtectionDomain;
  * @since 0.0.1
  */
 public class MonitoringTransformer implements ClassFileTransformer {
+    private static ClassPool classPool = ClassPool.getDefault();
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private ClassPool classPool;
     private MethodRewriteHandler methodRewriteHandler;
 
     public MonitoringTransformer() {
-        this.classPool = ClassPool.getDefault();
         try {
-            this.classPool.appendPathList(System.getProperty("java.class.path"));
-            this.classPool.appendClassPath(new LoaderClassPath(ClassLoader.getSystemClassLoader()));
+            ClassClassPath classPath = new ClassClassPath(this.getClass());
+            classPool.insertClassPath(classPath);
+            classPool.appendPathList(System.getProperty("java.class.path"));
+            classPool.appendClassPath(new LoaderClassPath(ClassLoader.getSystemClassLoader()));
         } catch (NotFoundException e) {
             throw new RuntimeException(e);
         }
         this.methodRewriteHandler = MethodRewriteHandler.instance();
     }
 
+    public static ClassPool getClassPool() {
+        return classPool;
+    }
+
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-                            ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         if (loader == null
                 || ApmFilter.isNotNeedInjectClassLoader(loader.getClass().getName())
                 || (ApmFilter.isNotNeedInject(className) && !ApmFilter.isNeedInject(className))) {
@@ -74,10 +77,19 @@ public class MonitoringTransformer implements ClassFileTransformer {
                     || ctClass.isAnnotation()
                     || ctClass.isEnum()
                     || ctClass.isInterface()) {
-                logger.trace(className + "is not a class, SKIPPED!");
+                logger.trace(className + " is not a class, SKIPPED!");
                 return classfileBuffer;
             }
-
+            if (className.equals("com/alibaba/druid/pool/DruidConnectionHolder")) {
+                final ClassLoader classLoader = com.alibaba.druid.pool.DruidConnectionHolder.class.getClassLoader();
+                logger.info("load classloader: {}", classLoader);
+                classPool.appendClassPath(new LoaderClassPath(classLoader));
+            }
+            if (className.equals("com/alibaba/druid/pool/DruidPooledStatement")) {
+                final ClassLoader classLoader = com.alibaba.druid.pool.DruidPooledStatement.class.getClassLoader();
+                logger.info("load classloader: {}", classLoader);
+                classPool.appendClassPath(new LoaderClassPath(classLoader));
+            }
             this.methodRewriteHandler.doWeave(ctClass);
 
             return ctClass.toBytecode();

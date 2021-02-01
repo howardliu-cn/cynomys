@@ -2,6 +2,7 @@ package cn.howardliu.monitor.cynomys.agent.transform.aspect;
 
 import cn.howardliu.monitor.cynomys.agent.counter.SLACounter;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.RequestWrapper;
+import cn.howardliu.monitor.cynomys.common.Constant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,8 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static cn.howardliu.monitor.cynomys.common.Constant.HEADER_SERVER_TAG;
-import static cn.howardliu.monitor.cynomys.common.Constant.THIS_TAG;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
@@ -32,7 +31,7 @@ public final class RequestAspect {
     public static void begin(long tid, HttpServletRequest request, HttpServletResponse response) {
         assert request != null;
         assert response != null;
-        response.setHeader(HEADER_SERVER_TAG, THIS_TAG);
+        response.setHeader(Constant.HEADER_SERVER_TAG, Constant.THIS_TAG);
         if (REQUEST_COUNTER_MAP.containsKey(tid)) {
             return;
         } else {
@@ -89,8 +88,8 @@ public final class RequestAspect {
         }
     }
 
-    static class RequestDataWrapper extends RunnerWrapper {
-        RequestDataWrapper(long tid) {
+    public static class RequestDataWrapper extends RunnerWrapper {
+        public RequestDataWrapper(long tid) {
             super(tid);
         }
     }

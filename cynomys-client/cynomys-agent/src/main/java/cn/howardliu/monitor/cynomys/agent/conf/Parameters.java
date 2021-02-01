@@ -37,8 +37,8 @@ public final class Parameters {
     }
 
     public static void initialize() {
-        if ("1.7".compareTo(SystemUtils.JAVA_VERSION) > 0) {
-            throw new IllegalStateException("the minimal JDK version is 1.7, current is " + SystemUtils.JAVA_VERSION);
+        if ("1.8".compareTo(SystemUtils.JAVA_VERSION) > 0) {
+            throw new IllegalStateException("the minimal JDK version is 1.8, current is " + SystemUtils.JAVA_VERSION);
         }
         dnsLookupsDisabled = false;
     }
@@ -55,14 +55,6 @@ public final class Parameters {
             return Constant.LOCAL_IP_ADDRESS;
         }
         return NetUtils.getLocalHostAddress();
-    }
-
-    public static boolean isNoDatabase() {
-        return false;
-    }
-
-    public static boolean isSystemActionsEnabled() {
-        return false;
     }
 
     public static boolean isCounterHidden(String counterName) {

@@ -1,5 +1,6 @@
 package cn.howardliu.monitor.cynomys.agent.transform.handler;
 
+import cn.howardliu.monitor.cynomys.agent.transform.MethodRewriteHandler;
 import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtConstructor;
@@ -22,6 +23,7 @@ public class ConnectionHandler extends SqlHandler {
     @Override
     public void doWeave(CtClass ctClass) {
         if (isConnection(ctClass)) {
+            logger.info("begin to wrap Connection");
             CtConstructor[] constructors = ctClass.getDeclaredConstructors();
             for (CtConstructor constructor : constructors) {
                 try {
@@ -31,7 +33,6 @@ public class ConnectionHandler extends SqlHandler {
                     logger.error("cannot compile exception: ConnectionAspect", e);
                 }
             }
-            logger.info("begin to wrap Connection");
             prepareMethodWeave(ctClass, "prepareStatement");
             prepareMethodWeave(ctClass, "prepareCall");
         } else if (this.getHandler() != null) {
@@ -46,12 +47,14 @@ public class ConnectionHandler extends SqlHandler {
                 ctMethod.insertAfter(
                         "cn.howardliu.monitor.cynomys.agent.transform.aspect.ConnectionAspect.catchStatementAndSql($1, $_);");
             }
-        } catch (Exception e) {
-            logger.warn("SKIPPED " + methodName + " in " + ctClass.getName() + ", the reason is " + e.getMessage());
+        } catch (Throwable t) {
+            logger.warn("SKIPPED " + methodName + " in " + ctClass.getName() + ", the reason is " + t.getMessage());
         }
     }
 
     private boolean isConnection(CtClass ctClass) {
-        return isImpl(ctClass, Connection.class) || isChild(ctClass, Connection.class);
+        return MethodRewriteHandler.isImpl(ctClass, Connection.class)
+                ||
+                MethodRewriteHandler.isChild(ctClass, Connection.class);
     }
 }

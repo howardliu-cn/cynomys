@@ -1,4 +1,4 @@
-package cn.howardliu.cynomys.warn.exception;
+package cn.howardliu.monitor.cynomys.warn.exception;
 
 import cn.howardliu.monitor.cynomys.net.InvokeCallBack;
 import cn.howardliu.monitor.cynomys.net.netty.ResponseFuture;

@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 0.0.1
  * @since 0.0.1
  */
-public final class SqlHolder {
+public class SqlHolder {
     private static final Map<String, String> STATEMENT_HASHCODE_SQL_MAP = new ConcurrentHashMap<>();
 
     private SqlHolder() {

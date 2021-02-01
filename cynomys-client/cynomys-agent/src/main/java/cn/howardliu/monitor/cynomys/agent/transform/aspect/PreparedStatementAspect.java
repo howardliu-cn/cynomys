@@ -1,6 +1,6 @@
 package cn.howardliu.monitor.cynomys.agent.transform.aspect;
 
-import cn.howardliu.monitor.cynomys.agent.common.SqlHolder;
+import cn.howardliu.monitor.cynomys.agent.cache.SqlCacheHolder;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,16 +26,19 @@ public final class PreparedStatementAspect {
     public static void begin(long tid, PreparedStatement stmt) {
         assert stmt != null;
         int identityHashCode = System.identityHashCode(stmt);
-        if (!SqlHolder.contains(identityHashCode)) {
+        if (!SqlCacheHolder.SQL_HOLDER.contains(identityHashCode)) {
+            logger.trace("identityHashCode {} not in sql_holder", identityHashCode);
             return;
         }
         if (RUNNER_MAP.containsKey(tid)) {
+            logger.trace("tid {} is already in runner map", tid);
             return;
         } else {
             RUNNER_MAP.put(tid, new ExecuteRunnerWrapper(tid));
         }
         JdbcWrapper.ACTIVE_CONNECTION_COUNT.incrementAndGet();
-        String sql = SqlHolder.get(identityHashCode);
+        String sql = SqlCacheHolder.SQL_HOLDER.get(identityHashCode);
+        logger.trace("run sql: {}", sql);
         JdbcWrapper.SINGLETON.getSqlCounter().bindContext(sql, sql, null, -1);
     }
 
@@ -49,12 +52,14 @@ public final class PreparedStatementAspect {
     }
 
     public static void end(long tid, String methodName, PreparedStatement stmt) {
-        ExecuteRunnerWrapper wrapper = RUNNER_MAP.remove(tid);
+        final ExecuteRunnerWrapper wrapper = RUNNER_MAP.get(tid);
         if (wrapper == null) {
             return;
+        } else {
+            RUNNER_MAP.remove(tid);
         }
         int identityHashCode = System.identityHashCode(stmt);
-        String sql = SqlHolder.get(identityHashCode);
+        String sql = SqlCacheHolder.SQL_HOLDER.get(identityHashCode);
         if (sql == null) {
             return;
         }
@@ -69,10 +74,11 @@ public final class PreparedStatementAspect {
                 logger.debug("sql [{}] run error", sql, cause);
             }
         }
+        JdbcWrapper.SINGLETON.getSqlCounter().unbindContext();
     }
 
     public static void close(Object stmt) {
-        SqlHolder.remove(System.identityHashCode(stmt));
+        SqlCacheHolder.SQL_HOLDER.remove(System.identityHashCode(stmt));
     }
 
     static class ExecuteRunnerWrapper extends RunnerWrapper {
@@ -81,3 +87,4 @@ public final class PreparedStatementAspect {
         }
     }
 }
+

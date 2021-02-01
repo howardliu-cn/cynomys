@@ -1,4 +1,4 @@
-package cn.howardliu.cynomys.warn.exception;
+package cn.howardliu.monitor.cynomys.warn.exception;
 
 /**
  * <br>created at 17-8-25
@@ -6,14 +6,12 @@ package cn.howardliu.cynomys.warn.exception;
  * @author liuxh
  * @since 0.0.1
  */
-public enum ProcessStatus {
-    UNPROCESSED("0"),
-    INPROCESS("1"),
-    PROCESSED("2");
-
+public enum Flag {
+    VALID("0"),
+    INVALID("1");
     private final String code;
 
-    ProcessStatus(String code) {
+    Flag(String code) {
         this.code = code;
     }
 

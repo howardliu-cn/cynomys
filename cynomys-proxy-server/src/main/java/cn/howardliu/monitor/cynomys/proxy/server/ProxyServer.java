@@ -7,7 +7,9 @@ import cn.howardliu.monitor.cynomys.net.NetServer;
 import cn.howardliu.monitor.cynomys.net.netty.NettyNetServer;
 import cn.howardliu.monitor.cynomys.net.netty.NettyServerConfig;
 import cn.howardliu.monitor.cynomys.proxy.ServerContext;
+import cn.howardliu.monitor.cynomys.proxy.config.ProxyConfig;
 import cn.howardliu.monitor.cynomys.proxy.config.ServerConfig;
+import cn.howardliu.monitor.cynomys.proxy.config.SystemSetting;
 import cn.howardliu.monitor.cynomys.proxy.listener.LinkEventListener;
 import cn.howardliu.monitor.cynomys.proxy.processor.*;
 import io.netty.util.concurrent.DefaultThreadFactory;
@@ -21,8 +23,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static cn.howardliu.monitor.cynomys.net.struct.MessageCode.*;
-import static cn.howardliu.monitor.cynomys.proxy.config.ProxyConfig.PROXY_CONFIG;
-import static cn.howardliu.monitor.cynomys.proxy.config.SystemSetting.SYSTEM_SETTING;
 import static org.apache.kafka.clients.producer.ProducerConfig.*;
 
 /**
@@ -54,24 +54,24 @@ public class ProxyServer extends AbstractServer {
         this.serverConfig = serverConfig;
 
         Properties config = new Properties();
-        config.put(BOOTSTRAP_SERVERS_CONFIG, SYSTEM_SETTING.getKafkaBootstrapServers());
-        config.put(ACKS_CONFIG, SYSTEM_SETTING.getKafkaAcks());
-        config.put(RETRIES_CONFIG, SYSTEM_SETTING.getKafkaRetries());
-        config.put(BATCH_SIZE_CONFIG, SYSTEM_SETTING.getKafkaBatchSize());
-        config.put(MAX_REQUEST_SIZE_CONFIG, SYSTEM_SETTING.getKafkaMaxRequestSize());
+        config.put(BOOTSTRAP_SERVERS_CONFIG, SystemSetting.SYSTEM_SETTING.getKafkaBootstrapServers());
+        config.put(ACKS_CONFIG, SystemSetting.SYSTEM_SETTING.getKafkaAcks());
+        config.put(RETRIES_CONFIG, SystemSetting.SYSTEM_SETTING.getKafkaRetries());
+        config.put(BATCH_SIZE_CONFIG, SystemSetting.SYSTEM_SETTING.getKafkaBatchSize());
+        config.put(MAX_REQUEST_SIZE_CONFIG, SystemSetting.SYSTEM_SETTING.getKafkaMaxRequestSize());
         this.kafkaProducerWrapper = new KafkaProducerWrapper<>(config);
 
         this.zkClient = new ZkClientFactoryBuilder()
-                .zkAddresses(SYSTEM_SETTING.getZkAddresses())
-                .namespace(SYSTEM_SETTING.getZkNamespace())
+                .zkAddresses(SystemSetting.SYSTEM_SETTING.getZkAddresses())
+                .namespace(SystemSetting.SYSTEM_SETTING.getZkNamespace())
                 .config(ZkConfig.JuteMaxBuffer.key, 10 * 1024 * 1024)
                 .build()
                 .createClient();
 
         NettyServerConfig nettyServerConfig = new NettyServerConfig();
         nettyServerConfig.setListenPort(port);
-        nettyServerConfig.setServerSocketMaxFrameLength(PROXY_CONFIG.getMaxFrameLength());
-        nettyServerConfig.setServerChannelMaxIdleTimeSeconds(PROXY_CONFIG.getTimeoutSeconds());
+        nettyServerConfig.setServerSocketMaxFrameLength(ProxyConfig.PROXY_CONFIG.getMaxFrameLength());
+        nettyServerConfig.setServerChannelMaxIdleTimeSeconds(ProxyConfig.PROXY_CONFIG.getTimeoutSeconds());
         this.netServer = new NettyNetServer(nettyServerConfig, new LinkEventListener(zkClient));
     }
 
@@ -101,13 +101,9 @@ public class ProxyServer extends AbstractServer {
     public void registProcessor() {
         this.netServer.registProcessor(HEARTBEAT_REQ.value(), new HeartbeatProcessor(), heartbeatExecutor);
         this.netServer.registProcessor(APP_INFO_REQ.value(), new AppInfo2ZkProcessor(zkClient), appInfoActionExecutor);
-        this.netServer.registProcessor(REQUEST_INFO_REQ.value(), new RequestInfo2KafkaProcessor(kafkaProducerWrapper),
-                requestInfoActionExecutor);
-        this.netServer.registProcessor(SQL_INFO_REQ.value(), new SqlInfo2KafkaProcessor(kafkaProducerWrapper),
-                sqlInfoActionExecutor);
-        this.netServer
-                .registProcessor(EXCEPTION_INFO_REQ.value(), new ExceptionInfo2KafkaProcessor(kafkaProducerWrapper),
-                        exceptionInfoActionExecutor);
+        this.netServer.registProcessor(REQUEST_INFO_REQ.value(), new RequestInfo2KafkaProcessor(kafkaProducerWrapper), requestInfoActionExecutor);
+        this.netServer.registProcessor(SQL_INFO_REQ.value(), new SqlInfo2KafkaProcessor(kafkaProducerWrapper), sqlInfoActionExecutor);
+        this.netServer.registProcessor(EXCEPTION_INFO_REQ.value(), new ExceptionInfo2KafkaProcessor(kafkaProducerWrapper), exceptionInfoActionExecutor);
     }
 
     @Override

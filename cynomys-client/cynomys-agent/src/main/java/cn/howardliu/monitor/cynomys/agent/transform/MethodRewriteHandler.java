@@ -42,9 +42,12 @@ public class MethodRewriteHandler {
         try {
             superclass = ctClass.getSuperclass();
         } catch (NotFoundException e) {
+            logger.trace("not found {}'s super class, ctClass's type is {}", ctClass.getName(), ctClass.getClass().getName());
+            return false;
+        } catch (Throwable t) {
+            logger.info("got an exception when finding {}'s super class", ctClass.getName());
             return false;
         }
-
         return !(superclass == null || "java.lang.Object".equals(superclass.getName()))
                 &&
                 (className.equals(superclass.getName()) || isChild(superclass, className));
@@ -75,7 +78,7 @@ public class MethodRewriteHandler {
                     &&
                     isImpl(superclass, interfaceName);
         } catch (NotFoundException e) {
-            logger.error("not found super class", e);
+            logger.trace("not found super class, msg: {}", e.getMessage());
         }
         return false;
     }

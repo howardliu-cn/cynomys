@@ -1,8 +1,8 @@
 package cn.howardliu.monitor.cynomys.common;
 
 import javax.servlet.ServletContext;
-
-import static cn.howardliu.monitor.cynomys.common.Constant.LOCAL_IP_ADDRESS;
+import javax.sql.DataSource;
+import java.util.*;
 
 /**
  * <br>created at 17-9-1
@@ -11,18 +11,19 @@ import static cn.howardliu.monitor.cynomys.common.Constant.LOCAL_IP_ADDRESS;
  * @since 0.0.1
  */
 public final class CommonParameters {
+    public static volatile Set<String> SPRINGBOOT_INIT_ARGS = Collections.synchronizedSet(new HashSet<String>());
+    @SuppressWarnings("WeakerAccess")
+    public static volatile ServletContext servletContext = null;
     private static volatile boolean debugMode = Boolean.TRUE;
     private static String sysName = "cynomys-monitor-project-default-name";
     private static String sysCode = "000";
     private static String sysDesc = "'{'\"name\":\"{0}\",\"code\":\"{1}\",\"version\":\"1.0\",\"desc\":\"https://github.com/howardliu-cn/cynomys\",\"status\":\"{2}\"'}'";
-
-    private static volatile String serverList = LOCAL_IP_ADDRESS + ":7911";
+    private static String sysVersion = System.currentTimeMillis() + "";
+    private static volatile String serverList = Constant.LOCAL_IP_ADDRESS + ":7911";
     private static volatile boolean noFlag = true;
     private static volatile int serverPort = 8080;
-    private static ServletContext servletContext = null;
-
-    private CommonParameters() {
-    }
+    private static Map<String, DataSource> dataSources = Collections.synchronizedMap(new HashMap<String, DataSource>());
+    private static volatile boolean injectDataSources = false;
 
     public static boolean isDebugMode() {
         return debugMode;
@@ -56,6 +57,14 @@ public final class CommonParameters {
         CommonParameters.sysDesc = sysDesc;
     }
 
+    public static String getSysVersion() {
+        return sysVersion;
+    }
+
+    public static void setSysVersion(final String sysVersion) {
+        CommonParameters.sysVersion = sysVersion;
+    }
+
     public static String getServerList() {
         return serverList;
     }
@@ -86,5 +95,21 @@ public final class CommonParameters {
 
     public static void setServletContext(ServletContext servletContext) {
         CommonParameters.servletContext = servletContext;
+    }
+
+    public static Map<String, DataSource> getDataSources() {
+        return dataSources;
+    }
+
+    public static void setDataSources(Map<String, DataSource> dataSources) {
+        CommonParameters.dataSources = dataSources;
+    }
+
+    public static boolean isInjectDataSources() {
+        return injectDataSources;
+    }
+
+    public static void setInjectDataSources(boolean injectDataSources) {
+        CommonParameters.injectDataSources = injectDataSources;
     }
 }

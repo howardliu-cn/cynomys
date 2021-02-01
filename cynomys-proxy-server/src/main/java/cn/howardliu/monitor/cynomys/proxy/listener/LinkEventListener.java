@@ -125,6 +125,7 @@ public class LinkEventListener extends SimpleChannelEventListener {
                                             .append('}')
                                             .toString().getBytes(StandardCharsets.UTF_8)
                             );
+                    logger.debug("create path {} in zkClient", path);
                 }
             } catch (UnsupportedEncodingException e) {
                 logger.error("if you got this exception, please check your JDK version as soon as possible", e);
@@ -145,6 +146,7 @@ public class LinkEventListener extends SimpleChannelEventListener {
                 Stat stat = zkClient.checkExists().forPath(path);
                 if (stat != null) {
                     zkClient.delete().deletingChildrenIfNeeded().forPath(path);
+                    logger.debug("del path {} in zkClient", path);
                 }
             } catch (UnsupportedEncodingException e) {
                 logger.error("if you got this exception, please check your JDK version as soon as possible", e);

@@ -7,13 +7,14 @@ import cn.howardliu.monitor.cynomys.net.struct.Message;
 import cn.howardliu.monitor.cynomys.net.struct.MessageType;
 import cn.howardliu.monitor.cynomys.proxy.config.SystemSetting;
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.Validate;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * <br>created at 17-8-14
@@ -43,7 +44,7 @@ public abstract class AbstractInfo2ZkProcessor implements NettyRequestProcessor 
                     String data = header.getSysName() + "-" + header.getSysCode();
                     zkClient.create().creatingParentsIfNeeded()
                             .withMode(CreateMode.EPHEMERAL)
-                            .forPath(path, data.getBytes(CharEncoding.UTF_8));
+                            .forPath(path, data.getBytes(StandardCharsets.UTF_8));
                     stat = zkClient.checkExists().forPath(path);
                 } catch (Exception e) {
                     stat = zkClient.checkExists().forPath(path);
@@ -53,7 +54,7 @@ public abstract class AbstractInfo2ZkProcessor implements NettyRequestProcessor 
                 }
             }
             if (stat != null) {
-                zkClient.setData().forPath(path, message.getBody().getBytes(CharEncoding.UTF_8));
+                zkClient.setData().forPath(path, message.getBody().getBytes(StandardCharsets.UTF_8));
             }
         } catch (Exception e) {
             logger.error("got an exception when sending application info to zk", e);
@@ -62,9 +63,7 @@ public abstract class AbstractInfo2ZkProcessor implements NettyRequestProcessor 
         }
 
         StringBuilder body = new StringBuilder();
-        if (success) {
-            body.append("");
-        } else {
+        if (!success) {
             body.append(errMsg);
         }
         return

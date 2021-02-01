@@ -135,6 +135,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                 .channel(NioSocketChannel.class)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.SO_KEEPALIVE, false)
+                .option(ChannelOption.SO_REUSEADDR, true)
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.nettyClientConfig.getConnectTimeoutMillis())
                 .option(ChannelOption.SO_SNDBUF, this.nettyClientConfig.getClientSocketSndBufSize())
                 .option(ChannelOption.SO_RCVBUF, this.nettyClientConfig.getClientSocketRcvBufSize())
@@ -163,8 +164,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                 ch.pipeline()
                         .addLast(defaultEventExecutorGroup)
                         .addLast(new ReadTimeoutHandler(60))
-                        .addLast(new IdleStateHandler(0, 0,
-                                nettyClientConfig.getClientChannelMaxIdleTimeSeconds()))
+                        .addLast(new IdleStateHandler(0, 0, nettyClientConfig.getClientChannelMaxIdleTimeSeconds()))
                         .addLast(new MessageDecoder(nettyClientConfig.getClientSocketMaxFrameLength(), 4, 4))
                         .addLast(new MessageEncoder())
                         .addLast(new NettyConnectManageHandler())
@@ -231,7 +231,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             }
             this.channelTables.clear();
 
-            if (this.nettyEventExecutor != null && !this.nettyEventExecutor.isStopped()) {
+            if (!this.nettyEventExecutor.isStopped()) {
                 this.nettyEventExecutor.shutdown();
             }
 
@@ -253,14 +253,12 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
     }
 
     @Override
-    public Message sync(final Message request)
-            throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException {
+    public Message sync(final Message request) throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException {
         return this.sync(request, this.nettyClientConfig.getSocketTimeoutMillis());
     }
 
     @Override
-    public Message sync(final Message request, final long timeoutMillis)
-            throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException {
+    public Message sync(final Message request, final long timeoutMillis) throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException {
         final Channel channel = this.getAndCreateUseAddressChoosen();
         String remoteAddress = NetHelper.remoteAddress(channel);
         if (remoteAddress.isEmpty()) {
@@ -300,7 +298,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             NetTimeoutException {
         final Channel channel = this.getAndCreateUseAddressChoosen();
         String remoteAddress = NetHelper.remoteAddress(channel);
-        if (channel != null && channel.isActive()) {
+        if (channel != null && channel.isActive() && channel.isWritable()) {
             try {
                 this.invokeAsync(channel, request, timeoutMills, invokeCallBack);
             } catch (NetSendRequestException e) {
@@ -339,7 +337,12 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
         if (address != null) {
             ChannelWrapper cw = this.channelTables.get(address);
             if (cw != null && cw.isOK()) {
+                if (this.stop) {
+                    this.stop = false;
+                }
                 return cw.getChannel();
+            } else if (cw != null) {
+                closeChannel(cw.getChannel());
             }
         }
         final List<String> addresses = this.addressList.get();
@@ -414,16 +417,13 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
             ChannelFuture channelFuture = cw.getChannelFuture();
             if (channelFuture.awaitUninterruptibly(3000)) {
                 if (cw.isOK()) {
-                    logger.info("createChannel: connect remote {} success, {}",
-                            address, channelFuture.toString());
+                    logger.info("createChannel: connect remote {} success, {}", address, channelFuture.toString());
                     return cw.getChannel();
                 } else {
-                    logger.warn("createChannel: connect remote {} failed, {}",
-                            address, channelFuture.toString(), channelFuture.cause());
+                    logger.warn("createChannel: connect remote {} failed, {}", address, channelFuture.toString(), channelFuture.cause());
                 }
             } else {
-                logger.warn("createChannel: connect remote {} timeout {}ms, {}",
-                        address, 3000, channelFuture.channel().toString());
+                logger.warn("createChannel: connect remote {} timeout {}ms, {}", address, 3000, channelFuture.channel().toString());
             }
         }
 
@@ -493,9 +493,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                         logger.info("eventCloseChannel: the channel has been removed from the channel table before");
                         removeItemFromTable = false;
                     } else if (wrapper.getChannel() != channel) {
-                        logger.info(
-                                "closeChannel: the channel[{}] has been closed before, and has been created again, nothing to do.",
-                                address);
+                        logger.info("closeChannel: the channel[{}] has been closed before, and has been created again, nothing to do.", address);
                         removeItemFromTable = false;
                     }
 
@@ -504,7 +502,6 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
                         logger.info("closeChannel: the channel[{}] was removed from channel table", address);
                         NetHelper.closeChannel(channel);
                     }
-
                 } catch (Exception e) {
                     logger.error("closeChannel: close the channel exception", e);
                 } finally {
@@ -516,6 +513,8 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
         } catch (InterruptedException e) {
             logger.error("closeChannel exception", e);
             Thread.currentThread().interrupt();
+        } finally {
+            this.stop = true;
         }
     }
 
@@ -621,7 +620,7 @@ public class NettyNetClient extends NettyNetAbstract implements NetClient {
         }
 
         public boolean isOK() {
-            return this.channelFuture.channel() != null && this.channelFuture.channel().isActive();
+            return this.channelFuture.channel() != null && this.channelFuture.channel().isActive() && this.channelFuture.channel().isWritable();
         }
 
         public boolean isWriteable() {

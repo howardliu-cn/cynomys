@@ -40,8 +40,8 @@ public class SimpleChannelEventListener implements ChannelEventListener {
 
     @Override
     public void onChannelIdle(String address, Channel channel) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("got IDLE event, the remote address is {}, the local address is {}",
+        if (logger.isTraceEnabled()) {
+            logger.trace("got IDLE event, the remote address is {}, the local address is {}",
                     address, NetHelper.localAddress(channel));
         }
     }

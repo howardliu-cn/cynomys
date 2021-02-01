@@ -121,6 +121,7 @@ public class CynomysClient implements NetClient {
             throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException {
         if (this.netClient.isStopped()) {
             logger.warn("the NetClient is STOPPED!");
+            this.netClient.connect();
             return null;
         }
         return this.netClient.sync(request);
@@ -131,6 +132,7 @@ public class CynomysClient implements NetClient {
             throws InterruptedException, NetConnectException, NetTimeoutException, NetSendRequestException {
         if (this.netClient.isStopped()) {
             logger.warn("the NetClient is STOPPED!");
+            this.netClient.connect();
             return null;
         }
         return this.netClient.sync(request, timeoutMillis);
@@ -142,6 +144,7 @@ public class CynomysClient implements NetClient {
             NetTimeoutException {
         if (this.netClient.isStopped()) {
             logger.warn("the NetClient is STOPPED!");
+            this.netClient.connect();
             return;
         }
         this.netClient.async(request, invokeCallBack);
@@ -153,6 +156,7 @@ public class CynomysClient implements NetClient {
             NetTimeoutException {
         if (this.netClient.isStopped()) {
             logger.warn("the NetClient is STOPPED!");
+            this.netClient.connect();
             return;
         }
         this.netClient.async(request, timeoutMills, invokeCallBack);

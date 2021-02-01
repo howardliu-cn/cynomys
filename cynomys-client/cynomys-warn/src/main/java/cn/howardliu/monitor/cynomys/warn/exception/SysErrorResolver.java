@@ -1,4 +1,4 @@
-package cn.howardliu.cynomys.warn.exception;
+package cn.howardliu.monitor.cynomys.warn.exception;
 
 import javax.xml.crypto.NoSuchMechanismException;
 import javax.xml.ws.WebServiceException;
@@ -12,11 +12,13 @@ import java.util.*;
  * @author liuxh
  * @since 0.0.1
  */
-public class SysErrorResolver {
+public enum SysErrorResolver {
+    INSTANCE;
+
     public static final SysErrorInfo UNKNOWN_THROWABLE_SYS_ERROR = new SysErrorInfo("230", "其他异常");
     private final Map<Class<? extends Throwable>, SysErrorInfo> sysErrorMap;
 
-    public SysErrorResolver() {
+    SysErrorResolver() {
         LinkedHashMap<Class<? extends Throwable>, SysErrorInfo> map = new LinkedHashMap<>();
         this.initSysErrorCodeMap(map);
         this.sysErrorMap = Collections.unmodifiableMap(map);

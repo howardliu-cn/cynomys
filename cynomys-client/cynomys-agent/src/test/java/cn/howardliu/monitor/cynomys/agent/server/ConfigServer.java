@@ -19,8 +19,6 @@ import io.netty.handler.timeout.ReadTimeoutHandler;
 
 import java.util.Collections;
 
-import static cn.howardliu.monitor.cynomys.agent.net.ServerInfo.ServerType.LAN;
-
 /**
  * <br>created at 17-5-22
  *
@@ -56,7 +54,7 @@ public class ConfigServer {
                                                                     new ServerInfo(
                                                                             "127.0.0.1",
                                                                             8082,
-                                                                            LAN
+                                                                            ServerInfo.ServerType.LAN
                                                                     )
                                                             )
                                                     );

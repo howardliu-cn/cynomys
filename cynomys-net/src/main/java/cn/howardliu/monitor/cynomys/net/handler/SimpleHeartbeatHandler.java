@@ -24,17 +24,17 @@ public class SimpleHeartbeatHandler extends HeartbeatHandler {
     }
 
     protected void handleReaderIdle(ChannelHandlerContext ctx) {
-        logger.debug("READER IDLE");
+        logger.trace("READER IDLE");
         handlerIdle(ctx);
     }
 
     protected void handleWriterIdle(ChannelHandlerContext ctx) {
-        logger.debug("WRITER IDLE");
+        logger.trace("WRITER IDLE");
         handlerIdle(ctx);
     }
 
     protected void handleAllIdle(ChannelHandlerContext ctx) {
-        logger.debug("ALL IDLE");
+        logger.trace("ALL IDLE");
         handlerIdle(ctx);
     }
 

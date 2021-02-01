@@ -1,7 +1,7 @@
-package cn.howardliu.cynomys.warn;
+package cn.howardliu.monitor.cynomys.warn;
 
-import cn.howardliu.cynomys.warn.exception.ErrorLevel;
 import cn.howardliu.monitor.cynomys.client.common.SystemPropertyConfig;
+import cn.howardliu.monitor.cynomys.warn.exception.ErrorLevel;
 import org.junit.Ignore;
 import org.junit.Test;
 

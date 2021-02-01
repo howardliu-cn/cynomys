@@ -1,6 +1,7 @@
 package cn.howardliu.monitor.cynomys.agent.transform.handler;
 
 import cn.howardliu.monitor.cynomys.agent.transform.MethodRewriteHandler;
+import cn.howardliu.monitor.cynomys.agent.transform.MonitoringTransformer;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -20,9 +21,9 @@ import javax.servlet.http.HttpServletResponse;
  * @since 0.0.1
  */
 public class HttpServletHandler extends MethodRewriteHandler {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final HttpServletHandler SERVLET_HANDLER = new HttpServletHandler();
-    private ClassPool classPool;
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private ClassPool classPool = MonitoringTransformer.getClassPool();
 
     public static HttpServletHandler instance() {
         return SERVLET_HANDLER;
@@ -30,7 +31,6 @@ public class HttpServletHandler extends MethodRewriteHandler {
 
     public void doWeave(CtClass ctClass) {
         if (isHttpServlet(ctClass)) {
-            classPool = ClassPool.getDefault();
             logger.debug("begin to wrapping HttpServlet");
             doWeaveInit(ctClass);
             doWeave(ctClass, "doHead");
@@ -47,21 +47,24 @@ public class HttpServletHandler extends MethodRewriteHandler {
     }
 
     private boolean isHttpServlet(CtClass ctClass) {
-        return isChild(ctClass, HttpServlet.class);
+        return isChild(ctClass, HttpServlet.class)
+                ||
+                isChild(ctClass, "org.springframework.web.servlet.HttpServletBean")
+                ;
     }
 
     private void doWeaveInit(CtClass ctClass) {
         try {
             CtMethod ctMethod = ctClass.getDeclaredMethod("init");
             ctMethod.insertAfter(
-                    "if(cn.howardliu.monitor.cynomys.client.common.Constant.servletContext == null) {" +
-                            "cn.howardliu.monitor.cynomys.client.common.Constant.servletContext = $0.getServletContext();" +
+                    "if(cn.howardliu.monitor.cynomys.common.CommonParameters.servletContext == null) {" +
+                            "cn.howardliu.monitor.cynomys.common.CommonParameters.servletContext = $0.getServletContext();" +
                             "}"
             );
-        } catch (NotFoundException ignored) {
-            logger.info("not found init method in " + ctClass.getName());
-        } catch (Exception e) {
-            logger.warn("SKIPPED init() in " + ctClass.getName() + ", the reason is " + e.getMessage());
+        } catch (NotFoundException e) {
+            logger.trace("not found init method in " + ctClass.getName());
+        } catch (Throwable t) {
+            logger.warn("SKIPPED init() in " + ctClass.getName() + ", the reason is " + t.getMessage());
         }
     }
 
@@ -84,9 +87,9 @@ public class HttpServletHandler extends MethodRewriteHandler {
                     "cn.howardliu.monitor.cynomys.agent.transform.aspect.RequestAspect.end(Thread.currentThread().getId(), $1, $2);"
             );
         } catch (NotFoundException e) {
-            logger.info("not found " + methodName + " method in " + ctClass.getName());
-        } catch (Exception e) {
-            logger.warn("SKIPPED " + methodName + " in " + ctClass.getName() + ", the reason is " + e.getMessage());
+            logger.trace("not found " + methodName + " method in " + ctClass.getName());
+        } catch (Throwable t) {
+            logger.warn("SKIPPED " + methodName + " in " + ctClass.getName() + ", the reason is " + t.getMessage());
         }
     }
 }

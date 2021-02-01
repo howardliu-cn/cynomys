@@ -30,7 +30,7 @@ public class ConstructWaveTest {
 
     @Test
     public void test() throws Exception {
-        CtClass ctClass = classPool.getCtClass("cn.howardliu.monitor.cynomys.agent.javassist.TestObject");
+        CtClass ctClass = classPool.getCtClass("TestObject");
         CtConstructor constructor = ctClass
                 .getConstructor(Descriptor.ofConstructor(new CtClass[]{CtClass.booleanType}));
         constructor.insertBeforeBody("System.out.println(\"insertBeforeBody\");");

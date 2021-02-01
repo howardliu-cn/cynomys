@@ -19,6 +19,7 @@ package cn.howardliu.monitor.cynomys.agent.dto;
 
 import cn.howardliu.monitor.cynomys.common.ThreadMXBeanUtils;
 
+import java.io.Closeable;
 import java.io.Serializable;
 import java.util.*;
 
@@ -30,7 +31,7 @@ import java.util.*;
  *
  * @author Emeric Vernat
  */
-public class CounterRequestContext implements CounterRequest.ICounterRequestContext, Cloneable, Serializable {
+public class CounterRequestContext implements CounterRequest.ICounterRequestContext, Cloneable, Closeable, Serializable {
     private static final long serialVersionUID = 1L;
     private static final Long ONE = 1L;
     private final CounterRequestContext parentContext;
@@ -49,14 +50,11 @@ public class CounterRequestContext implements CounterRequest.ICounterRequestCont
     // ces 2 champs sont initialisés à 0
     private int childHits;
     private int childDurationsSum;
-    @SuppressWarnings("all")
     private Map<String, Long> childRequestsExecutionsByRequestId;
 
     public CounterRequestContext(Counter parentCounter, CounterRequestContext parentContext, String requestName,
                                  String completeRequestName, String remoteUser, long startCpuTime) {
-        this(parentCounter, parentContext, requestName, completeRequestName, remoteUser, Thread.currentThread().getId(),
-                System
-                        .currentTimeMillis(), startCpuTime);
+        this(parentCounter, parentContext, requestName, completeRequestName, remoteUser, Thread.currentThread().getId(), System.currentTimeMillis(), startCpuTime);
         if (parentContext != null) {
             parentContext.setCurrentChildContext(this);
         }
@@ -64,9 +62,7 @@ public class CounterRequestContext implements CounterRequest.ICounterRequestCont
 
     // constructeur privé pour la méthode clone
     // CHECKSTYLE:OFF
-    private CounterRequestContext(Counter parentCounter, CounterRequestContext parentContext, String requestName,
-                                  String completeRequestName, String remoteUser, long threadId, long startTime,
-                                  long startCpuTime) {
+    private CounterRequestContext(Counter parentCounter, CounterRequestContext parentContext, String requestName, String completeRequestName, String remoteUser, long threadId, long startTime, long startCpuTime) {
         // CHECKSTYLE:ON
         super();
         assert parentCounter != null;
@@ -304,8 +300,7 @@ public class CounterRequestContext implements CounterRequest.ICounterRequestCont
         // final Counter parentCounterClone = new Counter(counter.getName(),
         // counter.getStorageName(),
         // counter.getIconName(), counter.getChildCounterName(), null);
-        final CounterRequestContext clone = new CounterRequestContext(counter, parentContextClone, getRequestName(),
-                getCompleteRequestName(), getRemoteUser(), getThreadId(), startTime, startCpuTime);
+        final CounterRequestContext clone = new CounterRequestContext(counter, parentContextClone, getRequestName(), getCompleteRequestName(), getRemoteUser(), getThreadId(), startTime, startCpuTime);
         clone.childHits = getChildHits();
         clone.childDurationsSum = getChildDurationsSum();
         final CounterRequestContext childContext = getCurrentChildContext();
@@ -313,8 +308,7 @@ public class CounterRequestContext implements CounterRequest.ICounterRequestCont
             clone.currentChildContext = childContext.clone(clone);
         }
         if (childRequestsExecutionsByRequestId != null) {
-            clone.childRequestsExecutionsByRequestId = new LinkedHashMap<>(
-                    childRequestsExecutionsByRequestId);
+            clone.childRequestsExecutionsByRequestId = new LinkedHashMap<>(childRequestsExecutionsByRequestId);
         }
         return clone;
     }
@@ -327,5 +321,13 @@ public class CounterRequestContext implements CounterRequest.ICounterRequestCont
         return getClass().getSimpleName() + "[parentCounter=" + getParentCounter()
                 .getName() + ", completeRequestName=" + getCompleteRequestName() + ", threadId=" + getThreadId() + ", startTime="
                 + startTime + ", childHits=" + getChildHits() + ", childDurationsSum=" + getChildDurationsSum() + ", childContexts=" + getChildContexts() + ']';
+    }
+
+    @Override
+    public void close() {
+        if (this.childRequestsExecutionsByRequestId != null) {
+            this.childRequestsExecutionsByRequestId.clear();
+        }
+        this.currentChildContext = null;
     }
 }

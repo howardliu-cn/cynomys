@@ -28,7 +28,6 @@ public class CynomysVersion {
 
     public enum Version {
         V0_0_1_SNAPSHOT(0x0000_0_0_1);
-
         int code;
 
         Version(int code) {

@@ -1,11 +1,10 @@
 package cn.howardliu.monitor.cynomys.agent.transform;
 
+import cn.howardliu.monitor.cynomys.client.common.Constant;
 import cn.howardliu.monitor.cynomys.client.common.SystemPropertyConfig;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import static cn.howardliu.monitor.cynomys.client.common.Constant.*;
 
 /**
  * <br>created at 17-3-22
@@ -23,21 +22,22 @@ public final class ApmFilter {
         addExcludePackage("sun/");
         addExcludePackage("com/sun/");
         addExcludePackage("javassist");
-        String excludePackageStr = SystemPropertyConfig.getContextProperty(SYSTEM_SETTING_EXCLUDE_PACKAGE);
+        String excludePackageStr = SystemPropertyConfig.getContextProperty(Constant.SYSTEM_SETTING_EXCLUDE_PACKAGE);
         if (excludePackageStr != null && !excludePackageStr.isEmpty()) {
             for (String p : excludePackageStr.split(",")) {
                 addExcludePackage(p.trim());
             }
         }
 
-        String includePackageStr = SystemPropertyConfig.getContextProperty(SYSTEM_SETTING_INCLUDE_PACKAGE);
+        String includePackageStr = SystemPropertyConfig.getContextProperty(Constant.SYSTEM_SETTING_INCLUDE_PACKAGE);
         if (includePackageStr != null && !includePackageStr.isEmpty()) {
             for (String p : includePackageStr.split(",")) {
                 addIncludePackage(p.trim());
             }
         }
 
-        String excludeClassLoaderStr = SystemPropertyConfig.getContextProperty(SYSTEM_SETTING_EXCLUDE_CLASS_LOADER);
+        String excludeClassLoaderStr = SystemPropertyConfig.getContextProperty(
+                Constant.SYSTEM_SETTING_EXCLUDE_CLASS_LOADER);
         if (excludeClassLoaderStr != null && !excludeClassLoaderStr.isEmpty()) {
             for (String p : excludeClassLoaderStr.split(",")) {
                 addExcludeClassLoader(p.trim());

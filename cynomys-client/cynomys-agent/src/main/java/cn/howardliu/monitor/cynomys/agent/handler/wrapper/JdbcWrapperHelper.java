@@ -17,6 +17,10 @@
  */
 package cn.howardliu.monitor.cynomys.agent.handler.wrapper;
 
+import org.apache.commons.beanutils.PropertyUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.naming.*;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
@@ -34,6 +38,7 @@ import java.util.*;
  * @author Emeric Vernat
  */
 public final class JdbcWrapperHelper {
+    private static final Logger logger = LoggerFactory.getLogger(JdbcWrapperHelper.class);
     private static final String MAX_ACTIVE_PROPERTY_NAME = "maxActive";
     private static final Map<String, DataSource> SPRING_DATASOURCES = new LinkedHashMap<>();
     private static final Map<String, DataSource> COMMON_DATASOURCES = new LinkedHashMap<>();
@@ -43,8 +48,7 @@ public final class JdbcWrapperHelper {
     private static final BasicDataSourcesProperties TOMCAT_JDBC_DATASOURCES_PROPERTIES = new BasicDataSourcesProperties();
     private static final BasicDataSourcesProperties ALIBABA_JDBC_DATASOURCES_PROPERTIES = new BasicDataSourcesProperties();
 
-    private static final Map<Class<?>, Constructor<?>> PROXY_CACHE = Collections
-            .synchronizedMap(new WeakHashMap<Class<?>, Constructor<?>>());
+    private static final Map<Class<?>, Constructor<?>> PROXY_CACHE = Collections.synchronizedMap(new WeakHashMap<>());
 
     private JdbcWrapperHelper() {
         super();
@@ -54,9 +58,17 @@ public final class JdbcWrapperHelper {
         SPRING_DATASOURCES.put(name, dataSource);
     }
 
-    @SuppressWarnings("unused")
     public static void registerCommonDataSource(String name, DataSource dataSource) {
         COMMON_DATASOURCES.put(name, dataSource);
+    }
+
+    public static boolean registerCommonDataSource(Map<String, DataSource> dataSources) {
+        if (dataSources.isEmpty()) {
+            return false;
+        }
+        COMMON_DATASOURCES.putAll(dataSources);
+        dataSources.values().forEach(JdbcWrapper.SINGLETON::fillDataSourceInfo);
+        return true;
     }
 
     public static void rebindDataSource(ServletContext servletContext, String jndiName, DataSource dataSource,
@@ -169,238 +181,221 @@ public final class JdbcWrapperHelper {
         return Collections.emptyMap();
     }
 
-    public static void pullDataSourceProperties(String name, DataSource dataSource) {
-        final String dataSourceClassName = dataSource.getClass().getName();
-        if ("org.apache.tomcat.dbcp.dbcp.BasicDataSource".equals(dataSourceClassName)
-                && dataSource instanceof org.apache.tomcat.dbcp.dbcp.BasicDataSource) {
-            pullTomcatDbcpDataSourceProperties(name, dataSource);
-        } else if ("org.apache.tomcat.dbcp.dbcp2.BasicDataSource".equals(dataSourceClassName)
-                && dataSource instanceof org.apache.tomcat.dbcp.dbcp2.BasicDataSource) {
-            pullTomcatDbcp2DataSourceProperties(name, dataSource);
-        } else if ("org.apache.commons.dbcp.BasicDataSource".equals(dataSourceClassName)
-                && dataSource instanceof org.apache.commons.dbcp.BasicDataSource) {
-            pullCommonsDbcpDataSourceProperties(name, dataSource);
-        } else if ("org.apache.commons.dbcp2.BasicDataSource".equals(dataSourceClassName)
-                && dataSource instanceof org.apache.commons.dbcp2.BasicDataSource) {
-            pullCommonsDbcp2DataSourceProperties(name, dataSource);
-        } else if ("org.apache.tomcat.jdbc.pool.DataSource".equals(dataSourceClassName)
-                && dataSource instanceof org.apache.tomcat.jdbc.pool.DataSource) {
-            pullTomcatJdbcDataSourceProperties(name, dataSource);
-        } else if ("com.alibaba.druid.pool.DruidDataSource".equals(dataSourceClassName)
-                && dataSource instanceof com.alibaba.druid.pool.DruidDataSource) {
-            pullAlibabaDataSourceProperties(name, dataSource);
+    static void pullDataSourceProperties(String name, DataSource dataSource) {
+        switch (dataSource.getClass().getName()) {
+//            case "org.apache.tomcat.dbcp.dbcp.BasicDataSource":
+//                pullTomcatDbcpDataSourceProperties(name, dataSource);
+//                break;
+//            case "org.apache.tomcat.dbcp.dbcp2.BasicDataSource":
+//                pullTomcatDbcp2DataSourceProperties(name, dataSource);
+//                break;
+//            case "org.apache.commons.dbcp.BasicDataSource":
+//                pullCommonsDbcpDataSourceProperties(name, dataSource);
+//                break;
+//            case "org.apache.commons.dbcp2.BasicDataSource":
+//                pullCommonsDbcp2DataSourceProperties(name, dataSource);
+//                break;
+//            case "org.apache.tomcat.jdbc.pool.DataSource":
+//                pullTomcatJdbcDataSourceProperties(name, dataSource);
+//                break;
+            case "com.alibaba.druid.pool.DruidDataSource":
+                pullAlibabaDataSourceProperties(name, dataSource);
+                break;
         }
     }
 
     private static void pullAlibabaDataSourceProperties(String name, DataSource dataSource) {
-        final com.alibaba.druid.pool.DruidDataSource dds = (com.alibaba.druid.pool.DruidDataSource) dataSource;
         final BasicDataSourcesProperties properties = ALIBABA_JDBC_DATASOURCES_PROPERTIES;
-
-        properties.put(name, MAX_ACTIVE_PROPERTY_NAME, dds.getMaxActive());
-        properties.put(name, "poolPreparedStatements", dds.isPoolPreparedStatements());
-        properties.put(name, "version", dds.getName() + ":" + dds.getVersion());
-        properties.put(name, "defaultCatalog", dds.getDefaultCatalog());
-        properties.put(name, "defaultReadOnly", dds.getDefaultReadOnly());
-        properties.put(name, "defaultTransactionIsolation", dds.getDefaultTransactionIsolation());
-        properties.put(name, "driverClassName", dds.getDriverClassName());
-        properties.put(name, "initialSize", dds.getInitialSize());
-        properties.put(name, "maxIdle", dds.getMaxIdle());
-        properties.put(name, "maxOpenPreparedStatements", dds.getMaxOpenPreparedStatements());
-        properties.put(name, "maxWait", dds.getMaxWait());
-        properties.put(name, "minEvictableIdleTimeMillis", dds.getMinEvictableIdleTimeMillis());
-        properties.put(name, "minIdle", dds.getMinIdle());
-        properties.put(name, "numTestsPerEvictionRun", dds.getNumTestsPerEvictionRun());
-        properties.put(name, "testOnBorrow", dds.isTestOnBorrow());
-        properties.put(name, "testOnReturn", dds.isTestOnReturn());
-        properties.put(name, "testWhileIdle", dds.isTestWhileIdle());
-        properties.put(name, "timeBetweenEvictionRunsMillis", dds.getTimeBetweenEvictionRunsMillis());
-        properties.put(name, "validationQuery", dds.getValidationQuery());
-        properties.put(name, "userName", dds.getUsername());
-        properties.put(name, "passWord", dds.getPassword());
+        properties.put(name, MAX_ACTIVE_PROPERTY_NAME, getValue(dataSource, "maxActive"));
+        properties.put(name, "poolPreparedStatements", getValue(dataSource, "poolPreparedStatements"));
+        properties.put(name, "version", getValue(dataSource, "name") + ":" + getValue(dataSource, "version"));
+        properties.put(name, "defaultCatalog", getValue(dataSource, "defaultCatalog"));
+        properties.put(name, "defaultReadOnly", getValue(dataSource, "defaultReadOnly"));
+        properties.put(name, "defaultTransactionIsolation", getValue(dataSource, "defaultTransactionIsolation"));
+        properties.put(name, "driverClassName", getValue(dataSource, "driverClassName"));
+        properties.put(name, "initialSize", getValue(dataSource, "initialSize"));
+        properties.put(name, "maxIdle", getValue(dataSource, "initialSize"));
+        properties.put(name, "maxOpenPreparedStatements", getValue(dataSource, "maxOpenPreparedStatements"));
+        properties.put(name, "maxWait", getValue(dataSource, "maxWait"));
+        properties.put(name, "minEvictableIdleTimeMillis", getValue(dataSource, "minEvictableIdleTimeMillis"));
+        properties.put(name, "minIdle", getValue(dataSource, "minIdle"));
+        properties.put(name, "numTestsPerEvictionRun", getValue(dataSource, "numTestsPerEvictionRun"));
+        properties.put(name, "testOnBorrow", getValue(dataSource, "testOnBorrow"));
+        properties.put(name, "testOnReturn", getValue(dataSource, "testOnReturn"));
+        properties.put(name, "testWhileIdle", getValue(dataSource, "testWhileIdle"));
+        properties.put(name, "timeBetweenEvictionRunsMillis", getValue(dataSource, "timeBetweenEvictionRunsMillis"));
+        properties.put(name, "validationQuery", getValue(dataSource, "validationQuery"));
+        properties.put(name, "username", getValue(dataSource, "username"));
+        properties.put(name, "passWord", getValue(dataSource, "password"));
     }
 
-    private static void pullTomcatDbcpDataSourceProperties(String name, DataSource dataSource) {
-
-        final org.apache.tomcat.dbcp.dbcp.BasicDataSource tomcatDbcpDataSource = (org.apache.tomcat.dbcp.dbcp.BasicDataSource) dataSource;
-        final BasicDataSourcesProperties properties = TOMCAT_BASIC_DATASOURCES_PROPERTIES;
-
-        properties.put(name, MAX_ACTIVE_PROPERTY_NAME, tomcatDbcpDataSource.getMaxActive());
-        properties.put(name, "poolPreparedStatements", tomcatDbcpDataSource.isPoolPreparedStatements());
-
-        properties.put(name, "defaultCatalog", tomcatDbcpDataSource.getDefaultCatalog());
-        properties.put(name, "defaultAutoCommit", tomcatDbcpDataSource.getDefaultAutoCommit());
-        properties.put(name, "defaultReadOnly", tomcatDbcpDataSource.getDefaultReadOnly());
-        properties.put(name, "defaultTransactionIsolation", tomcatDbcpDataSource.getDefaultTransactionIsolation());
-        properties.put(name, "driverClassName", tomcatDbcpDataSource.getDriverClassName());
-        properties.put(name, "initialSize", tomcatDbcpDataSource.getInitialSize());
-        properties.put(name, "maxIdle", tomcatDbcpDataSource.getMaxIdle());
-        properties.put(name, "maxOpenPreparedStatements", tomcatDbcpDataSource.getMaxOpenPreparedStatements());
-        properties.put(name, "maxWait", tomcatDbcpDataSource.getMaxWait());
-        properties.put(name, "minEvictableIdleTimeMillis", tomcatDbcpDataSource.getMinEvictableIdleTimeMillis());
-        properties.put(name, "minIdle", tomcatDbcpDataSource.getMinIdle());
-        properties.put(name, "numTestsPerEvictionRun", tomcatDbcpDataSource.getNumTestsPerEvictionRun());
-        properties.put(name, "testOnBorrow", tomcatDbcpDataSource.getTestOnBorrow());
-        properties.put(name, "testOnReturn", tomcatDbcpDataSource.getTestOnReturn());
-        properties.put(name, "testWhileIdle", tomcatDbcpDataSource.getTestWhileIdle());
-        properties.put(name, "timeBetweenEvictionRunsMillis", tomcatDbcpDataSource.getTimeBetweenEvictionRunsMillis());
-        properties.put(name, "validationQuery", tomcatDbcpDataSource.getValidationQuery());
-        properties.put(name, "userName", tomcatDbcpDataSource.getUsername());
-        properties.put(name, "passWord", tomcatDbcpDataSource.getPassword());
+    private static Object getValue(Object obj, String name) {
+        try {
+            return PropertyUtils.getNestedProperty(obj, name);
+        } catch (Throwable t) {
+            logger.error("get {}'s {} exception", obj, name, t);
+        }
+        return null;
     }
 
-    private static void pullCommonsDbcpDataSourceProperties(String name, DataSource dataSource) {
+//    private static void pullTomcatDbcpDataSourceProperties(String name, DataSource dataSource) {
+//        final org.apache.tomcat.dbcp.dbcp.BasicDataSource tomcatDbcpDataSource = (org.apache.tomcat.dbcp.dbcp.BasicDataSource) dataSource;
+//        final BasicDataSourcesProperties properties = TOMCAT_BASIC_DATASOURCES_PROPERTIES;
+//        properties.put(name, MAX_ACTIVE_PROPERTY_NAME, tomcatDbcpDataSource.getMaxActive());
+//        properties.put(name, "poolPreparedStatements", tomcatDbcpDataSource.isPoolPreparedStatements());
+//        properties.put(name, "defaultCatalog", tomcatDbcpDataSource.getDefaultCatalog());
+//        properties.put(name, "defaultAutoCommit", tomcatDbcpDataSource.getDefaultAutoCommit());
+//        properties.put(name, "defaultReadOnly", tomcatDbcpDataSource.getDefaultReadOnly());
+//        properties.put(name, "defaultTransactionIsolation", tomcatDbcpDataSource.getDefaultTransactionIsolation());
+//        properties.put(name, "driverClassName", tomcatDbcpDataSource.getDriverClassName());
+//        properties.put(name, "initialSize", tomcatDbcpDataSource.getInitialSize());
+//        properties.put(name, "maxIdle", tomcatDbcpDataSource.getMaxIdle());
+//        properties.put(name, "maxOpenPreparedStatements", tomcatDbcpDataSource.getMaxOpenPreparedStatements());
+//        properties.put(name, "maxWait", tomcatDbcpDataSource.getMaxWait());
+//        properties.put(name, "minEvictableIdleTimeMillis", tomcatDbcpDataSource.getMinEvictableIdleTimeMillis());
+//        properties.put(name, "minIdle", tomcatDbcpDataSource.getMinIdle());
+//        properties.put(name, "numTestsPerEvictionRun", tomcatDbcpDataSource.getNumTestsPerEvictionRun());
+//        properties.put(name, "testOnBorrow", tomcatDbcpDataSource.getTestOnBorrow());
+//        properties.put(name, "testOnReturn", tomcatDbcpDataSource.getTestOnReturn());
+//        properties.put(name, "testWhileIdle", tomcatDbcpDataSource.getTestWhileIdle());
+//        properties.put(name, "timeBetweenEvictionRunsMillis", tomcatDbcpDataSource.getTimeBetweenEvictionRunsMillis());
+//        properties.put(name, "validationQuery", tomcatDbcpDataSource.getValidationQuery());
+//        properties.put(name, "username", tomcatDbcpDataSource.getUsername());
+//        properties.put(name, "passWord", tomcatDbcpDataSource.getPassword());
+//    }
 
-        final org.apache.commons.dbcp.BasicDataSource dbcpDataSource = (org.apache.commons.dbcp.BasicDataSource) dataSource;
-        final BasicDataSourcesProperties properties = DBCP_BASIC_DATASOURCES_PROPERTIES;
+//    private static void pullCommonsDbcpDataSourceProperties(String name, DataSource dataSource) {
+//        final org.apache.commons.dbcp.BasicDataSource dbcpDataSource = (org.apache.commons.dbcp.BasicDataSource) dataSource;
+//        final BasicDataSourcesProperties properties = DBCP_BASIC_DATASOURCES_PROPERTIES;
+//        properties.put(name, MAX_ACTIVE_PROPERTY_NAME, dbcpDataSource.getMaxActive());
+//        properties.put(name, "poolPreparedStatements", dbcpDataSource.isPoolPreparedStatements());
+//        properties.put(name, "defaultCatalog", dbcpDataSource.getDefaultCatalog());
+//        properties.put(name, "defaultAutoCommit", dbcpDataSource.getDefaultAutoCommit());
+//        properties.put(name, "defaultReadOnly", dbcpDataSource.getDefaultReadOnly());
+//        properties.put(name, "defaultTransactionIsolation", dbcpDataSource.getDefaultTransactionIsolation());
+//        properties.put(name, "driverClassName", dbcpDataSource.getDriverClassName());
+//        properties.put(name, "initialSize", dbcpDataSource.getInitialSize());
+//        properties.put(name, "maxIdle", dbcpDataSource.getMaxIdle());
+//        properties.put(name, "maxOpenPreparedStatements", dbcpDataSource.getMaxOpenPreparedStatements());
+//        properties.put(name, "maxWait", dbcpDataSource.getMaxWait());
+//        properties.put(name, "minEvictableIdleTimeMillis", dbcpDataSource.getMinEvictableIdleTimeMillis());
+//        properties.put(name, "minIdle", dbcpDataSource.getMinIdle());
+//        properties.put(name, "numTestsPerEvictionRun", dbcpDataSource.getNumTestsPerEvictionRun());
+//        properties.put(name, "testOnBorrow", dbcpDataSource.getTestOnBorrow());
+//        properties.put(name, "testOnReturn", dbcpDataSource.getTestOnReturn());
+//        properties.put(name, "testWhileIdle", dbcpDataSource.getTestWhileIdle());
+//        properties.put(name, "timeBetweenEvictionRunsMillis", dbcpDataSource.getTimeBetweenEvictionRunsMillis());
+//        properties.put(name, "validationQuery", dbcpDataSource.getValidationQuery());
+//        properties.put(name, "username", dbcpDataSource.getUsername());
+//        properties.put(name, "passWord", dbcpDataSource.getPassword());
+//    }
 
-        properties.put(name, MAX_ACTIVE_PROPERTY_NAME, dbcpDataSource.getMaxActive());
-        properties.put(name, "poolPreparedStatements", dbcpDataSource.isPoolPreparedStatements());
+//    private static void pullTomcatDbcp2DataSourceProperties(String name, DataSource dataSource) {
+//        final org.apache.tomcat.dbcp.dbcp2.BasicDataSource tomcatDbcp2DataSource = (org.apache.tomcat.dbcp.dbcp2.BasicDataSource) dataSource;
+//        final BasicDataSourcesProperties properties = TOMCAT_BASIC_DATASOURCES_PROPERTIES;
+//        properties.put(name, MAX_ACTIVE_PROPERTY_NAME, tomcatDbcp2DataSource.getMaxTotal());
+//        properties.put(name, "poolPreparedStatements", tomcatDbcp2DataSource.isPoolPreparedStatements());
+//        properties.put(name, "defaultCatalog", tomcatDbcp2DataSource.getDefaultCatalog());
+//        properties.put(name, "defaultAutoCommit", tomcatDbcp2DataSource.getDefaultAutoCommit());
+//        properties.put(name, "defaultReadOnly", tomcatDbcp2DataSource.getDefaultReadOnly());
+//        properties.put(name, "defaultTransactionIsolation", tomcatDbcp2DataSource.getDefaultTransactionIsolation());
+//        properties.put(name, "driverClassName", tomcatDbcp2DataSource.getDriverClassName());
+//        properties.put(name, "initialSize", tomcatDbcp2DataSource.getInitialSize());
+//        properties.put(name, "maxIdle", tomcatDbcp2DataSource.getMaxIdle());
+//        properties.put(name, "maxOpenPreparedStatements", tomcatDbcp2DataSource.getMaxOpenPreparedStatements());
+//        properties.put(name, "maxWait", tomcatDbcp2DataSource.getMaxWaitMillis());
+//        properties.put(name, "minEvictableIdleTimeMillis", tomcatDbcp2DataSource.getMinEvictableIdleTimeMillis());
+//        properties.put(name, "minIdle", tomcatDbcp2DataSource.getMinIdle());
+//        properties.put(name, "numTestsPerEvictionRun", tomcatDbcp2DataSource.getNumTestsPerEvictionRun());
+//        properties.put(name, "testOnBorrow", tomcatDbcp2DataSource.getTestOnBorrow());
+//        properties.put(name, "testOnReturn", tomcatDbcp2DataSource.getTestOnReturn());
+//        properties.put(name, "testWhileIdle", tomcatDbcp2DataSource.getTestWhileIdle());
+//        properties.put(name, "timeBetweenEvictionRunsMillis", tomcatDbcp2DataSource.getTimeBetweenEvictionRunsMillis());
+//        properties.put(name, "validationQuery", tomcatDbcp2DataSource.getValidationQuery());
+//        properties.put(name, "username", tomcatDbcp2DataSource.getUsername());
+//        properties.put(name, "passWord", tomcatDbcp2DataSource.getPassword());
+//    }
 
-        properties.put(name, "defaultCatalog", dbcpDataSource.getDefaultCatalog());
-        properties.put(name, "defaultAutoCommit", dbcpDataSource.getDefaultAutoCommit());
-        properties.put(name, "defaultReadOnly", dbcpDataSource.getDefaultReadOnly());
-        properties.put(name, "defaultTransactionIsolation", dbcpDataSource.getDefaultTransactionIsolation());
-        properties.put(name, "driverClassName", dbcpDataSource.getDriverClassName());
-        properties.put(name, "initialSize", dbcpDataSource.getInitialSize());
-        properties.put(name, "maxIdle", dbcpDataSource.getMaxIdle());
-        properties.put(name, "maxOpenPreparedStatements", dbcpDataSource.getMaxOpenPreparedStatements());
-        properties.put(name, "maxWait", dbcpDataSource.getMaxWait());
-        properties.put(name, "minEvictableIdleTimeMillis", dbcpDataSource.getMinEvictableIdleTimeMillis());
-        properties.put(name, "minIdle", dbcpDataSource.getMinIdle());
-        properties.put(name, "numTestsPerEvictionRun", dbcpDataSource.getNumTestsPerEvictionRun());
-        properties.put(name, "testOnBorrow", dbcpDataSource.getTestOnBorrow());
-        properties.put(name, "testOnReturn", dbcpDataSource.getTestOnReturn());
-        properties.put(name, "testWhileIdle", dbcpDataSource.getTestWhileIdle());
-        properties.put(name, "timeBetweenEvictionRunsMillis", dbcpDataSource.getTimeBetweenEvictionRunsMillis());
-        properties.put(name, "validationQuery", dbcpDataSource.getValidationQuery());
-        properties.put(name, "userName", dbcpDataSource.getUsername());
-        properties.put(name, "passWord", dbcpDataSource.getPassword());
-    }
+//    private static void pullCommonsDbcp2DataSourceProperties(String name, DataSource dataSource) {
+//        final org.apache.commons.dbcp2.BasicDataSource dbcp2DataSource = (org.apache.commons.dbcp2.BasicDataSource) dataSource;
+//        final BasicDataSourcesProperties properties = DBCP_BASIC_DATASOURCES_PROPERTIES;
+//        properties.put(name, MAX_ACTIVE_PROPERTY_NAME, dbcp2DataSource.getMaxTotal());
+//        properties.put(name, "poolPreparedStatements", dbcp2DataSource.isPoolPreparedStatements());
+//        properties.put(name, "defaultCatalog", dbcp2DataSource.getDefaultCatalog());
+//        properties.put(name, "defaultAutoCommit", dbcp2DataSource.getDefaultAutoCommit());
+//        properties.put(name, "defaultReadOnly", dbcp2DataSource.getDefaultReadOnly());
+//        properties.put(name, "defaultTransactionIsolation", dbcp2DataSource.getDefaultTransactionIsolation());
+//        properties.put(name, "driverClassName", dbcp2DataSource.getDriverClassName());
+//        properties.put(name, "initialSize", dbcp2DataSource.getInitialSize());
+//        properties.put(name, "maxIdle", dbcp2DataSource.getMaxIdle());
+//        properties.put(name, "maxOpenPreparedStatements", dbcp2DataSource.getMaxOpenPreparedStatements());
+//        properties.put(name, "maxWait", dbcp2DataSource.getMaxWaitMillis());
+//        properties.put(name, "minEvictableIdleTimeMillis", dbcp2DataSource.getMinEvictableIdleTimeMillis());
+//        properties.put(name, "minIdle", dbcp2DataSource.getMinIdle());
+//        properties.put(name, "numTestsPerEvictionRun", dbcp2DataSource.getNumTestsPerEvictionRun());
+//        properties.put(name, "testOnBorrow", dbcp2DataSource.getTestOnBorrow());
+//        properties.put(name, "testOnReturn", dbcp2DataSource.getTestOnReturn());
+//        properties.put(name, "testWhileIdle", dbcp2DataSource.getTestWhileIdle());
+//        properties.put(name, "timeBetweenEvictionRunsMillis", dbcp2DataSource.getTimeBetweenEvictionRunsMillis());
+//        properties.put(name, "validationQuery", dbcp2DataSource.getValidationQuery());
+//        properties.put(name, "username", dbcp2DataSource.getUsername());
+//        properties.put(name, "passWord", dbcp2DataSource.getPassword());
+//    }
 
-    private static void pullTomcatDbcp2DataSourceProperties(String name, DataSource dataSource) {
+//    private static void pullTomcatJdbcDataSourceProperties(String name, DataSource dataSource) {
+//        final org.apache.tomcat.jdbc.pool.DataSource jdbcDataSource = (org.apache.tomcat.jdbc.pool.DataSource) dataSource;
+//        final BasicDataSourcesProperties properties = TOMCAT_JDBC_DATASOURCES_PROPERTIES;
+//        properties.put(name, MAX_ACTIVE_PROPERTY_NAME, jdbcDataSource.getMaxActive());
+//        properties.put(name, "defaultCatalog", jdbcDataSource.getDefaultCatalog());
+//        properties.put(name, "defaultAutoCommit", jdbcDataSource.getDefaultAutoCommit());
+//        properties.put(name, "defaultReadOnly", jdbcDataSource.getDefaultReadOnly());
+//        properties.put(name, "defaultTransactionIsolation", jdbcDataSource.getDefaultTransactionIsolation());
+//        properties.put(name, "driverClassName", jdbcDataSource.getDriverClassName());
+//        properties.put(name, "connectionProperties", jdbcDataSource.getConnectionProperties());
+//        properties.put(name, "initSQL", jdbcDataSource.getInitSQL());
+//        properties.put(name, "initialSize", jdbcDataSource.getInitialSize());
+//        properties.put(name, "maxIdle", jdbcDataSource.getMaxIdle());
+//        properties.put(name, "maxWait", jdbcDataSource.getMaxWait());
+//        properties.put(name, "maxAge", jdbcDataSource.getMaxAge());
+//        properties.put(name, "faireQueue", jdbcDataSource.isFairQueue());
+//        properties.put(name, "jmxEnabled", jdbcDataSource.isJmxEnabled());
+//        properties.put(name, "minEvictableIdleTimeMillis", jdbcDataSource.getMinEvictableIdleTimeMillis());
+//        properties.put(name, "minIdle", jdbcDataSource.getMinIdle());
+//        properties.put(name, "numTestsPerEvictionRun", jdbcDataSource.getNumTestsPerEvictionRun());
+//        properties.put(name, "testOnBorrow", jdbcDataSource.isTestOnBorrow());
+//        properties.put(name, "testOnConnect", jdbcDataSource.isTestOnConnect());
+//        properties.put(name, "testOnReturn", jdbcDataSource.isTestOnReturn());
+//        properties.put(name, "testWhileIdle", jdbcDataSource.isTestWhileIdle());
+//        properties.put(name, "timeBetweenEvictionRunsMillis", jdbcDataSource.getTimeBetweenEvictionRunsMillis());
+//        properties.put(name, "validationInterval", jdbcDataSource.getValidationInterval());
+//        properties.put(name, "validationQuery", jdbcDataSource.getValidationQuery());
+//        properties.put(name, "validatorClassName", jdbcDataSource.getValidatorClassName());
+//        properties.put(name, "username", jdbcDataSource.getUsername());
+//        properties.put(name, "passWord", jdbcDataSource.getPassword());
+//    }
 
-        final org.apache.tomcat.dbcp.dbcp2.BasicDataSource tomcatDbcp2DataSource = (org.apache.tomcat.dbcp.dbcp2.BasicDataSource) dataSource;
-        final BasicDataSourcesProperties properties = TOMCAT_BASIC_DATASOURCES_PROPERTIES;
-
-        properties.put(name, MAX_ACTIVE_PROPERTY_NAME, tomcatDbcp2DataSource.getMaxTotal());
-        properties.put(name, "poolPreparedStatements", tomcatDbcp2DataSource.isPoolPreparedStatements());
-
-        properties.put(name, "defaultCatalog", tomcatDbcp2DataSource.getDefaultCatalog());
-        properties.put(name, "defaultAutoCommit", tomcatDbcp2DataSource.getDefaultAutoCommit());
-        properties.put(name, "defaultReadOnly", tomcatDbcp2DataSource.getDefaultReadOnly());
-        properties.put(name, "defaultTransactionIsolation", tomcatDbcp2DataSource.getDefaultTransactionIsolation());
-        properties.put(name, "driverClassName", tomcatDbcp2DataSource.getDriverClassName());
-        properties.put(name, "initialSize", tomcatDbcp2DataSource.getInitialSize());
-        properties.put(name, "maxIdle", tomcatDbcp2DataSource.getMaxIdle());
-        properties.put(name, "maxOpenPreparedStatements", tomcatDbcp2DataSource.getMaxOpenPreparedStatements());
-        properties.put(name, "maxWait", tomcatDbcp2DataSource.getMaxWaitMillis());
-        properties.put(name, "minEvictableIdleTimeMillis", tomcatDbcp2DataSource.getMinEvictableIdleTimeMillis());
-        properties.put(name, "minIdle", tomcatDbcp2DataSource.getMinIdle());
-        properties.put(name, "numTestsPerEvictionRun", tomcatDbcp2DataSource.getNumTestsPerEvictionRun());
-        properties.put(name, "testOnBorrow", tomcatDbcp2DataSource.getTestOnBorrow());
-        properties.put(name, "testOnReturn", tomcatDbcp2DataSource.getTestOnReturn());
-        properties.put(name, "testWhileIdle", tomcatDbcp2DataSource.getTestWhileIdle());
-        properties.put(name, "timeBetweenEvictionRunsMillis", tomcatDbcp2DataSource.getTimeBetweenEvictionRunsMillis());
-        properties.put(name, "validationQuery", tomcatDbcp2DataSource.getValidationQuery());
-        properties.put(name, "userName", tomcatDbcp2DataSource.getUsername());
-        properties.put(name, "passWord", tomcatDbcp2DataSource.getPassword());
-    }
-
-    private static void pullCommonsDbcp2DataSourceProperties(String name, DataSource dataSource) {
-
-        final org.apache.commons.dbcp2.BasicDataSource dbcp2DataSource = (org.apache.commons.dbcp2.BasicDataSource) dataSource;
-        final BasicDataSourcesProperties properties = DBCP_BASIC_DATASOURCES_PROPERTIES;
-
-        properties.put(name, MAX_ACTIVE_PROPERTY_NAME, dbcp2DataSource.getMaxTotal());
-        properties.put(name, "poolPreparedStatements", dbcp2DataSource.isPoolPreparedStatements());
-
-        properties.put(name, "defaultCatalog", dbcp2DataSource.getDefaultCatalog());
-        properties.put(name, "defaultAutoCommit", dbcp2DataSource.getDefaultAutoCommit());
-        properties.put(name, "defaultReadOnly", dbcp2DataSource.getDefaultReadOnly());
-        properties.put(name, "defaultTransactionIsolation", dbcp2DataSource.getDefaultTransactionIsolation());
-        properties.put(name, "driverClassName", dbcp2DataSource.getDriverClassName());
-        properties.put(name, "initialSize", dbcp2DataSource.getInitialSize());
-        properties.put(name, "maxIdle", dbcp2DataSource.getMaxIdle());
-        properties.put(name, "maxOpenPreparedStatements", dbcp2DataSource.getMaxOpenPreparedStatements());
-        properties.put(name, "maxWait", dbcp2DataSource.getMaxWaitMillis());
-        properties.put(name, "minEvictableIdleTimeMillis", dbcp2DataSource.getMinEvictableIdleTimeMillis());
-        properties.put(name, "minIdle", dbcp2DataSource.getMinIdle());
-        properties.put(name, "numTestsPerEvictionRun", dbcp2DataSource.getNumTestsPerEvictionRun());
-        properties.put(name, "testOnBorrow", dbcp2DataSource.getTestOnBorrow());
-        properties.put(name, "testOnReturn", dbcp2DataSource.getTestOnReturn());
-        properties.put(name, "testWhileIdle", dbcp2DataSource.getTestWhileIdle());
-        properties.put(name, "timeBetweenEvictionRunsMillis", dbcp2DataSource.getTimeBetweenEvictionRunsMillis());
-        properties.put(name, "validationQuery", dbcp2DataSource.getValidationQuery());
-        properties.put(name, "userName", dbcp2DataSource.getUsername());
-        properties.put(name, "passWord", dbcp2DataSource.getPassword());
-    }
-
-    private static void pullTomcatJdbcDataSourceProperties(String name, DataSource dataSource) {
-        // si tomcat-jdbc, alors on récupère des infos
-        final org.apache.tomcat.jdbc.pool.DataSource jdbcDataSource = (org.apache.tomcat.jdbc.pool.DataSource) dataSource;
-        final BasicDataSourcesProperties properties = TOMCAT_JDBC_DATASOURCES_PROPERTIES;
-
-        properties.put(name, MAX_ACTIVE_PROPERTY_NAME, jdbcDataSource.getMaxActive());
-
-        properties.put(name, "defaultCatalog", jdbcDataSource.getDefaultCatalog());
-        properties.put(name, "defaultAutoCommit", jdbcDataSource.getDefaultAutoCommit());
-        properties.put(name, "defaultReadOnly", jdbcDataSource.getDefaultReadOnly());
-        properties.put(name, "defaultTransactionIsolation", jdbcDataSource.getDefaultTransactionIsolation());
-        properties.put(name, "driverClassName", jdbcDataSource.getDriverClassName());
-        properties.put(name, "connectionProperties", jdbcDataSource.getConnectionProperties());
-        properties.put(name, "initSQL", jdbcDataSource.getInitSQL());
-        properties.put(name, "initialSize", jdbcDataSource.getInitialSize());
-        properties.put(name, "maxIdle", jdbcDataSource.getMaxIdle());
-        properties.put(name, "maxWait", jdbcDataSource.getMaxWait());
-        properties.put(name, "maxAge", jdbcDataSource.getMaxAge());
-        properties.put(name, "faireQueue", jdbcDataSource.isFairQueue());
-        properties.put(name, "jmxEnabled", jdbcDataSource.isJmxEnabled());
-        properties.put(name, "minEvictableIdleTimeMillis", jdbcDataSource.getMinEvictableIdleTimeMillis());
-        properties.put(name, "minIdle", jdbcDataSource.getMinIdle());
-        properties.put(name, "numTestsPerEvictionRun", jdbcDataSource.getNumTestsPerEvictionRun());
-        properties.put(name, "testOnBorrow", jdbcDataSource.isTestOnBorrow());
-        properties.put(name, "testOnConnect", jdbcDataSource.isTestOnConnect());
-        properties.put(name, "testOnReturn", jdbcDataSource.isTestOnReturn());
-        properties.put(name, "testWhileIdle", jdbcDataSource.isTestWhileIdle());
-        properties.put(name, "timeBetweenEvictionRunsMillis", jdbcDataSource.getTimeBetweenEvictionRunsMillis());
-        properties.put(name, "validationInterval", jdbcDataSource.getValidationInterval());
-        properties.put(name, "validationQuery", jdbcDataSource.getValidationQuery());
-        properties.put(name, "validatorClassName", jdbcDataSource.getValidatorClassName());
-        properties.put(name, "userName", jdbcDataSource.getUsername());
-        properties.put(name, "passWord", jdbcDataSource.getPassword());
-    }
-
-    @SuppressWarnings("all")
     private static Object changeContextWritable(ServletContext servletContext, Object lock) throws NoSuchFieldException,
             ClassNotFoundException, IllegalAccessException, NamingException {
         assert servletContext != null;
         final String serverInfo = servletContext.getServerInfo();
-        if ((serverInfo.contains("Tomcat") || serverInfo.contains("vFabric") || serverInfo
-                .contains("SpringSource tc Runtime")) && System
-                .getProperty("jonas.name") == null) {
-
-            final Field field = Class.forName("org.apache.naming.ContextAccessController")
-                    .getDeclaredField("readOnlyContexts");
+        if ((serverInfo.contains("Tomcat") || serverInfo.contains("vFabric") || serverInfo.contains("SpringSource tc Runtime")) && System.getProperty("jonas.name") == null) {
+            final Field field = Class.forName("org.apache.naming.ContextAccessController").getDeclaredField("readOnlyContexts");
             setFieldAccessible(field);
-            @SuppressWarnings("unchecked") final Hashtable<String, Object> readOnlyContexts = (Hashtable<String, Object>) field
-                    .get(null);
-
+            @SuppressWarnings("unchecked") final Hashtable<String, Object> readOnlyContexts = (Hashtable<String, Object>) field.get(null);
             if (lock == null) {
-                final Hashtable<String, Object> clone = new Hashtable<String, Object>(readOnlyContexts);
+                final Hashtable<String, Object> clone = new Hashtable<>(readOnlyContexts);
                 readOnlyContexts.clear();
                 return clone;
             }
             // on remet le contexte not writable comme avant
             @SuppressWarnings("unchecked") final Hashtable<String, Object> myLock = (Hashtable<String, Object>) lock;
             readOnlyContexts.putAll(myLock);
-
             return null;
         } else if (serverInfo.contains("jetty")) {
             // on n'exécute cela que si c'est jetty
             final Context jdbcContext = (Context) new InitialContext().lookup("java:comp");
             final Field field = getAccessibleField(jdbcContext, "_env");
-            @SuppressWarnings("unchecked") final Hashtable<Object, Object> env = (Hashtable<Object, Object>) field
-                    .get(jdbcContext);
+            @SuppressWarnings("unchecked") final Hashtable<Object, Object> env = (Hashtable<Object, Object>) field.get(jdbcContext);
             if (lock == null) {
                 // on rend le contexte writable
                 Object result = env.remove("org.mortbay.jndi.lock");
@@ -412,7 +407,6 @@ public final class JdbcWrapperHelper {
             // on remet le contexte not writable comme avant
             env.put("org.mortbay.jndi.lock", lock);
             env.put("org.eclipse.jndi.lock", lock);
-
             return null;
         }
         return null;
@@ -480,7 +474,7 @@ public final class JdbcWrapperHelper {
     }
 
     private static Constructor<?> getProxyConstructor(Class<?> objectClass, Class<?>[] interfacesArray) {
-        final ClassLoader classLoader = objectClass.getClassLoader(); // NOPMD
+        final ClassLoader classLoader = objectClass.getClassLoader();
         try {
             final Constructor<?> constructor = Proxy
                     .getProxyClass(classLoader, interfacesArray).getConstructor(InvocationHandler.class);

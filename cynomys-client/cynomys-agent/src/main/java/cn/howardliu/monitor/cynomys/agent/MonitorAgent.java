@@ -16,10 +16,15 @@ import java.lang.instrument.Instrumentation;
  */
 public class MonitorAgent {
     public static void premain(String args, Instrumentation inst) {
+        System.out.println("################### monitor agent ###################");
         SystemPropertyConfig.init(args);
+        System.out.println("local version is: " + CommonParameters.getSysVersion());
         if (CommonParameters.isDebugMode()) {
+            System.out.println("DEBUG MODE!!");
+            System.out.println("################### monitor agent ###################");
             return;
         }
+        System.out.println("################### monitor agent ###################");
         inst.addTransformer(new MonitoringTransformer());
         CommonParameters.setNoFlag(false);
         MonitorStarter.run();

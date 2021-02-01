@@ -1,13 +1,12 @@
 package cn.howardliu.monitor.cynomys.proxy.server;
 
+import cn.howardliu.monitor.cynomys.proxy.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
-
-import static cn.howardliu.monitor.cynomys.proxy.Constants.COMMAND_SERVER_CTRL_STOP;
 
 /**
  * <br>created at 17-7-17
@@ -35,17 +34,21 @@ public abstract class AbstractServer {
     }
 
     protected void ctrl() {
-        Thread t = new Thread(() -> {
+        final Thread t = new Thread(() -> {
             logger.info("server listen to control port {}", cport);
             try (ServerSocket ss = new ServerSocket(cport)) {
                 while (isListen) {
-                    Socket s = ss.accept();
-                    Scanner sc = new Scanner(s.getInputStream());
-                    String command = sc.nextLine();
-                    if (COMMAND_SERVER_CTRL_STOP.equals(command)) {
-                        shutdownGracefully();
-                    } else {
-                        logger.warn("command \"{}\" not recognized", command);
+                    final Socket s = ss.accept();
+                    final Scanner sc = new Scanner(s.getInputStream());
+                    try {
+                        final String command = sc.nextLine();
+                        if (Constants.COMMAND_SERVER_CTRL_STOP.equals(command)) {
+                            shutdownGracefully();
+                        } else {
+                            logger.warn("command \"{}\" not recognized", command);
+                        }
+                    } catch (Throwable throwable) {
+                        logger.warn("got an exception when flow the command", throwable);
                     }
                 }
                 logger.info("server listen to control port {} STOPPED!", cport);

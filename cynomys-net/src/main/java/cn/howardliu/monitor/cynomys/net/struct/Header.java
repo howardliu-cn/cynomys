@@ -1,11 +1,9 @@
 package cn.howardliu.monitor.cynomys.net.struct;
 
 import cn.howardliu.monitor.cynomys.common.CommonParameters;
+import cn.howardliu.monitor.cynomys.common.Constant;
 
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static cn.howardliu.monitor.cynomys.common.Constant.CRC_CODE;
-import static cn.howardliu.monitor.cynomys.common.Constant.THIS_TAG;
 
 /**
  * <br>created at 17-5-11
@@ -18,8 +16,8 @@ public class Header {
     private static AtomicInteger requestId = new AtomicInteger(0);
 
     private int opaque = requestId.getAndIncrement();
-    private int crcCode = CRC_CODE;
-    private String tag = THIS_TAG;
+    private int crcCode = Constant.CRC_CODE;
+    private String tag = Constant.THIS_TAG;
     private String sysName = "";
     private String sysCode = "";
     private int length;

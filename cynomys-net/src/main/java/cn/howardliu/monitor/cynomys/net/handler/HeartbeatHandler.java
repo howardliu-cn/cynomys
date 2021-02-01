@@ -2,17 +2,13 @@ package cn.howardliu.monitor.cynomys.net.handler;
 
 import cn.howardliu.monitor.cynomys.net.struct.Header;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
+import cn.howardliu.monitor.cynomys.net.struct.MessageCode;
+import cn.howardliu.monitor.cynomys.net.struct.MessageType;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static cn.howardliu.monitor.cynomys.net.handler.HeartbeatConstants.HEARTBEAT_COUNTER;
-import static cn.howardliu.monitor.cynomys.net.struct.MessageCode.HEARTBEAT_REQ;
-import static cn.howardliu.monitor.cynomys.net.struct.MessageCode.HEARTBEAT_RESP;
-import static cn.howardliu.monitor.cynomys.net.struct.MessageType.REQUEST;
-import static cn.howardliu.monitor.cynomys.net.struct.MessageType.RESPONSE;
 
 /**
  * <br>created at 17-3-30
@@ -33,13 +29,13 @@ public abstract class HeartbeatHandler extends SimpleChannelInboundHandler<Messa
         assert message != null;
         assert message.getHeader() != null;
         Header header = message.getHeader();
-        if (header.getCode() == HEARTBEAT_REQ.value()) {
+        if (header.getCode() == MessageCode.HEARTBEAT_REQ.value()) {
             // handle PING single message
             pong(ctx);
-        } else if (header.getCode() == HEARTBEAT_RESP.value()) {
+        } else if (header.getCode() == MessageCode.HEARTBEAT_RESP.value()) {
             // handle PONG single message
-            if (logger.isDebugEnabled()) {
-                logger.debug(name + " get PONG single message from " + ctx.channel().remoteAddress());
+            if (logger.isTraceEnabled()) {
+                logger.trace(name + " get PONG single message from " + ctx.channel().remoteAddress());
             }
         } else {
             ctx.fireChannelRead(message);
@@ -51,13 +47,13 @@ public abstract class HeartbeatHandler extends SimpleChannelInboundHandler<Messa
                 new Message()
                         .setHeader(
                                 customHeader()
-                                        .setType(REQUEST.value())
-                                        .setCode(HEARTBEAT_REQ.value())
+                                        .setType(MessageType.REQUEST.value())
+                                        .setCode(MessageCode.HEARTBEAT_REQ.value())
                         )
         );
-        HEARTBEAT_COUNTER.incrementAndGet();
-        if (logger.isDebugEnabled()) {
-            logger.debug(name + " send PING single message to " + ctx.channel().remoteAddress());
+        HeartbeatConstants.HEARTBEAT_COUNTER.incrementAndGet();
+        if (logger.isTraceEnabled()) {
+            logger.trace(name + " send PING single message to " + ctx.channel().remoteAddress());
         }
     }
 
@@ -66,10 +62,10 @@ public abstract class HeartbeatHandler extends SimpleChannelInboundHandler<Messa
                 new Message()
                         .setHeader(
                                 customHeader()
-                                        .setType(RESPONSE.value())
-                                        .setCode(HEARTBEAT_RESP.value()))
+                                        .setType(MessageType.RESPONSE.value())
+                                        .setCode(MessageCode.HEARTBEAT_RESP.value()))
         );
-        HEARTBEAT_COUNTER.incrementAndGet();
+        HeartbeatConstants.HEARTBEAT_COUNTER.incrementAndGet();
         if (logger.isDebugEnabled()) {
             logger.debug(name + " send PONG single message to " + ctx.channel().remoteAddress());
         }

@@ -7,6 +7,7 @@ import cn.howardliu.monitor.cynomys.agent.dto.*;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.RequestWrapper;
 import cn.howardliu.monitor.cynomys.common.CommonParameters;
+import cn.howardliu.monitor.cynomys.common.Constant;
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -18,9 +19,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static cn.howardliu.monitor.cynomys.common.Constant.UNKNOWN_SERVER_NAME;
-import static cn.howardliu.monitor.cynomys.common.Constant.UNKNOWN_SERVER_VERSION;
-
 /**
  * @author Jack
  * @author liuxh
@@ -28,39 +26,29 @@ import static cn.howardliu.monitor.cynomys.common.Constant.UNKNOWN_SERVER_VERSIO
  * @Create In 2015年11月10日
  */
 public class AppMonitor {
+    private static final Logger log = LoggerFactory.getLogger(AppMonitor.class);
     private static final String TIME_FMT_PATTERN = "yyyy-MM-dd HH:mm:ss";
     private static AppMonitor appMonitor = null;
-    private Logger log = LoggerFactory.getLogger(this.getClass());
-    private Integer port;
-    private JavaInformations javaInfor;
+    private JavaInformations javaInfo;
 
-    private AppMonitor(Integer p) {
-        this.port = p;
-        javaInfor = JavaInformations.instance(true);
+    private AppMonitor() {
+        javaInfo = JavaInformations.instance(true);
     }
 
     /**
      * 获取实例
      *
-     * @param p 控制端口
      * @return AppMonitor
      * @Methods Name instance
      * @Create In 2015年11月10日 By Jack
      */
-    public static AppMonitor instance(Integer p) {
+    public static AppMonitor instance() {
         if (appMonitor != null) {
             return appMonitor;
         } else {
-            appMonitor = new AppMonitor(p);
+            appMonitor = new AppMonitor();
             return appMonitor;
         }
-    }
-
-    /**
-     * @Param Integer port to set
-     */
-    public void setPort(Integer port) {
-        this.port = port;
     }
 
     /**
@@ -110,7 +98,7 @@ public class AppMonitor {
             SystemInfo sysInfo = new SystemInfo();
             // 0. 判断是否当天计数，如已不是当天，重置计数器，但每个实例目前存在一个5分钟的计数延迟待处理
             compareDate();
-            javaInfor.rebuildJavaInfo(true);
+            javaInfo.rebuildJavaInfo(true);
 
             // 1. 获取目前节点基础信息
             Object[] tagArgs = {CommonParameters.getSysName(), CommonParameters.getSysCode(), "Active"};
@@ -123,60 +111,60 @@ public class AppMonitor {
 
             // 2.开始获取实例基本信息及机器基本信息
             // =======================通过java来获取相关系统状态============================
-            sysInfo.setTotalMem(javaInfor.getMemoryInformations().getTotalMemory() / 1024 / 1024);
-            sysInfo.setFreeMem(javaInfor.getMemoryInformations().getFreeMemory() / 1024 / 1024);
-            sysInfo.setMaxMem(javaInfor.getMemoryInformations().getMaxMemory() / 1024 / 1024);
+            sysInfo.setTotalMem(javaInfo.getMemoryInformations().getTotalMemory() / 1024 / 1024);
+            sysInfo.setFreeMem(javaInfo.getMemoryInformations().getFreeMemory() / 1024 / 1024);
+            sysInfo.setMaxMem(javaInfo.getMemoryInformations().getMaxMemory() / 1024 / 1024);
             // =======================OperatingSystemMXBean============================
-            sysInfo.setOsName(javaInfor.getOS());
-            sysInfo.setSysArch(javaInfor.getArc());
-            sysInfo.setVersion(javaInfor.getSysVersion());
-            sysInfo.setAvailableProcessors(javaInfor.getAvailableProcessors());
+            sysInfo.setOsName(javaInfo.getOS());
+            sysInfo.setSysArch(javaInfo.getArc());
+            sysInfo.setVersion(javaInfo.getSysVersion());
+            sysInfo.setAvailableProcessors(javaInfo.getAvailableProcessors());
 
-            sysInfo.setCommittedVirtualMemorySize(javaInfor.getMemoryInformations().getCommittedVirtualMemorySize());
+            sysInfo.setCommittedVirtualMemorySize(javaInfo.getMemoryInformations().getCommittedVirtualMemorySize());
 
-            sysInfo.setProcessCpuTime(javaInfor.getProcessCpuTimeMillis());
+            sysInfo.setProcessCpuTime(javaInfo.getProcessCpuTimeMillis());
 
-            sysInfo.setFreeSwapSpaceSize(javaInfor.getMemoryInformations().getFreeSwapSpaceSize() / 1024 / 1024);
+            sysInfo.setFreeSwapSpaceSize(javaInfo.getMemoryInformations().getFreeSwapSpaceSize() / 1024 / 1024);
             sysInfo.setFreePhysicalMemorySize(
-                    javaInfor.getMemoryInformations().getFreePhysicalMemorySize() / 1024 / 1024);
+                    javaInfo.getMemoryInformations().getFreePhysicalMemorySize() / 1024 / 1024);
             sysInfo.setTotalPhysicalMemorySize(
-                    javaInfor.getMemoryInformations().getTotalPhysicalMemorySize() / 1024 / 1024);
+                    javaInfo.getMemoryInformations().getTotalPhysicalMemorySize() / 1024 / 1024);
 
-            sysInfo.setHostName(javaInfor.getHost());
-            sysInfo.setIps(getAddress(new OsInfo(), this.port));
+            sysInfo.setHostName(javaInfo.getHost());
+            sysInfo.setIps(getAddress(new OsInfo(), CommonParameters.getServerPort()));
 
-            sysInfo.setSystemCpuRatio(javaInfor.getSystemCpuLoad());
-            sysInfo.setCpuRatio(javaInfor.getProcessCpuLoad());
+            sysInfo.setSystemCpuRatio(javaInfo.getSystemCpuLoad());
+            sysInfo.setCpuRatio(javaInfo.getProcessCpuLoad());
 
             // =======================MemoryMXBean============================
-            sysInfo.setHeapMemoryUsage(javaInfor.getMemoryInformations().getHeapMemoryUsage());
-            sysInfo.setNonHeapMemoryUsage(javaInfor.getMemoryInformations().getNonHeapMemoryUsage());
+            sysInfo.setHeapMemoryUsage(javaInfo.getMemoryInformations().getHeapMemoryUsage());
+            sysInfo.setNonHeapMemoryUsage(javaInfo.getMemoryInformations().getNonHeapMemoryUsage());
 
             // =======================ThreadMXBean============================
-            sysInfo.setThreadCount(javaInfor.getThreadCount());
-            sysInfo.setPeakThreadCount(javaInfor.getPeakThreadCount());
+            sysInfo.setThreadCount(javaInfo.getThreadCount());
+            sysInfo.setPeakThreadCount(javaInfo.getPeakThreadCount());
 
-            sysInfo.setCurrentThreadCpuTime(javaInfor.getCurrentThreadCpuTime());
-            sysInfo.setDaemonThreadCount(javaInfor.getDaemonThreadCount());
-            sysInfo.setCurrentThreadUserTime(javaInfor.getCurrentThreadUserTime());
+            sysInfo.setCurrentThreadCpuTime(javaInfo.getCurrentThreadCpuTime());
+            sysInfo.setDaemonThreadCount(javaInfo.getDaemonThreadCount());
+            sysInfo.setCurrentThreadUserTime(javaInfo.getCurrentThreadUserTime());
 
             // =======================CompilationMXBean============================
             // "
-            sysInfo.setCompliationName(javaInfor.getCompliationName());
-            sysInfo.setTotalCompliationTime(javaInfor.getTotalCompliationTime());
-            sysInfo.setMemPoolInfos(javaInfor.getMemoryInformations().getMemPoolInfos());
-            sysInfo.setGCInfos(javaInfor.getMemoryInformations().getGcInfos());
+            sysInfo.setCompliationName(javaInfo.getCompliationName());
+            sysInfo.setTotalCompliationTime(javaInfo.getTotalCompliationTime());
+            sysInfo.setMemPoolInfos(javaInfo.getMemoryInformations().getMemPoolInfos());
+            sysInfo.setGCInfos(javaInfo.getMemoryInformations().getGcInfos());
 
             // =======================RuntimeMXBean============================
             // "
-            sysInfo.setClassPath(javaInfor.getClassPath());
-            sysInfo.setLibraryPath(javaInfor.getLibraryPath());
-            sysInfo.setVmName(javaInfor.getVmName());
-            sysInfo.setVmVendor(javaInfor.getVmVendor());
-            sysInfo.setVmVersion(javaInfor.getVmVersion());
-            sysInfo.setVmArguments(javaInfor.getJvmArguments());
+            sysInfo.setClassPath(javaInfo.getClassPath());
+            sysInfo.setLibraryPath(javaInfo.getLibraryPath());
+            sysInfo.setVmName(javaInfo.getVmName());
+            sysInfo.setVmVendor(javaInfo.getVmVendor());
+            sysInfo.setVmVersion(javaInfo.getVmVersion());
+            sysInfo.setVmArguments(javaInfo.getJvmArguments());
 
-            appInfo.setServerTag(cn.howardliu.monitor.cynomys.common.Constant.THIS_TAG);
+            appInfo.setServerTag(Constant.THIS_TAG);
 
             // 3.构造实例信息
             appInfo.setSysInfo(sysInfo);
@@ -192,22 +180,22 @@ public class AppMonitor {
 
             // 4.更新服务器名称及版本
             if (CommonParameters.getServletContext() == null) {
-                appInfo.setServerName(UNKNOWN_SERVER_NAME);
-                appInfo.setServerVersion(UNKNOWN_SERVER_VERSION);
+                appInfo.setServerName(Constant.UNKNOWN_SERVER_NAME);
+                appInfo.setServerVersion(Constant.UNKNOWN_SERVER_VERSION);
             } else {
                 String[] svrInfo = CommonParameters.getServletContext().getServerInfo().split("/");
                 appInfo.setServerName(svrInfo[0]);
-                appInfo.setServerVersion(svrInfo.length > 1 ? svrInfo[1] : UNKNOWN_SERVER_VERSION);
+                appInfo.setServerVersion(svrInfo.length > 1 ? svrInfo[1] : Constant.UNKNOWN_SERVER_VERSION);
             }
 
-            appInfo.setTransactionCount(javaInfor.getTransactionCount());
-            appInfo.setPid(javaInfor.getPID());
-            appInfo.setDataBaseVersion(javaInfor.getDataBaseVersion());
-            appInfo.setDataSourceDetails(javaInfor.getDataSourceDetails());
+            appInfo.setTransactionCount(javaInfo.getTransactionCount());
+            appInfo.setPid(javaInfo.getPID());
+            appInfo.setDataBaseVersion(javaInfo.getDataBaseVersion());
+            appInfo.setDataSourceDetails(javaInfo.getDataSourceDetails());
 
-            appInfo.setStartupDate(fmt.format(javaInfor.getStartDate()));
-            appInfo.setUnixMaxFileDescriptorCount(javaInfor.getUnixMaxFileDescriptorCount());
-            appInfo.setUnixOpenFileDescriptorCount(javaInfor.getUnixOpenFileDescriptorCount());
+            appInfo.setStartupDate(fmt.format(javaInfo.getStartDate()));
+            appInfo.setUnixMaxFileDescriptorCount(javaInfo.getUnixMaxFileDescriptorCount());
+            appInfo.setUnixOpenFileDescriptorCount(javaInfo.getUnixOpenFileDescriptorCount());
 
             // 更新自身节点状态
             return JSON.toJSONString(appInfo);
@@ -226,26 +214,23 @@ public class AppMonitor {
     public String buildSQLCountsInfo() {
         //构造 SQL 信息并发送
         try {
-            JdbcWrapper jw = JdbcWrapper.SINGLETON;
-            if (jw != null) {
-                SQLInfo sqlInfo = SQLInfo.instance();
-                sqlInfo.setSysCode(CommonParameters.getSysCode());
-                sqlInfo.setSysName(CommonParameters.getSysName());
-                sqlInfo.setSysIPS(StringUtils.join(getAddress(new OsInfo(), this.port), "<br>"));
-                sqlInfo.setDataBaseVersion(javaInfor.getDataBaseVersion());
-                sqlInfo.setDataSourceDetails(javaInfor.getDataSourceDetails());
-                sqlInfo.setActiveConnectionCount(JdbcWrapper.getActiveConnectionCount());
-                sqlInfo.setActiveThreadCount(JdbcWrapper.getActiveThreadCount());
-                sqlInfo.setBuildQueueLength(JdbcWrapper.getBuildQueueLength());
-                sqlInfo.setRunningBuildCount(JdbcWrapper.getRunningBuildCount());
-                sqlInfo.setTransactionCount(JdbcWrapper.getTransactionCount());
-                sqlInfo.setUsedConnectionCount(JdbcWrapper.getUsedConnectionCount());
-                sqlInfo.setUpdateDate(new SimpleDateFormat(TIME_FMT_PATTERN).format(new Date()));
+            SQLInfo sqlInfo = SQLInfo.instance();
+            sqlInfo.setSysCode(CommonParameters.getSysCode());
+            sqlInfo.setSysName(CommonParameters.getSysName());
+            sqlInfo.setSysIPS(StringUtils.join(getAddress(new OsInfo(), CommonParameters.getServerPort()), "<br>"));
+            sqlInfo.setDataBaseVersion(javaInfo.getDataBaseVersion());
+            sqlInfo.setDataSourceDetails(javaInfo.getDataSourceDetails());
+            sqlInfo.setActiveConnectionCount(JdbcWrapper.getActiveConnectionCount());
+            sqlInfo.setActiveThreadCount(JdbcWrapper.getActiveThreadCount());
+            sqlInfo.setBuildQueueLength(JdbcWrapper.getBuildQueueLength());
+            sqlInfo.setRunningBuildCount(JdbcWrapper.getRunningBuildCount());
+            sqlInfo.setTransactionCount(JdbcWrapper.getTransactionCount());
+            sqlInfo.setUsedConnectionCount(JdbcWrapper.getUsedConnectionCount());
+            sqlInfo.setUpdateDate(new SimpleDateFormat(TIME_FMT_PATTERN).format(new Date()));
 
-                List<CounterRequest> sqlDetails = jw.getSqlCounter().getRequests();
-                sqlInfo.setSqlDetails(sqlDetails);
-                return JSON.toJSONString(sqlInfo);
-            }
+            List<CounterRequest> sqlDetails = JdbcWrapper.SINGLETON.getSqlCounter().getRequests();
+            sqlInfo.setSqlDetails(sqlDetails);
+            return JSON.toJSONString(sqlInfo);
         } catch (Exception e) {
             log.error("cannot load monitor info: build sql info", e);
         }
@@ -256,20 +241,18 @@ public class AppMonitor {
     public String buildRequestCountInfo() {
         try {
             RequestWrapper rw = RequestWrapper.SINGLETON;
-            if (rw != null) {
-                RequestInfo reqInfo = RequestInfo.instance();
-                reqInfo.setSysCode(CommonParameters.getSysCode());
-                reqInfo.setSysName(CommonParameters.getSysName());
+            RequestInfo reqInfo = RequestInfo.instance();
+            reqInfo.setSysCode(CommonParameters.getSysCode());
+            reqInfo.setSysName(CommonParameters.getSysName());
 
-                reqInfo.setSysIPS(StringUtils.join(getAddress(new OsInfo(), this.port), "<br>"));
-                reqInfo.setUpdateDate(new SimpleDateFormat(TIME_FMT_PATTERN).format(new Date()));
+            reqInfo.setSysIPS(StringUtils.join(getAddress(new OsInfo(), CommonParameters.getServerPort()), "<br>"));
+            reqInfo.setUpdateDate(new SimpleDateFormat(TIME_FMT_PATTERN).format(new Date()));
 
-                List<CounterRequest> reqDetails = rw.getHttpCounter().getRequests();
-                List<CounterRequest> errDetails = rw.getErrorCounter().getRequests();
-                reqInfo.setRequestDetails(reqDetails);
-                reqInfo.setErrorDetails(errDetails);
-                return JSON.toJSONString(reqInfo);
-            }
+            List<CounterRequest> reqDetails = rw.getHttpCounter().getRequests();
+            List<CounterRequest> errDetails = rw.getErrorCounter().getRequests();
+            reqInfo.setRequestDetails(reqDetails);
+            reqInfo.setErrorDetails(errDetails);
+            return JSON.toJSONString(reqInfo);
         } catch (Exception e) {
             log.error("cannot load monitor info: build request info", e);
         }
@@ -283,7 +266,7 @@ public class AppMonitor {
     private void compareDate() {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
         try {
-            Date cdS = new Date(System.currentTimeMillis());
+            Date cdS = new Date();
             Date pdD = SLACounter.instance().getPeerDate();
 
             Date currentDate = df.parse(df.format(cdS));

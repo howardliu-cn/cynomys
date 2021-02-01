@@ -18,7 +18,6 @@
 package cn.howardliu.monitor.cynomys.agent.util;
 
 import cn.howardliu.monitor.cynomys.agent.dto.MBeanNode;
-import cn.howardliu.monitor.cynomys.agent.dto.MBeanNode.MBeanAttribute;
 
 import javax.management.*;
 import javax.management.openmbean.CompositeData;
@@ -45,9 +44,9 @@ public final class MBeans {
             return o1.getName() != null ? o1.getName().compareTo(o2.getName()) : 0;
         }
     };
-    private static final Comparator<MBeanAttribute> ATTRIBUTE_COMPARATOR = new Comparator<MBeanAttribute>() {
+    private static final Comparator<MBeanNode.MBeanAttribute> ATTRIBUTE_COMPARATOR = new Comparator<MBeanNode.MBeanAttribute>() {
         @Override
-        public int compare(MBeanAttribute o1, MBeanAttribute o2) {
+        public int compare(MBeanNode.MBeanAttribute o1, MBeanNode.MBeanAttribute o2) {
             return o1.getName().compareTo(o2.getName());
         }
     };
@@ -174,7 +173,7 @@ public final class MBeans {
             if (children != null) {
                 sortMBeanNodes(children);
             }
-            final List<MBeanAttribute> attributes = node.getAttributes();
+            final List<MBeanNode.MBeanAttribute> attributes = node.getAttributes();
             if (attributes != null && attributes.size() > 1) {
                 Collections.sort(attributes, ATTRIBUTE_COMPARATOR);
             }
@@ -195,13 +194,13 @@ public final class MBeans {
         final MBeanInfo mbeanInfo = mbeanServer.getMBeanInfo(name);
         final String description = formatDescription(mbeanInfo.getDescription());
         final MBeanAttributeInfo[] attributeInfos = mbeanInfo.getAttributes();
-        final List<MBeanAttribute> attributes = getAttributes(name, attributeInfos);
+        final List<MBeanNode.MBeanAttribute> attributes = getAttributes(name, attributeInfos);
         // les attributs seront triés par ordre alphabétique dans getMBeanNodes
         return new MBeanNode(mbeanName, description, attributes);
     }
 
-    private List<MBeanAttribute> getAttributes(ObjectName name,
-                                               MBeanAttributeInfo[] attributeInfos) {
+    private List<MBeanNode.MBeanAttribute> getAttributes(ObjectName name,
+                                                         MBeanAttributeInfo[] attributeInfos) {
         final List<String> attributeNames = new ArrayList<>(attributeInfos.length);
         for (final MBeanAttributeInfo attribute : attributeInfos) {
             // on ne veut pas afficher l'attribut password, jamais
@@ -212,7 +211,7 @@ public final class MBeans {
         }
         final String[] attributeNamesArray = attributeNames
                 .toArray(new String[attributeNames.size()]);
-        final List<MBeanAttribute> result = new ArrayList<>();
+        final List<MBeanNode.MBeanAttribute> result = new ArrayList<>();
         try {
             // issue 116: asList sur mbeanServer.getAttributes(name, attributeNamesArray) n'existe qu'en java 1.6
             final List<Object> attributes = mbeanServer.getAttributes(name, attributeNamesArray);
@@ -222,13 +221,13 @@ public final class MBeans {
                 final String attributeDescription = getAttributeDescription(attribute.getName(),
                         attributeInfos);
                 final String formattedAttributeValue = formatAttributeValue(value);
-                final MBeanAttribute mbeanAttribute = new MBeanAttribute(attribute.getName(),
+                final MBeanNode.MBeanAttribute mbeanAttribute = new MBeanNode.MBeanAttribute(attribute.getName(),
                         attributeDescription, formattedAttributeValue);
                 result.add(mbeanAttribute);
             }
         } catch (final Exception e) {
             // issue 201: do not stop to render MBeans tree when exception in mbeanServer.getAttributes
-            final MBeanAttribute mbeanAttribute = new MBeanAttribute("exception", null,
+            final MBeanNode.MBeanAttribute mbeanAttribute = new MBeanNode.MBeanAttribute("exception", null,
                     e.toString());
             result.add(mbeanAttribute);
         }

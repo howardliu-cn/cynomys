@@ -9,6 +9,7 @@ import cn.howardliu.monitor.cynomys.net.codec.MessageEncoder;
 import cn.howardliu.monitor.cynomys.net.handler.OtherInfoHandler;
 import cn.howardliu.monitor.cynomys.net.stats.PooledAllocatorStats;
 import cn.howardliu.monitor.cynomys.net.struct.Message;
+import cn.howardliu.monitor.cynomys.net.struct.MessageType;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -31,8 +32,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static cn.howardliu.monitor.cynomys.net.struct.MessageType.REQUEST;
 
 /**
  * <br>created at 17-8-14
@@ -183,7 +182,7 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
                     protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
                         if (msg != null) {
                             byte rpcType = msg.getHeader().getType();
-                            if (rpcType == REQUEST.value()) {
+                            if (rpcType == MessageType.REQUEST.value()) {
                                 processRequest(ctx, msg);
                             } else {
                                 ctx.fireChannelRead(msg);

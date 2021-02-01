@@ -1,5 +1,6 @@
 package cn.howardliu.monitor.cynomys.proxy.config;
 
+import cn.howardliu.monitor.cynomys.proxy.Constants;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +11,6 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import static cn.howardliu.monitor.cynomys.common.Constant.CYNOMYS_HOME;
-import static cn.howardliu.monitor.cynomys.proxy.Constants.*;
 
 /**
  * <br>created at 17-7-17
@@ -38,11 +38,11 @@ public enum ProxyConfig {
             Properties properties = new Properties();
             properties.load(inputStream);
 
-            thePort = readFromConfigAndProperty(properties, KEY_CYNOMYS_PROXY_SERVER_PORT, thePort);
-            theCport = readFromConfigAndProperty(properties, KEY_CYNOMYS_PROXY_SERVER_CTRL_PORT, theCport);
-            theMaxFrameLength = readFromConfigAndProperty(properties, KEY_CYNOMYS_PROXY_SERVER_MAX_FRAME_LENGTH,
+            thePort = readFromConfigAndProperty(properties, Constants.KEY_CYNOMYS_PROXY_SERVER_PORT, thePort);
+            theCport = readFromConfigAndProperty(properties, Constants.KEY_CYNOMYS_PROXY_SERVER_CTRL_PORT, theCport);
+            theMaxFrameLength = readFromConfigAndProperty(properties, Constants.KEY_CYNOMYS_PROXY_SERVER_MAX_FRAME_LENGTH,
                     theMaxFrameLength);
-            theTimeoutSeconds = readFromConfigAndProperty(properties, KEY_CYNOMYS_PROXY_SERVER_TIMEOUT_SECONDS,
+            theTimeoutSeconds = readFromConfigAndProperty(properties, Constants.KEY_CYNOMYS_PROXY_SERVER_TIMEOUT_SECONDS,
                     theTimeoutSeconds);
         } catch (IOException e) {
             logger.error("Cannot load config properties in classpath", e);

@@ -1,4 +1,4 @@
-package cn.howardliu.cynomys.warn;
+package cn.howardliu.monitor.cynomys.warn;
 
 /**
  * <br>created at 17-8-25

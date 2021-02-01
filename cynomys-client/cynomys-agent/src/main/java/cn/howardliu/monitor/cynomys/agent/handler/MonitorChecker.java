@@ -43,7 +43,7 @@ public class MonitorChecker implements Health, Closeable {
 
     public MonitorChecker() {
         this.appName = CommonParameters.getSysName();
-        appMonitor = AppMonitor.instance(CommonParameters.getServerPort());
+        appMonitor = AppMonitor.instance();
         cynomysClient = CynomysClientManager.INSTANCE
                 .getAndCreateCynomysClient(
                         new ClientConfig(),
@@ -188,74 +188,48 @@ public class MonitorChecker implements Health, Closeable {
      */
     private void hearthCheck(final Long splitTime) {
         isMonitorStop = false;
-        this.m = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    while (!isMonitorStop) {
-                        // 1.构建系统实时状态并存储
-                        String appInfo = appMonitor.buildAppInfo();
-                        if (appInfo != null) {
-                            sendData(
-                                    new Message()
-                                            .setHeader(
-                                                    new Header()
-                                                            .setSysName(CommonParameters.getSysName())
-                                                            .setSysCode(CommonParameters.getSysCode())
-                                                            .setLength(appInfo.length())
-                                                            .setType(MessageType.REQUEST.value())
-                                                            .setCode(MessageCode.APP_INFO_REQ.value())
-                                            )
-                                            .setBody(appInfo)
-                            );
-                        }
-
-                        // 2.SQL计数信息
-                        String sqlInfo = appMonitor.buildSQLCountsInfo();
-                        if (sqlInfo != null) {
-                            sendData(
-                                    new Message()
-                                            .setHeader(
-                                                    new Header()
-                                                            .setSysName(CommonParameters.getSysName())
-                                                            .setSysCode(CommonParameters.getSysCode())
-                                                            .setLength(sqlInfo.length())
-                                                            .setType(MessageType.REQUEST.value())
-                                                            .setCode(MessageCode.SQL_INFO_REQ.value())
-                                            )
-                                            .setBody(sqlInfo)
-                            );
-                        }
-
-                        // 3. 请求计数信息
-                        String requestInfo = appMonitor.buildRequestCountInfo();
-                        if (requestInfo != null) {
-                            sendData(
-                                    new Message()
-                                            .setHeader(
-                                                    new Header()
-                                                            .setSysName(CommonParameters.getSysName())
-                                                            .setSysCode(CommonParameters.getSysCode())
-                                                            .setLength(requestInfo.length())
-                                                            .setType(MessageType.REQUEST.value())
-                                                            .setCode(MessageCode.REQUEST_INFO_REQ.value())
-                                            )
-                                            .setBody(requestInfo)
-                            );
-                        }
-
-                        // 4.进入休眠，等待下一次执行，默认5分钟执行一次
-                        Thread.sleep(splitTime);
-                    }
-                    logger.debug("Health Monitor Service is Stop!");
-                } catch (InterruptedException e) {
-                    logger.error("cannot load monitor module", e);
-                    Thread.currentThread().interrupt();
+        this.m = new Thread(() -> {
+            try {
+                while (!isMonitorStop) {
+                    // 1.构建系统实时状态并存储
+                    sendInfo(appMonitor.buildAppInfo(), MessageCode.APP_INFO_REQ);
+                    // 2.SQL计数信息
+                    sendInfo(appMonitor.buildSQLCountsInfo(), MessageCode.SQL_INFO_REQ);
+                    // 3. 请求计数信息
+                    sendInfo(appMonitor.buildRequestCountInfo(), MessageCode.REQUEST_INFO_REQ);
+                    // 4. 隔天清理数据
+                    // 5.进入休眠，等待下一次执行，默认5分钟执行一次
+                    Thread.sleep(splitTime);
                 }
+                logger.debug("Health Monitor Service is Stop!");
+            } catch (InterruptedException e) {
+                logger.error("cannot load monitor module", e);
+                Thread.currentThread().interrupt();
             }
         }, "monitor-agent-hearth-thread");
         m.setDaemon(true);
         m.start();
+    }
+
+    private void sendInfo(final String info, final MessageCode sqlInfoReq) {
+        if (info != null) {
+            sendData(
+                    new Message()
+                            .setHeader(
+                                    new Header()
+                                            .setSysName(CommonParameters.getSysName())
+                                            .setSysCode(CommonParameters.getSysCode())
+                                            .setLength(info.length())
+                                            .setType(MessageType.REQUEST.value())
+                                            .setCode(sqlInfoReq.value())
+                            )
+                            .setBody(info)
+            );
+        }
+    }
+
+    private void cleanPreInfo() {
+
     }
 
     public void startHealth(String status) {
@@ -296,7 +270,7 @@ public class MonitorChecker implements Health, Closeable {
 
     @Override
     public void setListensePort(Integer port) {
-        this.appMonitor.setPort(port);
+        CommonParameters.setServerPort(port);
     }
 
     private void sendData(Message request) {

@@ -23,22 +23,19 @@ public final class MonitorStarter {
 
     public static synchronized void run() {
         if (!started) {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    JavaInformations.instance(true);
-                    Parameters.initialize();
-                    SLACounter.init();
-                    try {
-                        if (!LaunchLatch.STARTED.waitForMillis(120_000)) {
-                            logger.warn("Timeout(120000ms) when waiting for server started!");
-                        }
-                    } catch (InterruptedException e) {
-                        logger.error("LaunchLatch was interrupted!", e);
-                        Thread.currentThread().interrupt();
+            Thread thread = new Thread(() -> {
+                JavaInformations.instance(true);
+                Parameters.initialize();
+                SLACounter.init();
+                try {
+                    if (!LaunchLatch.STARTED.waitForMillis(120_000)) {
+                        logger.warn("Timeout(120000ms) when waiting for server started!");
                     }
-                    new MonitorChecker().startHealth("Active");
+                } catch (InterruptedException e) {
+                    logger.error("LaunchLatch was interrupted!", e);
+                    Thread.currentThread().interrupt();
                 }
+                new MonitorChecker().startHealth("Active");
             }, "monitor-starter-thread");
             thread.setDaemon(true);
             thread.start();

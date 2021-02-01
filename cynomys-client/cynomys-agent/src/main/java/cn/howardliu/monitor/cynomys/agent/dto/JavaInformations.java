@@ -25,6 +25,7 @@ import cn.howardliu.gear.monitor.core.os.OsStats;
 import cn.howardliu.gear.monitor.core.process.ProcessStats;
 import cn.howardliu.monitor.cynomys.agent.conf.Parameters;
 import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapper;
+import cn.howardliu.monitor.cynomys.agent.handler.wrapper.JdbcWrapperHelper;
 import cn.howardliu.monitor.cynomys.common.CommonParameters;
 import cn.howardliu.monitor.cynomys.common.ThreadMXBeanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -71,11 +72,7 @@ public class JavaInformations implements Serializable {
     private static final int FAULTLENGTH = 10;
     private static final long serialVersionUID = 3281861236369720876L;
     private static final boolean SYSTEM_CPU_LOAD_ENABLED = "1.7".compareTo(SystemUtils.JAVA_VERSION) < 0;
-
     private static JavaInformations javaInfo = null;
-
-    private static boolean localWebXmlExists = true;
-    private static boolean localPomXmlExists = true;
     private MemoryInformations memoryInformations;
     private List<TomcatInformations> tomcatInformationsList = new ArrayList<>();
     private int sessionCount;
@@ -126,8 +123,6 @@ public class JavaInformations implements Serializable {
     private List<ThreadInformations> threadInformationsList;
     @SuppressWarnings("all")
     private List<String> dependenciesList;
-    private boolean webXmlExists = localWebXmlExists;
-    private boolean pomXmlExists = localPomXmlExists;
 
     private JavaInformations(boolean includeDetails) {
         super();
@@ -141,11 +136,6 @@ public class JavaInformations implements Serializable {
             javaInfo = new JavaInformations(includeDetails);
             return javaInfo;
         }
-    }
-
-    public static void setWebXmlExistsAndPomXmlExists(boolean webXmlExists, boolean pomXmlExists) {
-        localWebXmlExists = webXmlExists;
-        localPomXmlExists = pomXmlExists;
     }
 
     private static String buildOS() {
@@ -178,9 +168,7 @@ public class JavaInformations implements Serializable {
     @SuppressWarnings("unused")
     private static double getCpuRatioForWindows() {
         try {
-            String procCmd = System
-                    .getenv("windir") + "\\system32\\wbem\\wmic.exe process get Caption,CommandLine,KernelModeTime,ReadOperationCount,ThreadCount,UserModeTime,WriteOperationCount";
-
+            String procCmd = System.getenv("windir") + "\\system32\\wbem\\wmic.exe process get Caption,CommandLine,KernelModeTime,ReadOperationCount,ThreadCount,UserModeTime,WriteOperationCount";
             // 取进程信息
             double[] c0 = readCpu(Runtime.getRuntime().exec(procCmd));
             Thread.sleep(CPUTIME);
@@ -295,15 +283,18 @@ public class JavaInformations implements Serializable {
     }
 
     private static String buildDataBaseVersion() {
-        if (Parameters.isNoDatabase()) {
-            return null;
-        }
         final StringBuilder result = new StringBuilder();
         try {
             // 我们正在寻找一个datasource与initialcontext显示名称
             // 版本/和BDD +名称和版本的JDBC驱动程序
             //（名称中查找JNDI是datasource属
             // JDBC / XXX是一名datasource）标准图<字符串>，datasource datasources = jdbcwrapp
+            if (!CommonParameters.isInjectDataSources()) {
+                boolean injectSuccess = JdbcWrapperHelper.registerCommonDataSource(CommonParameters.getDataSources());
+                if (injectSuccess) {
+                    CommonParameters.setInjectDataSources(true);
+                }
+            }
             final Map<String, DataSource> dataSources = JdbcWrapper.getJndiAndSpringDataSources();
             for (final Map.Entry<String, DataSource> entry : dataSources.entrySet()) {
                 final String name = entry.getKey();
@@ -327,12 +318,9 @@ public class JavaInformations implements Serializable {
 
     private static void appendDataBaseVersion(StringBuilder result, Connection connection) throws SQLException {
         final DatabaseMetaData metaData = connection.getMetaData();
-        // Sécurité: pour l'instant on n'indique pas metaData.getUserName()
         result.append(metaData.getURL()).append('\n');
-        result.append(metaData.getDatabaseProductName()).append(", ").append(metaData.getDatabaseProductVersion())
-                .append('\n');
-        result.append("Driver JDBC:\n").append(metaData.getDriverName()).append(", ")
-                .append(metaData.getDriverVersion());
+        result.append(metaData.getDatabaseProductName()).append(", ").append(metaData.getDatabaseProductVersion()).append('\n');
+        result.append("Driver JDBC:\n").append(metaData.getDriverName()).append(", ").append(metaData.getDriverVersion());
     }
 
     private static String buildDataSourceDetails() {
@@ -447,20 +435,6 @@ public class JavaInformations implements Serializable {
     }
 
     /**
-     * @return the boolean localWebXmlExists
-     */
-    public static boolean isLocalWebXmlExists() {
-        return localWebXmlExists;
-    }
-
-    /**
-     * @return the boolean localPomXmlExists
-     */
-    public static boolean isLocalPomXmlExists() {
-        return localPomXmlExists;
-    }
-
-    /**
      * @return the JavaInformations javaInfo
      */
     public static JavaInformations getJavaInfo() {
@@ -471,7 +445,6 @@ public class JavaInformations implements Serializable {
      * 重建监控信息
      */
     public void rebuildJavaInfo(boolean includeDetails) {
-        clearJavaInfo();
         buildJavaInfo(includeDetails);
     }
 
@@ -630,29 +603,19 @@ public class JavaInformations implements Serializable {
         }
     }
 
-    public boolean doesWebXmlExists() {
-        return webXmlExists;
-    }
-
-    public boolean doesPomXmlExists() {
-        return pomXmlExists;
-    }
-
     @SuppressWarnings("unused")
     private double getCpuRatioForWindowsByPID() {
         MBeanServerConnection mbsc = ManagementFactory.getPlatformMBeanServer();
         com.sun.management.OperatingSystemMXBean osm;
         double cpuUsage = 0;
         try {
-            osm = ManagementFactory.newPlatformMXBeanProxy(mbsc, ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME,
-                    com.sun.management.OperatingSystemMXBean.class);
+            osm = ManagementFactory.newPlatformMXBeanProxy(mbsc, ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, com.sun.management.OperatingSystemMXBean.class);
             if (Math.abs(this.beforeCpuTime) < BENCHMARK_ZERO_VALUE) {
                 this.beforeCpuTime = osm.getProcessCpuTime();
                 this.beforeCpuUpTime = System.nanoTime();
             } else {
                 if (osm.getProcessCpuTime() > this.beforeCpuTime) {
-                    cpuUsage = ((osm.getProcessCpuTime() - this.beforeCpuTime) * 100L) / (System
-                            .nanoTime() - this.beforeCpuUpTime);
+                    cpuUsage = ((osm.getProcessCpuTime() - this.beforeCpuTime) * 100L) / (System.nanoTime() - this.beforeCpuUpTime);
                     cpuUsage = Math.abs(cpuUsage);
                     this.beforeCpuTime = osm.getProcessCpuTime();
                     this.beforeCpuUpTime = System.nanoTime();
@@ -963,26 +926,11 @@ public class JavaInformations implements Serializable {
     }
 
     /**
-     * @return the boolean webXmlExists
-     */
-    public boolean isWebXmlExists() {
-        return webXmlExists;
-    }
-
-    /**
-     * @return the boolean pomXmlExists
-     */
-    public boolean isPomXmlExists() {
-        return pomXmlExists;
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
     public String toString() {
-        return getClass()
-                .getSimpleName() + "[pid=" + getPID() + ", host=" + getHost() + ", javaVersion=" + getJavaVersion() + ", serverInfo=" + getServerInfo() + ']';
+        return getClass().getSimpleName() + "[pid=" + getPID() + ", host=" + getHost() + ", javaVersion=" + getJavaVersion() + ", serverInfo=" + getServerInfo() + ']';
     }
 
     public static final class ThreadInformationsComparator implements Comparator<ThreadInformations>, Serializable {

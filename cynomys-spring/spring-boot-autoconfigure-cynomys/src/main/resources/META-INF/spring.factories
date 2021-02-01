@@ -1,4 +1,10 @@
 # Auto Configure
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   cn.howardliu.monitor.cynomys.spring.boot.autoconfigure.CynomysContainerAutoConfigurer,\
-  cn.howardliu.monitor.cynomys.spring.boot.autoconfigure.CynomysContextRefreshedAutoConfigurer
+  cn.howardliu.monitor.cynomys.spring.boot.autoconfigure.CynomysContextRefreshedAutoConfigurer,\
+  cn.howardliu.monitor.cynomys.spring.boot.autoconfigure.CynomysDatasourceAutoConfigurer,\
+  cn.howardliu.monitor.cynomys.spring.boot.autoconfigure.CynomysDatasourceAutoConfigurer2,\
+  cn.howardliu.monitor.cynomys.spring.boot.autoconfigure.CynomysFilterAutoConfigurer
+## Run Listeners
+#org.springframework.boot.SpringApplicationRunListener=\
+#  cn.howardliu.monitor.cynomys.spring.boot.listener.Warlock

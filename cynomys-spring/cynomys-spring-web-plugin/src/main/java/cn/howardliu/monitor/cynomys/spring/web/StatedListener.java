@@ -26,13 +26,17 @@ public class StatedListener implements ServletContextAware, ApplicationListener<
     public void setServletContext(ServletContext servletContext) {
         CommonParameters.setServletContext(servletContext);
         try {
+            final String thePort = System.getProperty("server.port");
+            if (thePort != null) {
+                CommonParameters.setServerPort(Integer.valueOf(thePort));
+                return;
+            }
+        } catch (Exception e) {
+            logger.error("got server port exception", e);
+        }
+        try {
             if (TomcatInfoUtils.SERVER_IS_TOMCAT) {
                 CommonParameters.setServerPort(TomcatInfoUtils.getPort());
-            } else {
-                String thePort = System.getProperty("server.port");
-                if (thePort != null) {
-                    CommonParameters.setServerPort(Integer.valueOf(thePort));
-                }
             }
         } catch (Exception e) {
             logger.error("got server port exception", e);

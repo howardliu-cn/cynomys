@@ -41,12 +41,9 @@ public abstract class AbstractInfo2KafkaProcessor implements NettyRequestProcess
                         errMsg = exception.toString();
                     }
                     StringBuilder body = new StringBuilder();
-                    if (success) {
-                        body.append("");
-                    } else {
+                    if (!success) {
                         body.append(errMsg);
                     }
-
                     ctx.writeAndFlush(
                             new Message()
                                     .setHeader(
