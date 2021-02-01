@@ -12,11 +12,11 @@ import io.netty.channel.ChannelHandlerContext;
 public interface NettyRequestProcessor {
     Message processRequest(ChannelHandlerContext ctx, Message request) throws Exception;
 
-    default boolean waitResponse(){
+    default boolean waitResponse() {
         return true;
     }
 
-    default boolean rejectRequest(){
+    default boolean rejectRequest() {
         return false;
     }
 }

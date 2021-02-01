@@ -92,7 +92,7 @@ public abstract class NettyNetAbstract implements NetService {
     }
 
     public void invokeAsync(final Channel channel, final Message request, final long timeoutMillis,
-            final InvokeCallBack invokeCallBack)
+                            final InvokeCallBack invokeCallBack)
             throws InterruptedException, NetTooMuchRequestException, NetTimeoutException, NetSendRequestException {
         final int opaque = request.getHeader().getOpaque();
         boolean acquired = this.semaphoreAsync.tryAcquire(timeoutMillis, TimeUnit.MILLISECONDS);

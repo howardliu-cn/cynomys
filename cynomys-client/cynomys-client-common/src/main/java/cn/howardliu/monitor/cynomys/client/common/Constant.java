@@ -1,5 +1,7 @@
 package cn.howardliu.monitor.cynomys.client.common;
 
+import javax.servlet.ServletContext;
+
 /**
  * <br>created at 17-4-11
  *
@@ -17,6 +19,8 @@ public final class Constant {
     public static final String SYSTEM_SETTING_EXCLUDE_PACKAGE = "system.setting.exclude.package";
     public static final String SYSTEM_SETTING_INCLUDE_PACKAGE = "system.setting.include.package";
     public static final String SYSTEM_SETTING_EXCLUDE_CLASS_LOADER = "system.setting.exclude.ClassLoader";
+
+    public static ServletContext servletContext = null;
 
     private Constant() {
     }

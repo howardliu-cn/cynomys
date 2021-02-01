@@ -451,7 +451,7 @@ public class Client {
 
         @Override
         public void connect(ChannelHandlerContext ctx, SocketAddress remoteAddress, SocketAddress localAddress,
-                ChannelPromise promise) throws Exception {
+                            ChannelPromise promise) throws Exception {
             final String local = localAddress == null ? "UNKNOWN" : localAddress.toString();
             final String remote = remoteAddress == null ? "UNKNOWN" : remoteAddress.toString();
             logger.info("NETTY CLIENT PIPELINE: CONNECT  {} => {}", local, remote);

@@ -35,7 +35,7 @@ public class ResponseFuture {
     private volatile Throwable cause;
 
     public ResponseFuture(int opaque, long timeoutMillis,
-            InvokeCallBack invokeCallBack, SemaphoreReleaseOnlyOnce once) {
+                          InvokeCallBack invokeCallBack, SemaphoreReleaseOnlyOnce once) {
         this.opaque = opaque;
         this.timeoutMillis = timeoutMillis;
         this.invokeCallBack = invokeCallBack;

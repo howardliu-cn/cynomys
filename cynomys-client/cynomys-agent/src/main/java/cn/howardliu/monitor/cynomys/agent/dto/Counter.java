@@ -243,7 +243,7 @@ public class Counter implements Cloneable, Serializable { // NOPMD
     }
 
     private Counter(String name, String storageName, String iconName, String childCounterName,
-            ThreadLocal<CounterRequestContext> contextThreadLocal) {
+                    ThreadLocal<CounterRequestContext> contextThreadLocal) {
         super();
         assert name != null;
         assert storageName != null;
@@ -478,7 +478,7 @@ public class Counter implements Cloneable, Serializable { // NOPMD
     }
 
     private void addRequest(String requestName, long duration, long cpuTime, boolean systemError,
-            String systemErrorStackTrace, int responseSize) {
+                            String systemErrorStackTrace, int responseSize) {
         assert requestName != null;
         assert duration >= 0;
         assert cpuTime >= -1; // -1 pour requêtes sql

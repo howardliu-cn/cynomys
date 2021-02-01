@@ -27,7 +27,7 @@ public enum SystemSetting {
     private static SystemSettingParam param;
 
     static {
-        try (InputStream in =  FileUtils
+        try (InputStream in = FileUtils
                 .openInputStream(new File(CYNOMYS_HOME + "/conf/system-setting.properties"))) {
             Properties properties = new Properties();
             properties.load(in);

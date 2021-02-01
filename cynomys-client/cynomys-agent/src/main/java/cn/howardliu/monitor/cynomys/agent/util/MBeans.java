@@ -201,7 +201,7 @@ public final class MBeans {
     }
 
     private List<MBeanAttribute> getAttributes(ObjectName name,
-            MBeanAttributeInfo[] attributeInfos) {
+                                               MBeanAttributeInfo[] attributeInfos) {
         final List<String> attributeNames = new ArrayList<>(attributeInfos.length);
         for (final MBeanAttributeInfo attribute : attributeInfos) {
             // on ne veut pas afficher l'attribut password, jamais

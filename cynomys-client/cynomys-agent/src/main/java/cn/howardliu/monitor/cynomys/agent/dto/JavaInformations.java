@@ -44,10 +44,10 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static cn.howardliu.gear.monitor.core.Constants.*;
-import static org.apache.commons.lang3.SystemUtils.*;
 import static org.apache.commons.lang3.SystemUtils.OS_ARCH;
 import static org.apache.commons.lang3.SystemUtils.OS_NAME;
 import static org.apache.commons.lang3.SystemUtils.OS_VERSION;
+import static org.apache.commons.lang3.SystemUtils.*;
 
 /**
  * Informations systèmes sur le serveur, sans code html de présentation. L'état

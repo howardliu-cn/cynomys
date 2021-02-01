@@ -53,7 +53,7 @@ public class CounterRequestContext implements CounterRequest.ICounterRequestCont
     private Map<String, Long> childRequestsExecutionsByRequestId;
 
     public CounterRequestContext(Counter parentCounter, CounterRequestContext parentContext, String requestName,
-            String completeRequestName, String remoteUser, long startCpuTime) {
+                                 String completeRequestName, String remoteUser, long startCpuTime) {
         this(parentCounter, parentContext, requestName, completeRequestName, remoteUser, Thread.currentThread().getId(),
                 System
                         .currentTimeMillis(), startCpuTime);
@@ -65,8 +65,8 @@ public class CounterRequestContext implements CounterRequest.ICounterRequestCont
     // constructeur privé pour la méthode clone
     // CHECKSTYLE:OFF
     private CounterRequestContext(Counter parentCounter, CounterRequestContext parentContext, String requestName,
-            String completeRequestName, String remoteUser, long threadId, long startTime,
-            long startCpuTime) {
+                                  String completeRequestName, String remoteUser, long threadId, long startTime,
+                                  long startCpuTime) {
         // CHECKSTYLE:ON
         super();
         assert parentCounter != null;
@@ -85,7 +85,7 @@ public class CounterRequestContext implements CounterRequest.ICounterRequestCont
     }
 
     public static void replaceParentCounters(List<CounterRequestContext> rootCurrentContexts,
-            List<Counter> newParentCounters) {
+                                             List<Counter> newParentCounters) {
         final Map<String, Counter> newParentCountersByName = new HashMap<>(newParentCounters.size());
         for (final Counter counter : newParentCounters) {
             newParentCountersByName.put(counter.getName(), counter);
@@ -94,7 +94,7 @@ public class CounterRequestContext implements CounterRequest.ICounterRequestCont
     }
 
     private static void replaceParentCounters(List<CounterRequestContext> rootCurrentContexts,
-            Map<String, Counter> newParentCountersByName) {
+                                              Map<String, Counter> newParentCountersByName) {
         for (final CounterRequestContext context : rootCurrentContexts) {
             final Counter newParentCounter = newParentCountersByName.get(context.getParentCounter().getName());
             if (newParentCounter != null) {
@@ -245,7 +245,7 @@ public class CounterRequestContext implements CounterRequest.ICounterRequestCont
 
     @SuppressWarnings("unused")
     public void addChildRequest(Counter childCounter, String request, String requestId, long duration,
-            boolean systemError, int responseSize) {
+                                boolean systemError, int responseSize) {
         // si je suis le counter fils du counter du contexte parent
         // comme sql pour http alors on ajoute la requête fille
         if (parentContext != null && parentCounter.getName()

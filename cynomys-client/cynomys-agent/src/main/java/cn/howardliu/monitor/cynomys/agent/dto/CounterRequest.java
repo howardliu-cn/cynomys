@@ -263,7 +263,7 @@ public class CounterRequest implements Cloneable, Serializable {
     }
 
     public void addHit(long duration, long cpuTime, boolean systemError, String systemErrorStackTrace,
-            int responseSize) {
+                       int responseSize) {
         hits++;
         durationsSum += duration;
         durationsSquareSum += duration * duration;

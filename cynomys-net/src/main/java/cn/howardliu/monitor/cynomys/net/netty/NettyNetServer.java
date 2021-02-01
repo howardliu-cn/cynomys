@@ -240,7 +240,7 @@ public class NettyNetServer extends NettyNetAbstract implements NetServer {
 
     @Override
     public void registProcessor(byte requestCode, NettyRequestProcessor processor,
-            ExecutorService executor) {
+                                ExecutorService executor) {
         ExecutorService theExecutor = executor;
         if (executor == null) {
             theExecutor = this.publicExecutor;

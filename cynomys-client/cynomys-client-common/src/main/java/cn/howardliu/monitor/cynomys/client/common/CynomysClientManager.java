@@ -34,7 +34,7 @@ public enum CynomysClientManager {
     }
 
     public CynomysClient getAndCreateCynomysClient(final ClientConfig clientConfig,
-            final ChannelEventListener channelEventListener) {
+                                                   final ChannelEventListener channelEventListener) {
         String clientId = clientConfig.buildClientId();
         CynomysClient cynomysClient = cynomysClientTable.get(clientId);
         if (cynomysClient == null) {

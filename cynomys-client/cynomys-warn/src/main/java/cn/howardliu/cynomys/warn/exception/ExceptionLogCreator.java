@@ -21,10 +21,10 @@ public final class ExceptionLogCreator {
     }
 
     public static ExceptionLog create(String sysCode,
-            String bizCode, String bizDesc,
-            String errCode, String errDesc,
-            String sysErrCode, String sysErrDesc,
-            ErrorLevel errLevel, String throwableDesc) {
+                                      String bizCode, String bizDesc,
+                                      String errCode, String errDesc,
+                                      String sysErrCode, String sysErrDesc,
+                                      ErrorLevel errLevel, String throwableDesc) {
         ExceptionLog request = new ExceptionLog();
         if (sysErrCode == null || !sysErrCode.matches("^\\d{3}$")) {
             throw new IllegalArgumentException("SysErrCode必须是3位数字");

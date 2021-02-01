@@ -52,7 +52,7 @@ public enum CynomysProxyServer {
 
     public void stop() {
         try (Socket socket = new Socket("localhost", PROXY_CONFIG.getCport());
-                PrintWriter w = new PrintWriter(socket.getOutputStream())) {
+             PrintWriter w = new PrintWriter(socket.getOutputStream())) {
             w.println(COMMAND_SERVER_CTRL_STOP);
             w.flush();
         } catch (ConnectException ce) {

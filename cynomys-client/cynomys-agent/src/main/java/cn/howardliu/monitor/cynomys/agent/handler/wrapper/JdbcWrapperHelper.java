@@ -60,7 +60,7 @@ public final class JdbcWrapperHelper {
     }
 
     public static void rebindDataSource(ServletContext servletContext, String jndiName, DataSource dataSource,
-            DataSource dataSourceProxy)
+                                        DataSource dataSourceProxy)
             throws ClassNotFoundException, NamingException, IllegalAccessException, NoSuchFieldException {
         final Object lock = changeContextWritable(servletContext, null);
         final InitialContext initialContext = new InitialContext();

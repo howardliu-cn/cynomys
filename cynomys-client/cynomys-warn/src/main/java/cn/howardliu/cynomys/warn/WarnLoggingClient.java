@@ -83,10 +83,10 @@ public enum WarnLoggingClient implements Closeable {
     }
 
     public void log(String sysCode,
-            String bizCode, String bizDesc,
-            String errCode, String errDesc,
-            String sysErrCode, String sysErrDesc,
-            ErrorLevel errorLevel, String desc) {
+                    String bizCode, String bizDesc,
+                    String errCode, String errDesc,
+                    String sysErrCode, String sysErrDesc,
+                    ErrorLevel errorLevel, String desc) {
         // create ExceptionLog object and send to Cynomys Server
         this.log(
                 ExceptionLogCreator.create(sysCode, bizCode, bizDesc, errCode, errDesc, sysErrCode,

@@ -42,7 +42,7 @@ public final class RequestAspect {
     }
 
     public static void catchBlock(long tid, HttpServletRequest request, HttpServletResponse response,
-            Throwable cause) {
+                                  Throwable cause) {
         assert request != null;
         assert response != null;
         assert cause != null;

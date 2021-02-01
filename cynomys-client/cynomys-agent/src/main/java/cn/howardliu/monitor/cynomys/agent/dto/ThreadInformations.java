@@ -49,7 +49,7 @@ public class ThreadInformations implements Serializable {
 
     @SuppressWarnings("all")
     public ThreadInformations(Thread thread, List<StackTraceElement> stackTrace, long cpuTimeMillis,
-            long userTimeMillis, boolean deadlocked, String hostAddress) {
+                              long userTimeMillis, boolean deadlocked, String hostAddress) {
         super();
         assert thread != null;
         assert stackTrace == null || stackTrace instanceof Serializable;
